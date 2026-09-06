@@ -1,5 +1,30 @@
 {
   "data": {
+    "33977963916": {
+      "hash": "14af55216f1c7ec1f96cd34f7703918189c2ef03",
+      "title": "fix(vialu): add vmax source VecDataSplit at ex1",
+      "date": 1788625692
+    },
+    "33973490456": {
+      "hash": "090d297a2a1eef8551d75370221672cd27e3fe8e",
+      "title": "ci(emu-performance): dedup & eta filter & disable xscc (#6488)",
+      "date": 1788620437
+    },
+    "33964886943": {
+      "hash": "b5ec9e2f89cf8b8b99ea757e9ddade407b2be3d1",
+      "title": "feat(vector,vialu): support vector widen and narrow instructions",
+      "date": 1788609697
+    },
+    "33941105423": {
+      "hash": "ed226432e2a9a3d60b51f9c08bb52e6efb927fe7",
+      "title": "fix(decode): generate dirtyVs in vector decode (#6483)",
+      "date": 1788577810
+    },
+    "33941066942": {
+      "hash": "562cb574d145ac0fcd01cb16f6b2e1e3fb133c4a",
+      "title": "fix(vector): use vf opcode not fp opcode",
+      "date": 1788577760
+    },
     "33907666402": {
       "hash": "b673b02741c33d19333fe8fcf630db78a7d96508",
       "title": "fix(vector,store): revert the adoption of old vector framework",
