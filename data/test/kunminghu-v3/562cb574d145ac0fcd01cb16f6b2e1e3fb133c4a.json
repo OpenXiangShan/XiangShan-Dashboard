@@ -17,38 +17,8 @@
   "dealII_9896": {
     "ipc": 4.315897
   },
-  "fuzz-GemsFDTD_35695": {
-    "ipc": 0.923866
-  },
   "calculix_38207": {
     "ipc": 5.480207
-  },
-  "fuzz-bwaves_33320": {
-    "ipc": 3.4993
-  },
-  "fuzz-leslie3d_62177": {
-    "ipc": 4.572186
-  },
-  "fuzz-leslie3d_3278": {
-    "ipc": 6.902868
-  },
-  "fuzz-namd_75957": {
-    "ipc": 2.798113
-  },
-  "fuzz-perlbench_diffmail_19558": {
-    "ipc": 4.185858
-  },
-  "fuzz-soplex_pds-50_5042": {
-    "ipc": 1.276931
-  },
-  "fuzz-soplex_ref_5654": {
-    "ipc": 1.713714
-  },
-  "fuzz-tonto_23168": {
-    "ipc": 4.212324
-  },
-  "fuzz-wrf_124261": {
-    "ipc": 6.79689
   },
   "gamess_gradient_12613": {
     "ipc": 5.384182

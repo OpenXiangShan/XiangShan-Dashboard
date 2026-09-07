@@ -20,21 +20,6 @@
   "dealII_9896": {
     "ipc": 4.315897
   },
-  "fuzz-bzip2_combined_16946": {
-    "ipc": 0.6395
-  },
-  "fuzz-milc_28462": {
-    "ipc": 1.613605
-  },
-  "fuzz-povray_21991": {
-    "ipc": 3.42319
-  },
-  "fuzz-sphinx3_38337": {
-    "ipc": 2.532646
-  },
-  "fuzz-tonto_46409": {
-    "ipc": 4.36231
-  },
   "gamess_gradient_12613": {
     "ipc": 5.384182
   },

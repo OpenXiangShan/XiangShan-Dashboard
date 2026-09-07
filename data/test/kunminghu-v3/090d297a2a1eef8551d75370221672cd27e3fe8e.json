@@ -17,26 +17,11 @@
   "calculix_38207": {
     "ipc": 5.480207
   },
-  "fuzz-calculix_200": {
-    "ipc": 3.416435
-  },
   "dealII_9896": {
     "ipc": 4.315897
   },
-  "fuzz-libquantum_42523": {
-    "ipc": 6.328182
-  },
-  "fuzz-sjeng_104526": {
-    "ipc": 2.410172
-  },
-  "fuzz-sphinx3_57407": {
-    "ipc": 2.367627
-  },
   "gamess_gradient_12613": {
     "ipc": 5.384182
-  },
-  "fuzz-tonto_33050": {
-    "ipc": 2.773806
   },
   "gcc_cpdecl_1944": {
     "ipc": 1.601778

@@ -17,23 +17,8 @@
   "calculix_38207": {
     "ipc": 5.480207
   },
-  "fuzz-gcc_expr_3531": {
-    "ipc": 1.277078
-  },
   "dealII_9896": {
     "ipc": 4.315897
-  },
-  "fuzz-hmmer_retro_54743": {
-    "ipc": 5.973735
-  },
-  "fuzz-povray_36556": {
-    "ipc": 3.67109
-  },
-  "fuzz-sjeng_41768": {
-    "ipc": 2.445199
-  },
-  "fuzz-zeusmp_3372": {
-    "ipc": 4.066065
   },
   "gamess_gradient_12613": {
     "ipc": 5.384182

@@ -14,26 +14,11 @@
   "cactusADM_163": {
     "ipc": 4.697725
   },
-  "fuzz-bwaves_27148": {
-    "ipc": 1.634164
-  },
   "dealII_9896": {
     "ipc": 4.315897
   },
   "calculix_38207": {
     "ipc": 5.480207
-  },
-  "fuzz-hmmer_retro_59969": {
-    "ipc": 6.15094
-  },
-  "fuzz-lbm_41810": {
-    "ipc": 2.728069
-  },
-  "fuzz-mcf_9241": {
-    "ipc": 2.055231
-  },
-  "fuzz-xalancbmk_38230": {
-    "ipc": 4.88537
   },
   "gamess_gradient_12613": {
     "ipc": 5.384182

@@ -20,21 +20,6 @@
   "dealII_9896": {
     "ipc": 4.315897
   },
-  "fuzz-bzip2_chicken_114": {
-    "ipc": 3.727143
-  },
-  "fuzz-gamess_triazolium_190075": {
-    "ipc": 4.686356
-  },
-  "fuzz-gcc_scilab_1053": {
-    "ipc": 1.69826
-  },
-  "fuzz-h264ref_foreman.main_4500": {
-    "ipc": 5.94916
-  },
-  "fuzz-wrf_2197": {
-    "ipc": 5.110431
-  },
   "gamess_gradient_12613": {
     "ipc": 5.384182
   },
