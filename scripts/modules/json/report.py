@@ -76,7 +76,7 @@ class ReportTestJson(ReportJson):
     def append_artifact_zip(self, artifact_zip: ZipFile) -> None:
         """Append multiple testcase from a artifact zip file"""
         for name in artifact_zip.namelist():
-            if not name.startswith("ipc-"):
+            if not name.startswith("ipc-") or name.startswith("ipc-fuzz-"):
                 continue
             testcase = name.replace("ipc-", "")
             with artifact_zip.open(name) as f:
