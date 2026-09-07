@@ -1,7 +1,7 @@
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 
-const repoBase = "/XiangShan-Dashboard/";
+const repoBase = "./";
 
 export default defineConfig({
   plugins: [vue()],
