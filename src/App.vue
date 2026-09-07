@@ -8,7 +8,7 @@
           <div class="muted link-row">
             <a
               class="gh-link"
-              href="https://github.com/ngc7331/XiangShan-Dashboard"
+              href="https://github.com/OpenXiangShan/XiangShan-Dashboard"
               target="_blank"
               rel="noreferrer"
             >
