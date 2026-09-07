@@ -79,9 +79,8 @@ body {
 .brand-mark {
   width: 44px;
   height: 44px;
-  border-radius: var(--radius-card);
-  background: linear-gradient(135deg, #4da1ff, #7cc0ff);
-  box-shadow: 0 10px 30px rgba(58, 127, 246, 0.35);
+  flex-shrink: 0;
+  object-fit: contain;
 }
 
 h1 {

@@ -2,7 +2,7 @@
   <div id="app-root">
     <header class="topbar">
       <div class="brand">
-        <div class="brand-mark" />
+        <img class="brand-mark" src="./assets/logo.svg" alt="" />
         <div>
           <h1>XiangShan Dashboard</h1>
           <div class="muted link-row">
