@@ -2,7 +2,7 @@ name: Update Data
 
 on:
   schedule:
-    - cron: "0 0 * * *" # 8:00 AM (UTC+8) daily
+    - cron: "0 0,12 * * *" # Run at 00:00 and 12:00 UTC every day
   workflow_dispatch:
 
 concurrency:
