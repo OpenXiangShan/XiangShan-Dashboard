@@ -1,5 +1,20 @@
 {
   "data": {
+    "34026045413": {
+      "hash": "a2340a516c7fa36076a4fa59a68a406d58a61d25",
+      "title": "feat(Exu): write full whole-register move results",
+      "date": 1788688601
+    },
+    "34026038541": {
+      "hash": "da03821dab792add8a20d1d7b9f426e8035d955a",
+      "title": "fix(vfwcvt): allow vfwcvt to execute when sew=8b",
+      "date": 1788688590
+    },
+    "34026026466": {
+      "hash": "77ac6b7f3e7da18cf917df597bada942c05b7057",
+      "title": "feat(vector,vcvt): support widen and 2-to-1 narrow instructions",
+      "date": 1788688574
+    },
     "33977963916": {
       "hash": "14af55216f1c7ec1f96cd34f7703918189c2ef03",
       "title": "fix(vialu): add vmax source VecDataSplit at ex1",
