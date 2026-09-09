@@ -1,4 +1,5 @@
 import { reactive } from "vue";
+import { version as appVersion } from "../../package.json";
 
 export type QuickRangePreset =
   | "lastWeek"
@@ -16,10 +17,11 @@ export interface DashboardSettings {
   selectedSubset: string;
 }
 
-const settingsKey = "xs-dashboard-settings-v2";
+const settingsKey = "xs-dashboard-settings";
+const settingsVersionKey = `${settingsKey}-version`;
 
-export function useDashboardSettings() {
-  const state = reactive<DashboardSettings>({
+function createDefaultSettings(): DashboardSettings {
+  return {
     selectedBranch: "",
     startDateStr: "",
     endDateStr: "",
@@ -27,29 +29,35 @@ export function useDashboardSettings() {
     selectedBenchmarks: [],
     selectedTabId: "ipc-commit",
     selectedSubset: "",
-  });
+  };
+}
+
+export function useDashboardSettings() {
+  const state = reactive<DashboardSettings>(createDefaultSettings());
+
+  function clear() {
+    localStorage.clear();
+    Object.assign(state, createDefaultSettings());
+  }
 
   function load() {
     try {
+      if (localStorage.getItem(settingsVersionKey) !== appVersion) {
+        clear();
+        return;
+      }
       const saved = localStorage.getItem(settingsKey);
       if (!saved) return;
-      const data = JSON.parse(saved) as Partial<DashboardSettings>;
-      state.selectedBranch = data.selectedBranch || "";
-      state.startDateStr = data.startDateStr || "";
-      state.endDateStr = data.endDateStr || "";
-      state.quickRangePreset = data.quickRangePreset || "lastWeek";
-      state.selectedBenchmarks = Array.isArray(data.selectedBenchmarks)
-        ? data.selectedBenchmarks
-        : [];
-      state.selectedTabId = data.selectedTabId || "ipc-commit";
-      state.selectedSubset = data.selectedSubset || "";
+      Object.assign(state, JSON.parse(saved) as DashboardSettings);
     } catch (err) {
       console.warn("Failed to load settings", err);
+      clear();
     }
   }
 
   function save() {
     localStorage.setItem(settingsKey, JSON.stringify(state));
+    localStorage.setItem(settingsVersionKey, appVersion);
   }
 
   return {

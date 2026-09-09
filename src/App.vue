@@ -211,7 +211,7 @@ const {
   save: saveSettings,
 } = useDashboardSettings();
 
-const selectedTabId = ref(settings.selectedTabId || tabs[0].id);
+const selectedTabId = ref(settings.selectedTabId);
 const activeTab = computed(
   () => tabs.find((tab) => tab.id === selectedTabId.value) || tabs[0],
 );
@@ -232,8 +232,8 @@ function displayTabTitle(tab: (typeof tabs)[number]) {
 
 const branches = ref<string[]>([]);
 const chartSubsets = ref<string[]>([]);
-const selectedBranch = ref(settings.selectedBranch || "");
-const selectedSubset = ref(settings.selectedSubset || "");
+const selectedBranch = ref(settings.selectedBranch);
+const selectedSubset = ref(settings.selectedSubset);
 const activeChartSubset = computed(() => {
   const subsets = chartSubsets.value;
   if (!subsets.length) return undefined;
@@ -241,10 +241,10 @@ const activeChartSubset = computed(() => {
     ? selectedSubset.value
     : subsets[0];
 });
-const startDateStr = ref(settings.startDateStr || "");
-const endDateStr = ref(settings.endDateStr || "");
+const startDateStr = ref(settings.startDateStr);
+const endDateStr = ref(settings.endDateStr);
 const quickRangePreset = ref<QuickRangePreset | null>(
-  settings.quickRangePreset ?? null,
+  settings.quickRangePreset,
 );
 
 const chartSummary = computed(() => {
@@ -1144,18 +1144,13 @@ onMounted(async () => {
   isHydrating.value = true;
   try {
     loadSettings();
-    selectedTabId.value = settings.selectedTabId || tabs[0].id;
-    if (selectedTabId.value.startsWith("score-weekly-")) {
-      const legacySubset = selectedTabId.value.slice("score-weekly-".length);
-      selectedTabId.value = "score-weekly";
-      settings.selectedSubset = legacySubset;
-    }
-    selectedBranch.value = settings.selectedBranch || "";
-    selectedSubset.value = settings.selectedSubset || "";
-    startDateStr.value = settings.startDateStr || "";
-    endDateStr.value = settings.endDateStr || "";
-    quickRangePreset.value = settings.quickRangePreset ?? null;
-    selectedBenchmarks.value = settings.selectedBenchmarks || [];
+    selectedTabId.value = settings.selectedTabId;
+    selectedBranch.value = settings.selectedBranch;
+    selectedSubset.value = settings.selectedSubset;
+    startDateStr.value = settings.startDateStr;
+    endDateStr.value = settings.endDateStr;
+    quickRangePreset.value = settings.quickRangePreset;
+    selectedBenchmarks.value = settings.selectedBenchmarks;
     if (activeTab.value.kind === "comparison") {
       await loadComparisonSources();
     } else {
