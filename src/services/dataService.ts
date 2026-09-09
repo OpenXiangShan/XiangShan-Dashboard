@@ -4,6 +4,7 @@ import {
   assertBranchList,
   assertReportPayload,
   assertRunIndex,
+  assertSubsetList,
   type NormalizedRun,
   type ReportPayload,
 } from "../types/data";
@@ -18,9 +19,16 @@ async function fetchJson(path: string): Promise<unknown> {
   return response.json();
 }
 
-export async function loadBranchList(tab: ChartConfig): Promise<string[]> {
+export async function loadBranchList(tab: ChartConfig) {
   const payloadRaw = await fetchJson(`${tab.datasetRoot}/branch.json`);
   return assertBranchList(payloadRaw);
+}
+
+export async function loadSubsetList(tab: ChartConfig, branch: string) {
+  const payloadRaw = await fetchJson(
+    `${tab.datasetRoot}/${branch}/subset.json`,
+  );
+  return assertSubsetList(payloadRaw);
 }
 
 function getDatasetPath(

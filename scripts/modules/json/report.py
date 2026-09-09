@@ -98,7 +98,7 @@ class ReportRegressionJson(ReportJson):
         for line in txt.splitlines():
             # match "id.name time ref_time score coverage"
             m = re.match(
-                r"^\s*(\d+\.\w+)\s+[\d\.NaN]+\s+[\d\.NaN]+\s+([\d\.NaN]+)\s+[\d\.NaN]+",
+                r"^\s*((?:\d+\.)?\w+)\s+[\d\.NaN]+\s+[\d\.NaN]+\s+([\d\.NaN]+)\s+[\d\.NaN]+",
                 line,
             )
             if m:

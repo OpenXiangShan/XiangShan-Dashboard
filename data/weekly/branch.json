@@ -1,3 +1,6 @@
-[
-  "kunminghu-v3"
-]
+{
+  "default": "kunminghu-v3",
+  "branches": [
+    "kunminghu-v3"
+  ]
+}

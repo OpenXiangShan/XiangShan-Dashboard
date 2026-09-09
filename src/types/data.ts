@@ -13,6 +13,16 @@ export interface RunIndex {
   data: Record<string, RunIndexEntry>;
 }
 
+export interface BranchList {
+  default: string;
+  branches: string[];
+}
+
+export interface SubsetList {
+  default: string;
+  subsets: string[];
+}
+
 export type ReportEntry = Partial<Record<MetricKey, number>>;
 export type ReportPayload = Record<string, ReportEntry>;
 
@@ -30,11 +40,40 @@ export function isMetricKey(key: string): key is MetricKey {
   return key === "ipc" || key === "score";
 }
 
-export function assertBranchList(value: unknown): string[] {
-  if (!Array.isArray(value) || value.some((item) => typeof item !== "string")) {
-    throw new Error("branch.json must be a string array");
+export function assertBranchList(value: unknown): BranchList {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new Error("branch.json must be an object with default and branches");
   }
-  return value;
+  const obj = value as Record<string, unknown>;
+  if (
+    typeof obj.default !== "string" ||
+    !Array.isArray(obj.branches) ||
+    obj.branches.some((item) => typeof item !== "string") ||
+    !obj.branches.includes(obj.default)
+  ) {
+    throw new Error(
+      "branch.json must include a default contained in the branches array",
+    );
+  }
+  return { default: obj.default, branches: obj.branches as string[] };
+}
+
+export function assertSubsetList(value: unknown): SubsetList {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new Error("subset.json must be an object with default and subsets");
+  }
+  const obj = value as Record<string, unknown>;
+  if (
+    typeof obj.default !== "string" ||
+    !Array.isArray(obj.subsets) ||
+    obj.subsets.some((item) => typeof item !== "string") ||
+    !obj.subsets.includes(obj.default)
+  ) {
+    throw new Error(
+      "subset.json must include a default contained in the subsets array",
+    );
+  }
+  return { default: obj.default, subsets: obj.subsets as string[] };
 }
 
 export function assertRunIndex(value: unknown): RunIndex {

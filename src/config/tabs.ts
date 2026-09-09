@@ -12,8 +12,6 @@ export interface ChartConfig extends TabConfigBase {
   kind: "chart";
   id: "ipc-commit" | "score-nightly" | "score-weekly";
   datasetRoot: string;
-  subsets?: readonly string[];
-  defaultSubset?: string;
   metricKey: MetricKey;
   axisMode: AxisMode;
   supportsSpecButtons: boolean;
@@ -56,8 +54,6 @@ export const DASHBOARD_TABS: TabConfig[] = [
     id: "score-weekly",
     titleKey: "tabsWeekly",
     datasetRoot: "data/weekly",
-    subsets: ["gcc", "xscc"],
-    defaultSubset: "gcc",
     metricKey: "score",
     axisMode: "date",
     supportsSpecButtons: true,

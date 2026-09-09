@@ -64,6 +64,7 @@
           <RangeSelector
             :t="t"
             :tab="activeChartTab"
+            :subsets="chartSubsets"
             :branches="branches"
             :selected-branch="selectedBranch"
             :selected-subset="selectedSubset"
@@ -176,6 +177,7 @@ import {
   loadBranchList,
   loadReport,
   loadRunIndex,
+  loadSubsetList,
 } from "./services/dataService";
 import type { NormalizedRun, ReportPayload } from "./types/data";
 import type { ComparisonDataset, ComparisonSource } from "./types/comparison";
@@ -208,19 +210,25 @@ const activeChartTab = computed(() =>
   activeTab.value.kind === "chart" ? activeTab.value : defaultChartTab,
 );
 
+function chartTabHasSubsets(tab: ChartConfig): boolean {
+  return tab.id === "score-weekly";
+}
+
 function displayTabTitle(tab: (typeof tabs)[number]) {
   return t(tab.titleKey);
 }
 
 const branches = ref<string[]>([]);
+const chartSubsets = ref<string[]>([]);
+const chartDefaultSubset = ref("");
 const selectedBranch = ref(settings.selectedBranch || "");
 const selectedSubset = ref(settings.selectedSubset || "");
 const activeChartSubset = computed(() => {
-  const subsets = activeChartTab.value.subsets || [];
+  const subsets = chartSubsets.value;
   if (!subsets.length) return undefined;
   return subsets.includes(selectedSubset.value)
     ? selectedSubset.value
-    : activeChartTab.value.defaultSubset || subsets[0];
+    : chartDefaultSubset.value || subsets[0];
 });
 const startDateStr = ref(settings.startDateStr || "");
 const endDateStr = ref(settings.endDateStr || "");
@@ -230,7 +238,7 @@ const quickRangePreset = ref<QuickRangePreset | null>(
 
 const chartSummary = computed(() => {
   const parts = [selectedBranch.value || t("branch")];
-  if (activeChartTab.value.subsets?.length && activeChartSubset.value) {
+  if (chartSubsets.value.length && activeChartSubset.value) {
     parts.push(activeChartSubset.value);
   }
 
@@ -284,7 +292,7 @@ type ExportablePanel = {
 const comparisonPanel = ref<ExportablePanel | null>(null);
 const metricChartPanel = ref<ExportablePanel | null>(null);
 const activeSpecVersion = computed(() =>
-  activeChartTab.value.subsets?.length
+  chartSubsets.value.length
     ? specVersionFromSubset(activeChartSubset.value)
     : activeChartTab.value.defaultSpecVersion,
 );
@@ -331,11 +339,31 @@ function comparisonDatasetId(
   return [tab.id, branch, subset].filter(Boolean).join(":");
 }
 
+function withDefaultFirst(values: string[], defaultValue: string): string[] {
+  return defaultValue && values.includes(defaultValue)
+    ? [defaultValue, ...values.filter((value) => value !== defaultValue)]
+    : values;
+}
+
 async function loadComparisonDatasets() {
-  const [nightlyBranches, weeklyBranches] = await Promise.all([
+  const [nightlyBranchConfig, weeklyBranchConfig] = await Promise.all([
     loadBranchList(nightlyTab),
     loadBranchList(weeklyTab),
   ]);
+  const nightlyBranches = withDefaultFirst(
+    nightlyBranchConfig.branches,
+    nightlyBranchConfig.default,
+  );
+  const weeklyBranches = withDefaultFirst(
+    weeklyBranchConfig.branches,
+    weeklyBranchConfig.default,
+  );
+  const weeklySubsetsByBranch = await Promise.all(
+    weeklyBranches.map(async (branch) => ({
+      branch,
+      config: await loadSubsetList(weeklyTab, branch),
+    })),
+  );
   comparisonDatasets.value = [
     ...nightlyBranches.map((branch) => ({
       id: comparisonDatasetId(nightlyTab, branch),
@@ -343,8 +371,8 @@ async function loadComparisonDatasets() {
       tab: nightlyTab,
       branch,
     })),
-    ...weeklyBranches.flatMap((branch) =>
-      (weeklyTab.subsets || []).map((subset) => ({
+    ...weeklySubsetsByBranch.flatMap(({ branch, config }) =>
+      withDefaultFirst(config.subsets, config.default).map((subset) => ({
         id: comparisonDatasetId(weeklyTab, branch, subset),
         label: `${branch} · ${t("comparisonWeeklySubset").replace("{0}", subset)}`,
         tab: weeklyTab,
@@ -775,17 +803,26 @@ async function loadCurrentTabData() {
   runDataByHash.value = {};
 
   try {
-    if (
-      activeChartTab.value.subsets?.length &&
-      activeChartSubset.value !== selectedSubset.value
-    ) {
-      selectedSubset.value = activeChartSubset.value || "";
-    }
     setLoading(`${activeChartTab.value.datasetRoot}/branch.json`);
-    branches.value = await loadBranchList(activeChartTab.value);
+    const branchConfig = await loadBranchList(activeChartTab.value);
+    branches.value = branchConfig.branches;
     if (!branches.value.includes(selectedBranch.value)) {
-      selectedBranch.value = branches.value[0] || "";
+      selectedBranch.value = branchConfig.default || branches.value[0] || "";
     }
+
+    if (chartTabHasSubsets(activeChartTab.value)) {
+      setLoading(
+        `${activeChartTab.value.datasetRoot}/${selectedBranch.value}/subset.json`,
+      );
+    }
+    const subsetConfig = chartTabHasSubsets(activeChartTab.value)
+      ? await loadSubsetList(activeChartTab.value, selectedBranch.value)
+      : { default: "", subsets: [] };
+    chartSubsets.value = subsetConfig.subsets;
+    chartDefaultSubset.value = subsetConfig.default;
+    selectedSubset.value = chartSubsets.value.includes(selectedSubset.value)
+      ? selectedSubset.value
+      : chartDefaultSubset.value || chartSubsets.value[0] || "";
 
     setLoading(
       `${activeChartTab.value.datasetRoot}/${selectedBranch.value}/${activeChartSubset.value ? `${activeChartSubset.value}/` : ""}data.json`,
@@ -961,6 +998,15 @@ watch(quickRangePreset, async (preset) => {
 watch(selectedBranch, async () => {
   if (isHydrating.value) return;
   if (!selectedBranch.value) return;
+  const subsetConfig = chartTabHasSubsets(activeChartTab.value)
+    ? await loadSubsetList(activeChartTab.value, selectedBranch.value)
+    : { default: "", subsets: [] };
+  chartSubsets.value = subsetConfig.subsets;
+  chartDefaultSubset.value = subsetConfig.default;
+  if (!chartSubsets.value.includes(selectedSubset.value)) {
+    selectedSubset.value =
+      chartDefaultSubset.value || chartSubsets.value[0] || "";
+  }
   allRuns.value = await loadRunIndex(
     activeChartTab.value,
     selectedBranch.value,
@@ -987,15 +1033,7 @@ onMounted(async () => {
     if (selectedTabId.value.startsWith("score-weekly-")) {
       const legacySubset = selectedTabId.value.slice("score-weekly-".length);
       selectedTabId.value = "score-weekly";
-      settings.selectedSubset = weeklyTab.subsets?.includes(legacySubset)
-        ? legacySubset
-        : weeklyTab.defaultSubset || weeklyTab.subsets?.[0] || "";
-    } else if (
-      settings.selectedSubset &&
-      !weeklyTab.subsets?.includes(settings.selectedSubset)
-    ) {
-      settings.selectedSubset =
-        weeklyTab.defaultSubset || weeklyTab.subsets?.[0] || "";
+      settings.selectedSubset = legacySubset;
     }
     selectedBranch.value = settings.selectedBranch || "";
     selectedSubset.value = settings.selectedSubset || "";

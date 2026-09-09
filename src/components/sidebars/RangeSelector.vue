@@ -15,7 +15,7 @@
         </option>
       </select>
     </div>
-    <div v-if="tab.subsets?.length" class="row">
+    <div v-if="subsets.length" class="row">
       <label>{{ t("subset") }}</label>
       <select
         class="control-input"
@@ -24,7 +24,7 @@
           $emit('subsetChange', ($event.target as HTMLSelectElement).value)
         "
       >
-        <option v-for="subset in tab.subsets" :key="subset" :value="subset">
+        <option v-for="subset in subsets" :key="subset" :value="subset">
           {{ subset }}
         </option>
       </select>
@@ -99,6 +99,7 @@ import { ChartConfig } from "../../config/tabs";
 defineProps<{
   t: (key: string) => string;
   tab: ChartConfig;
+  subsets: readonly string[];
   branches: string[];
   selectedBranch: string;
   selectedSubset: string;
