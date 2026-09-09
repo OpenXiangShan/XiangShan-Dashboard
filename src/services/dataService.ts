@@ -1,5 +1,6 @@
 import type { ChartConfig } from "../config/tabs";
 import { specVersionFromSubset } from "../config/spec";
+import { normalizeReportPayload } from "./benchmarkService";
 import {
   assertBranchList,
   assertReportPayload,
@@ -75,7 +76,8 @@ export async function loadReport(
   const payloadRaw = await fetchJson(
     `${getDatasetPath(tab, branch, subset)}/${hash}.json`,
   );
-  return assertReportPayload(payloadRaw);
+  const payload = assertReportPayload(payloadRaw);
+  return tab.metricKey === "score" ? normalizeReportPayload(payload) : payload;
 }
 
 export function formatInputDate(date: Date): string {

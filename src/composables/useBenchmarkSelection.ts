@@ -34,24 +34,6 @@ export function isSpecBenchmark(
   });
 }
 
-export function detectSpecVersion(
-  benchmarks: string[],
-): SpecVersion | undefined {
-  const versions: SpecVersion[] = ["06", "17", "26"];
-  const matches = versions.map((version) => ({
-    version,
-    count: benchmarks.filter(
-      (name) =>
-        isSpecBenchmark(name, version, "int") ||
-        isSpecBenchmark(name, version, "fp"),
-    ).length,
-  }));
-  const best = matches.reduce((current, item) =>
-    item.count > current.count ? item : current,
-  );
-  return best.count ? best.version : undefined;
-}
-
 export function selectSpecCategory(
   benchmarks: string[],
   version: SpecVersion,

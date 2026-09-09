@@ -157,7 +157,6 @@ import { useLocale } from "./composables/useLocale";
 import { useDashboardSettings } from "./composables/useDashboardSettings";
 import type { QuickRangePreset } from "./composables/useDashboardSettings";
 import {
-  detectSpecVersion,
   isSpecBenchmark,
   selectDefault,
   selectSpecCategory,
@@ -170,6 +169,10 @@ import {
   type SpecCategory,
   type SpecVersion,
 } from "./config/spec";
+import {
+  detectSpecVersion,
+  normalizeReportPayload,
+} from "./services/benchmarkService";
 import {
   formatDisplayDate,
   formatInputDate,
@@ -491,9 +494,8 @@ function parseClipboardReport(text: string): ReportPayload {
   }
   if (Object.keys(parsed).length) return parsed;
   for (const line of text.split(/\r?\n/)) {
-    const match = /^\s*(\d+\.\w+)\s+[\d.NaN]+\s+[\d.NaN]+\s+([\d.NaN]+)/.exec(
-      line,
-    );
+    const match =
+      /^\s*((?:\d+\.)?\w+)\s+[\d.NaN]+\s+[\d.NaN]+\s+([\d.NaN]+)/.exec(line);
     if (match && match[2] !== "NaN")
       parsed[match[1]] = { score: Number(match[2]) };
   }
@@ -540,8 +542,11 @@ async function pasteComparisonSource(id: "a" | "b") {
   if (!navigator.clipboard?.readText)
     throw new Error(t("comparisonClipboardDenied"));
   const text = await navigator.clipboard.readText();
-  const payload = parseClipboardReport(text);
+  const parsed = parseClipboardReport(text);
   const metadata = extractClipboardMetadata(text);
+  const specVersion =
+    metadata.specVersion || detectSpecVersion(Object.keys(parsed));
+  const payload = normalizeReportPayload(parsed, specVersion);
   const source = comparisonSources.value.find((item) => item.id === id);
   if (source) {
     source.payload = payload;
@@ -550,7 +555,7 @@ async function pasteComparisonSource(id: "a" | "b") {
     source.customDate = metadata.date;
     source.customCoverage = metadata.coverage;
     source.customSpecVersion =
-      metadata.specVersion || detectSpecVersion(Object.keys(payload));
+      specVersion || detectSpecVersion(Object.keys(payload));
     source.clipboardError = undefined;
   }
 }
