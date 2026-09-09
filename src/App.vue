@@ -113,12 +113,18 @@
       </div>
       <div v-else class="comparison-workspace">
         <aside class="panel-sidebar">
+          <CoverageSelector
+            :t="t"
+            :coverages="comparisonCoverages"
+            :selected-coverage-id="selectedComparisonCoverageId"
+            @coverage-change="onComparisonCoverageChange"
+          />
           <ComparisonSelector
             v-for="source in comparisonSources"
             :key="source.id"
             :t="t"
             :source="source"
-            :datasets="comparisonDatasets"
+            :datasets="activeComparisonDatasets"
             :on-paste="pasteComparisonSource"
             :show-swap="source.id === 'b'"
             :on-swap="swapComparisonSources"
@@ -136,6 +142,7 @@
           ref="comparisonPanel"
           :t="t"
           :sources="comparisonSources"
+          :coverage="selectedComparisonCoverage"
           :spec-version="comparisonSpecVersion"
         />
       </div>
@@ -149,6 +156,7 @@ import DashboardHero from "./components/DashboardHero.vue";
 import RangeSelector from "./components/sidebars/RangeSelector.vue";
 import BenchmarkSelector from "./components/sidebars/BenchmarkSelector.vue";
 import ComparisonSelector from "./components/sidebars/ComparisonSelector.vue";
+import CoverageSelector from "./components/sidebars/CoverageSelector.vue";
 import Exporter from "./components/sidebars/Exporter.vue";
 import MetricChartPanel from "./components/panels/MetricChartPanel.vue";
 import ComparisonPanel from "./components/panels/ComparisonPanel.vue";
@@ -184,7 +192,11 @@ import {
   loadSubsetList,
 } from "./services/dataService";
 import type { NormalizedRun, ReportPayload } from "./types/data";
-import type { ComparisonDataset, ComparisonSource } from "./types/comparison";
+import type {
+  ComparisonCoverage,
+  ComparisonDataset,
+  ComparisonSource,
+} from "./types/comparison";
 const dayMs = 24 * 60 * 60 * 1000;
 const defaultQuickRangePreset: QuickRangePreset = "lastWeek";
 const tabs = DASHBOARD_TABS;
@@ -285,6 +297,29 @@ const comparisonSources = ref<ComparisonSource[]>([
   },
 ]);
 const comparisonDatasets = ref<ComparisonDataset[]>([]);
+const comparisonCoverages = computed<ComparisonCoverage[]>(() =>
+  regressionTabs.map((tab) => ({
+    id: tab.id,
+    label: t(
+      tab.id === "score-nightly"
+        ? "comparisonCoverageNightly"
+        : "comparisonCoverageWeekly",
+    ).replace("{0}", tab.coverage || ""),
+  })),
+);
+const selectedComparisonCoverageId = ref(
+  comparisonCoverages.value[0]?.id || "",
+);
+const selectedComparisonCoverage = computed(
+  () =>
+    regressionTabs.find((tab) => tab.id === selectedComparisonCoverageId.value)
+      ?.coverage || "",
+);
+const activeComparisonDatasets = computed(() =>
+  comparisonDatasets.value.filter(
+    (dataset) => dataset.tab.id === selectedComparisonCoverageId.value,
+  ),
+);
 type ExportablePanel = {
   exportPng: () => Promise<string>;
 };
@@ -366,7 +401,7 @@ async function loadComparisonDatasets() {
       withDefaultFirst(subsetConfig.subsets, subsetConfig.default).map(
         (subset) => ({
           id: comparisonDatasetId(tab, branch, subset),
-          label: `${branch} · ${t(tab.titleKey)} · ${subset}`,
+          label: `${branch} · ${subset}`,
           tab,
           branch,
           subset,
@@ -388,9 +423,9 @@ async function updateChartSubsets(tab: ChartConfig, branch: string) {
 
 async function loadComparisonSource(source: ComparisonSource) {
   source.dataset =
-    comparisonDatasets.value.find(
+    activeComparisonDatasets.value.find(
       (dataset) => dataset.id === source.dataset?.id,
-    ) || comparisonDatasets.value[0];
+    ) || activeComparisonDatasets.value[0];
   if (!source.dataset) return;
   const { tab, branch, subset } = source.dataset;
   source.runs = await loadRunIndex(tab, branch, subset);
@@ -411,6 +446,35 @@ async function loadComparisonSources() {
         .filter((source) => source.runId !== "custom")
         .map(loadComparisonSource),
     );
+  } catch (err) {
+    errorText.value = err instanceof Error ? err.message : String(err);
+  } finally {
+    finishLoading();
+  }
+}
+
+function resetComparisonSource(source: ComparisonSource) {
+  source.label = t(
+    source.id === "a" ? "comparisonSourceA" : "comparisonSourceB",
+  );
+  source.dataset = undefined;
+  source.runs = [];
+  source.runId = "";
+  source.payload = undefined;
+  source.customCommit = undefined;
+  source.customDate = undefined;
+  source.customCoverage = undefined;
+  source.customSpecVersion = undefined;
+  source.clipboardError = undefined;
+}
+
+async function onComparisonCoverageChange(coverageId: string) {
+  if (coverageId === selectedComparisonCoverageId.value) return;
+  selectedComparisonCoverageId.value = coverageId;
+  comparisonSources.value.forEach(resetComparisonSource);
+  setLoading();
+  try {
+    await Promise.all(comparisonSources.value.map(loadComparisonSource));
   } catch (err) {
     errorText.value = err instanceof Error ? err.message : String(err);
   } finally {

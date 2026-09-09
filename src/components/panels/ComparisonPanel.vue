@@ -82,6 +82,7 @@ interface ComparisonRow {
 const props = defineProps<{
   t: (key: string) => string;
   sources: ComparisonSource[];
+  coverage: string;
   specVersion: SpecVersion;
 }>();
 
@@ -90,9 +91,6 @@ const exportRoot = ref<HTMLElement | null>(null);
 const sources = computed(() => props.sources);
 const sourceAName = computed(() => sourceName(sources.value[0]));
 const sourceBName = computed(() => sourceName(sources.value[1]));
-const coverage = computed(
-  () => sourceCoverage(sources.value[0]) || "Unknown Coverage",
-);
 const tableGroups = computed(() =>
   (["int", "fp"] as const).map((key) => ({
     key,
@@ -234,11 +232,7 @@ function sourceName(source?: ComparisonSource) {
 
 function sourceDatasetName(source: ComparisonSource): string {
   if (!source.dataset) return "";
-  return [
-    source.dataset.branch,
-    source.dataset.tab.coverage,
-    source.dataset.subset,
-  ]
+  return [source.dataset.branch, source.dataset.subset]
     .filter(Boolean)
     .join(" · ");
 }

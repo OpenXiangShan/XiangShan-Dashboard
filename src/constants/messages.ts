@@ -16,6 +16,8 @@ export const COMMON_MESSAGES: Record<string, string> = {
   tabsNightly: "Nightly 0.3c Regression",
   tabsWeekly: "Weekly 1.0c Regression",
   comparisonRun: "Run",
+  comparisonCoverageNightly: "Nightly ({0})",
+  comparisonCoverageWeekly: "Weekly ({0})",
   comparisonBenchmark: "Benchmark",
   comparisonSwapSources: "Swap Baseline/Comparison",
   exportTitle: "Export",

@@ -4,6 +4,11 @@ import type { ChartConfig } from "../config/tabs";
 
 export type ComparisonSourceId = "a" | "b";
 
+export interface ComparisonCoverage {
+  id: string;
+  label: string;
+}
+
 export interface ComparisonDataset {
   id: string;
   label: string;
