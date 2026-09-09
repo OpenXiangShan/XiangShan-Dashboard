@@ -43,9 +43,10 @@
       <DashboardHero
         :tabs="tabs"
         :selected-tab-id="selectedTabId"
-        :tab-title="displayTabTitle"
-        :runs-label="t('runsLabel')"
-        :benchmarks-label="t('testcasesLabel')"
+        :t="t"
+        :version="appVersion"
+        :commit-hash="commitHash"
+        :build-timestamp="buildTimestamp"
         :run-count="filteredRuns.length"
         :benchmark-count="
           activeTab.kind === 'comparison'
@@ -152,6 +153,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from "vue";
+import { version as appVersion } from "../package.json";
 import DashboardHero from "./components/DashboardHero.vue";
 import RangeSelector from "./components/sidebars/RangeSelector.vue";
 import BenchmarkSelector from "./components/sidebars/BenchmarkSelector.vue";
@@ -183,8 +185,7 @@ import {
   normalizeReportPayload,
 } from "./services/benchmarkService";
 import {
-  formatDisplayDate,
-  formatInputDate,
+  formatDate,
   getDateRange,
   loadBranchList,
   loadReport,
@@ -198,6 +199,8 @@ import type {
   ComparisonSource,
 } from "./types/comparison";
 const dayMs = 24 * 60 * 60 * 1000;
+const buildTimestamp = __BUILD_TIMESTAMP__;
+const commitHash = __COMMIT_HASH__;
 const defaultQuickRangePreset: QuickRangePreset = "lastWeek";
 const tabs = DASHBOARD_TABS;
 const regressionTabs = tabs.filter(
@@ -224,10 +227,6 @@ const activeChartTab = computed(() =>
 
 function chartTabHasSubsets(tab: ChartConfig): boolean {
   return tab.metricKey === "score";
-}
-
-function displayTabTitle(tab: (typeof tabs)[number]) {
-  return t(tab.titleKey);
 }
 
 const branches = ref<string[]>([]);
@@ -262,7 +261,7 @@ const chartSummary = computed(() => {
       );
     } else {
       parts.push(
-        `${formatDisplayDate(first.dateMs)} · ${first.hash.slice(0, 8)} ~ ${formatDisplayDate(last.dateMs)} · ${last.hash.slice(0, 8)}`,
+        `${formatDate(first.dateMs)} · ${first.hash.slice(0, 8)} ~ ${formatDate(last.dateMs)} · ${last.hash.slice(0, 8)}`,
       );
     }
   }
@@ -1119,8 +1118,8 @@ function setQuickPreset(preset: QuickRangePreset, shouldPersist = true) {
   const end = new Date();
   end.setHours(23, 59, 59, 999);
   const start = new Date(end.getTime() - (days - 1) * dayMs);
-  startDateStr.value = formatInputDate(start);
-  endDateStr.value = formatInputDate(end);
+  startDateStr.value = formatDate(start);
+  endDateStr.value = formatDate(end);
   if (shouldPersist) {
     persist();
     void refreshCurrentRuns();

@@ -61,7 +61,7 @@ import { computed, ref } from "vue";
 import { toPng } from "html-to-image";
 import { SPEC_BENCHMARK_GROUPS } from "../../config/spec";
 import type { SpecCategory, SpecVersion } from "../../config/spec";
-import { formatDisplayDate } from "../../services/dataService";
+import { formatDate } from "../../services/dataService";
 import type { ReportPayload } from "../../types/data";
 import type { ComparisonSource } from "../../types/comparison";
 import {
@@ -216,7 +216,7 @@ function sourceName(source?: ComparisonSource) {
   }
   const run = source.runs.find((item) => item.runId === source.runId);
   return run && source.dataset
-    ? `${source.dataset.subset} · ${formatDisplayDate(run.dateMs)} · ${run.hash.slice(0, 8)} · ${run.runId}`
+    ? `${source.dataset.subset} · ${formatDate(run.dateMs)} · ${run.hash.slice(0, 8)} · ${run.runId}`
     : source.label;
 }
 

@@ -87,8 +87,9 @@ export async function loadReport(
   return tab.metricKey === "score" ? normalizeReportPayload(payload) : payload;
 }
 
-export function formatInputDate(date: Date): string {
-  return date.toISOString().slice(0, 10);
+export function formatDate(value: Date | number): string {
+  const date = value instanceof Date ? value : new Date(value);
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 }
 
 export function getDateRange(
@@ -98,9 +99,4 @@ export function getDateRange(
   const start = new Date(`${startDate}T00:00:00`).getTime();
   const end = new Date(`${endDate}T23:59:59`).getTime();
   return { startMs: start, endMs: end };
-}
-
-export function formatDisplayDate(ms: number): string {
-  const d = new Date(ms);
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }

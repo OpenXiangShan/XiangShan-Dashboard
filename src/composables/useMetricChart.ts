@@ -17,7 +17,7 @@ import {
   type SpecVersion,
 } from "../config/spec";
 import type { NormalizedRun, ReportPayload } from "../types/data";
-import { formatDisplayDate } from "../services/dataService";
+import { formatDate } from "../services/dataService";
 import { isSpecBenchmark } from "./useBenchmarkSelection";
 
 Chart.register(
@@ -174,7 +174,7 @@ export function renderMetricChart(args: {
   }
 
   const labels = runs.map((run) =>
-    tab.axisMode === "date" ? formatDisplayDate(run.dateMs) : run.runId,
+    tab.axisMode === "date" ? formatDate(run.dateMs) : run.runId,
   );
   const isSinglePoint = labels.length === 1;
   const metricLabel = tab.metricKey === "ipc" ? "IPC" : "Score";
@@ -257,7 +257,7 @@ export function renderMetricChart(args: {
               const lines = [
                 `${t("commit")}: ${run.hash}`,
                 `${t("runId")}: ${run.runId}`,
-                `${t("date")}: ${formatDisplayDate(run.dateMs)}`,
+                `${t("date")}: ${formatDate(run.dateMs)}`,
               ];
 
               if (run.coverage) {

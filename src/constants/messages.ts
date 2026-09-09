@@ -8,6 +8,8 @@ export const COMMON_MESSAGES: Record<string, string> = {
   geomean: "GEOMEAN",
   runsLabel: "Runs",
   testcasesLabel: "Benchmarks",
+  versionLabel: "Version",
+  buildLabel: "Build",
   commit: "Commit",
   runId: "Run ID",
   coverage: "Coverage",

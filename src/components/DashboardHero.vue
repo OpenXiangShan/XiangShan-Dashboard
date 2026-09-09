@@ -9,32 +9,43 @@
         type="button"
         @click="$emit('tabChange', tab.id)"
       >
-        {{ tabTitle(tab) }}
+        {{ t(tab.titleKey) }}
       </button>
     </div>
-    <div v-if="showBadges || showBenchmarkBadge" class="badges">
-      <div v-if="showBadges" class="badge">{{ runsLabel }}: {{ runCount }}</div>
-      <div v-if="showBadges || showBenchmarkBadge" class="badge">
-        {{ benchmarksLabel }}: {{ benchmarkCount }}
+    <div class="badges">
+      <div v-if="showBadges" class="badge">
+        {{ t("runsLabel") }}: {{ runCount }}
       </div>
+      <div v-if="showBadges || showBenchmarkBadge" class="badge">
+        {{ t("testcasesLabel") }}: {{ benchmarkCount }}
+      </div>
+      <div class="badge">
+        {{ t("versionLabel") }}: {{ version }}-{{ commitHash }}
+      </div>
+      <div class="badge">{{ t("buildLabel") }}: {{ buildTimeText }}</div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import type { TabConfig } from "../config/tabs";
+import { formatDate } from "../services/dataService";
 
-defineProps<{
+const props = defineProps<{
   tabs: TabConfig[];
   selectedTabId: string;
-  tabTitle: (tab: TabConfig) => string;
-  runsLabel: string;
-  benchmarksLabel: string;
+  t: (key: string) => string;
+  version: string;
+  commitHash: string;
+  buildTimestamp: number;
   runCount: number;
   benchmarkCount: number;
   showBadges?: boolean;
   showBenchmarkBadge?: boolean;
 }>();
+
+const buildDate = new Date(props.buildTimestamp);
+const buildTimeText = `${formatDate(buildDate)} ${String(buildDate.getHours()).padStart(2, "0")}:${String(buildDate.getMinutes()).padStart(2, "0")}`;
 
 defineEmits<{
   (e: "tabChange", tabId: string): void;
