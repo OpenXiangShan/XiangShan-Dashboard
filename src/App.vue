@@ -409,16 +409,6 @@ async function loadComparisonDatasets() {
   );
 }
 
-async function updateChartSubsets(tab: ChartConfig, branch: string) {
-  const subsetConfig = chartTabHasSubsets(tab)
-    ? await loadSubsetList(tab, branch)
-    : { default: "", subsets: [] };
-  chartSubsets.value = subsetConfig.subsets;
-  if (!chartSubsets.value.includes(selectedSubset.value)) {
-    selectedSubset.value = subsetConfig.default || chartSubsets.value[0] || "";
-  }
-}
-
 async function loadComparisonSource(source: ComparisonSource) {
   source.dataset =
     activeComparisonDatasets.value.find(
@@ -748,6 +738,62 @@ function finishLoading() {
   loadingPath.value = "";
 }
 
+interface ChartLoadRequest {
+  generation: number;
+  controller: AbortController;
+  tab: ChartConfig;
+}
+
+interface ChartLoadContext extends ChartLoadRequest {
+  branch: string;
+  subset?: string;
+  runs: NormalizedRun[];
+}
+
+let chartLoadGeneration = 0;
+let chartLoadController: AbortController | undefined;
+
+function beginChartLoad(): ChartLoadRequest {
+  chartLoadController?.abort();
+  chartLoadController = new AbortController();
+  chartLoadGeneration += 1;
+  return {
+    generation: chartLoadGeneration,
+    controller: chartLoadController,
+    tab: activeChartTab.value,
+  };
+}
+
+function invalidateChartLoad() {
+  chartLoadController?.abort();
+  chartLoadController = undefined;
+  chartLoadGeneration += 1;
+}
+
+function isCurrentChartLoad(request: ChartLoadRequest): boolean {
+  return request.generation === chartLoadGeneration;
+}
+
+function setChartLoading(request: ChartLoadRequest, path = "") {
+  if (isCurrentChartLoad(request)) setLoading(path);
+}
+
+function finishChartLoad(request: ChartLoadRequest) {
+  if (!isCurrentChartLoad(request)) return;
+  chartLoadController = undefined;
+  finishLoading();
+}
+
+function handleChartLoadError(request: ChartLoadRequest, err: unknown) {
+  if (!isCurrentChartLoad(request)) return;
+  if (err instanceof Error && err.name === "AbortError") return;
+  console.error(err);
+  errorText.value = err instanceof Error ? err.message : String(err);
+  filteredRuns.value = [];
+  availableBenchmarks.value = [];
+  selectedBenchmarks.value = [];
+}
+
 function persist() {
   settings.selectedTabId = selectedTabId.value;
   settings.selectedSubset = selectedSubset.value;
@@ -769,7 +815,8 @@ function syncSelection() {
   }
 }
 
-async function refreshRuns() {
+async function refreshRuns(context: ChartLoadContext) {
+  if (!isCurrentChartLoad(context)) return;
   if (
     quickRangePreset.value !== "lastTenRuns" &&
     (!startDateStr.value || !endDateStr.value)
@@ -777,129 +824,184 @@ async function refreshRuns() {
     return;
   }
 
-  setLoading();
-  try {
-    if (quickRangePreset.value === "lastTenRuns") {
-      filteredRuns.value = allRuns.value.slice(-10);
-    } else {
-      const { startMs, endMs } = getDateRange(
-        startDateStr.value,
-        endDateStr.value,
-      );
-      filteredRuns.value = allRuns.value.filter(
-        (run) => run.dateMs >= startMs && run.dateMs <= endMs,
-      );
-    }
-
-    const needed = filteredRuns.value.filter(
-      (run) => !runDataByHash.value[run.hash],
+  setChartLoading(context);
+  const preset = quickRangePreset.value;
+  const startDate = startDateStr.value;
+  const endDate = endDateStr.value;
+  let filtered: NormalizedRun[];
+  if (preset === "lastTenRuns") {
+    filtered = context.runs.slice(-10);
+  } else {
+    const { startMs, endMs } = getDateRange(startDate, endDate);
+    filtered = context.runs.filter(
+      (run) => run.dateMs >= startMs && run.dateMs <= endMs,
     );
-    for (const run of needed) {
-      setLoading(
-        `${activeChartTab.value.datasetRoot}/${selectedBranch.value}/${activeChartSubset.value ? `${activeChartSubset.value}/` : ""}${run.hash}.json`,
+  }
+  filteredRuns.value = filtered;
+
+  const dataByHash = { ...runDataByHash.value };
+  const needed = filtered.filter((run) => !dataByHash[run.hash]);
+  for (const run of needed) {
+    setChartLoading(
+      context,
+      `${context.tab.datasetRoot}/${context.branch}/${context.subset ? `${context.subset}/` : ""}${run.hash}.json`,
+    );
+    const payload = await loadReport(
+      context.tab,
+      context.branch,
+      run.hash,
+      context.subset,
+      context.controller.signal,
+    );
+    if (!isCurrentChartLoad(context)) return;
+    dataByHash[run.hash] = payload;
+    runDataByHash.value = { ...dataByHash };
+  }
+
+  const set = new Set<string>();
+  for (const run of filtered) {
+    const payload = dataByHash[run.hash];
+    if (!payload) continue;
+    Object.keys(payload).forEach((name) => set.add(name));
+  }
+
+  const specVersion = context.subset
+    ? specVersionFromSubset(context.subset)
+    : context.tab.defaultSpecVersion;
+  set.add("GEOMEAN");
+  const intGeomean = getSpecGeomeanName(specVersion, "int");
+  const fpGeomean = getSpecGeomeanName(specVersion, "fp");
+  const geomeanNames = ["GEOMEAN"];
+  if (context.tab.supportsSpecButtons) {
+    set.add(intGeomean);
+    set.add(fpGeomean);
+    geomeanNames.push(intGeomean, fpGeomean);
+  }
+
+  const available = Array.from(set).sort();
+  const geomean: Record<number, Record<string, string[]>> = {};
+  filtered.forEach((run, runIdx) => {
+    const payload = dataByHash[run.hash];
+    geomeanNames.forEach((name) => {
+      let scopeTestcases = available.filter(
+        (benchmark) =>
+          !benchmark.startsWith("GEOMEAN") && !benchmark.startsWith("legacy"),
       );
-      runDataByHash.value[run.hash] = await loadReport(
-        activeChartTab.value,
-        selectedBranch.value,
-        run.hash,
-        activeChartSubset.value,
-      );
-    }
-
-    const set = new Set<string>();
-    for (const run of filteredRuns.value) {
-      const payload = runDataByHash.value[run.hash];
-      if (!payload) continue;
-      Object.keys(payload).forEach((name) => set.add(name));
-    }
-
-    set.add("GEOMEAN");
-    const intGeomean = getSpecGeomeanName(activeSpecVersion.value, "int");
-    const fpGeomean = getSpecGeomeanName(activeSpecVersion.value, "fp");
-    const geomeanNames = ["GEOMEAN"];
-    if (activeChartTab.value.supportsSpecButtons) {
-      set.add(intGeomean);
-      set.add(fpGeomean);
-      geomeanNames.push(intGeomean, fpGeomean);
-    }
-
-    availableBenchmarks.value = Array.from(set).sort();
-
-    // Calculate geomeanMissing after availableBenchmarks is set
-    const geomean: Record<number, Record<string, string[]>> = {};
-    filteredRuns.value.forEach((run, runIdx) => {
-      const payload = runDataByHash.value[run.hash];
-      geomeanNames.forEach((name) => {
-        let scopeTestcases = availableBenchmarks.value.filter(
-          (n) => !n.startsWith("GEOMEAN") && !n.startsWith("legacy"),
+      if (name === intGeomean) {
+        scopeTestcases = scopeTestcases.filter((benchmark) =>
+          isSpecBenchmark(benchmark, specVersion, "int"),
         );
-        if (name === intGeomean) {
-          scopeTestcases = scopeTestcases.filter((n) =>
-            isSpecBenchmark(n, activeSpecVersion.value, "int"),
-          );
-        } else if (name === fpGeomean) {
-          scopeTestcases = scopeTestcases.filter((n) =>
-            isSpecBenchmark(n, activeSpecVersion.value, "fp"),
-          );
+      } else if (name === fpGeomean) {
+        scopeTestcases = scopeTestcases.filter((benchmark) =>
+          isSpecBenchmark(benchmark, specVersion, "fp"),
+        );
+      }
+      const missing = scopeTestcases.filter((benchmark) => {
+        if (!payload) return true;
+        if (!Object.prototype.hasOwnProperty.call(payload, benchmark)) {
+          return true;
         }
-        const missing = scopeTestcases.filter((tc) => {
-          if (!payload) return true;
-          if (!Object.prototype.hasOwnProperty.call(payload, tc)) return true;
-          const entry = payload?.[tc];
-          const metricValue = entry?.[activeChartTab.value.metricKey];
-          if (typeof metricValue !== "number" || metricValue <= 0) return true;
-          return false;
-        });
-        if (missing.length) {
-          if (!geomean[runIdx]) geomean[runIdx] = {};
-          geomean[runIdx][name] = missing;
-        }
+        const metricValue = payload[benchmark]?.[context.tab.metricKey];
+        return typeof metricValue !== "number" || metricValue <= 0;
       });
+      if (missing.length) {
+        if (!geomean[runIdx]) geomean[runIdx] = {};
+        geomean[runIdx][name] = missing;
+      }
     });
-    geomeanMissing.value = geomean;
+  });
+  if (!isCurrentChartLoad(context)) return;
+  availableBenchmarks.value = available;
+  geomeanMissing.value = geomean;
+  syncSelection();
+  persist();
+}
 
-    syncSelection();
-    persist();
+async function refreshCurrentRuns() {
+  if (activeTab.value.kind !== "chart") return;
+  if (!selectedBranch.value) return;
+  if (!allRuns.value.length || !allRuns.value.some((run) => run.hash)) return;
+  if (
+    quickRangePreset.value !== "lastTenRuns" &&
+    (!startDateStr.value || !endDateStr.value)
+  ) {
+    return;
+  }
+
+  const request = beginChartLoad();
+  errorText.value = "";
+  try {
+    await refreshRuns({
+      ...request,
+      branch: selectedBranch.value,
+      subset: activeChartSubset.value,
+      runs: [...allRuns.value],
+    });
+  } catch (err) {
+    handleChartLoadError(request, err);
   } finally {
-    finishLoading();
+    finishChartLoad(request);
   }
 }
 
 async function loadCurrentTabData() {
+  const request = beginChartLoad();
   errorText.value = "";
+  allRuns.value = [];
+  filteredRuns.value = [];
+  availableBenchmarks.value = [];
   runDataByHash.value = {};
+  geomeanMissing.value = {};
 
   try {
-    setLoading(`${activeChartTab.value.datasetRoot}/branch.json`);
-    const branchConfig = await loadBranchList(activeChartTab.value);
+    setChartLoading(request, `${request.tab.datasetRoot}/branch.json`);
+    const branchConfig = await loadBranchList(
+      request.tab,
+      request.controller.signal,
+    );
+    if (!isCurrentChartLoad(request)) return;
     branches.value = branchConfig.branches;
-    if (!branches.value.includes(selectedBranch.value)) {
-      selectedBranch.value = branchConfig.default || branches.value[0] || "";
-    }
+    const branch = branches.value.includes(selectedBranch.value)
+      ? selectedBranch.value
+      : branchConfig.default || branches.value[0] || "";
+    selectedBranch.value = branch;
 
-    if (chartTabHasSubsets(activeChartTab.value)) {
-      setLoading(
-        `${activeChartTab.value.datasetRoot}/${selectedBranch.value}/subset.json`,
+    if (chartTabHasSubsets(request.tab)) {
+      setChartLoading(
+        request,
+        `${request.tab.datasetRoot}/${branch}/subset.json`,
       );
     }
-    await updateChartSubsets(activeChartTab.value, selectedBranch.value);
+    const subsetConfig = chartTabHasSubsets(request.tab)
+      ? await loadSubsetList(request.tab, branch, request.controller.signal)
+      : { default: "", subsets: [] };
+    if (!isCurrentChartLoad(request)) return;
+    chartSubsets.value = subsetConfig.subsets;
+    const subset = chartSubsets.value.includes(selectedSubset.value)
+      ? selectedSubset.value
+      : subsetConfig.default || chartSubsets.value[0] || "";
+    selectedSubset.value = subset;
 
-    setLoading(
-      `${activeChartTab.value.datasetRoot}/${selectedBranch.value}/${activeChartSubset.value ? `${activeChartSubset.value}/` : ""}data.json`,
+    setChartLoading(
+      request,
+      `${request.tab.datasetRoot}/${branch}/${subset ? `${subset}/` : ""}data.json`,
     );
-    allRuns.value = await loadRunIndex(
-      activeChartTab.value,
-      selectedBranch.value,
-      activeChartSubset.value,
+    const runs = await loadRunIndex(
+      request.tab,
+      branch,
+      subset || undefined,
+      request.controller.signal,
     );
+    if (!isCurrentChartLoad(request)) return;
+    allRuns.value = runs;
     if (
       quickRangePreset.value === "lastWeek" &&
-      activeChartTab.value.id === "score-weekly"
+      request.tab.id === "score-weekly"
     ) {
       quickRangePreset.value = "lastMonth";
     } else if (
       quickRangePreset.value === "last3Months" &&
-      activeChartTab.value.id !== "score-weekly"
+      request.tab.id !== "score-weekly"
     ) {
       quickRangePreset.value = "lastMonth";
     }
@@ -909,15 +1011,16 @@ async function loadCurrentTabData() {
       setQuickPreset(quickRangePreset.value || defaultQuickRangePreset, false);
     }
 
-    await refreshRuns();
+    await refreshRuns({
+      ...request,
+      branch,
+      subset: subset || undefined,
+      runs,
+    });
   } catch (err) {
-    console.error(err);
-    errorText.value = err instanceof Error ? err.message : String(err);
-    filteredRuns.value = [];
-    availableBenchmarks.value = [];
-    selectedBenchmarks.value = [];
+    handleChartLoadError(request, err);
   } finally {
-    finishLoading();
+    finishChartLoad(request);
   }
 }
 
@@ -962,12 +1065,16 @@ function onToggleBenchmark(name: string) {
 }
 
 function onTabChange(nextTabId: string) {
+  if (nextTabId === selectedTabId.value) return;
+  invalidateChartLoad();
   selectedTabId.value = nextTabId;
   persist();
 }
 
-function onBranchChange(nextBranch: string) {
+async function onBranchChange(nextBranch: string) {
+  if (nextBranch === selectedBranch.value) return;
   selectedBranch.value = nextBranch;
+  await loadCurrentTabData();
 }
 
 async function onSubsetChange(nextSubset: string) {
@@ -981,12 +1088,14 @@ function onStartDateChange(value: string) {
   startDateStr.value = value;
   quickRangePreset.value = null;
   persist();
+  void refreshCurrentRuns();
 }
 
 function onEndDateChange(value: string) {
   endDateStr.value = value;
   quickRangePreset.value = null;
   persist();
+  void refreshCurrentRuns();
 }
 
 function setQuickPreset(preset: QuickRangePreset, shouldPersist = true) {
@@ -994,6 +1103,7 @@ function setQuickPreset(preset: QuickRangePreset, shouldPersist = true) {
   if (preset === "lastTenRuns") {
     if (shouldPersist) {
       persist();
+      void refreshCurrentRuns();
     }
     return;
   }
@@ -1013,12 +1123,14 @@ function setQuickPreset(preset: QuickRangePreset, shouldPersist = true) {
   endDateStr.value = formatInputDate(end);
   if (shouldPersist) {
     persist();
+    void refreshCurrentRuns();
   }
 }
 
 watch(selectedTabId, async () => {
   if (isHydrating.value) return;
   if (activeTab.value.kind === "comparison") {
+    invalidateChartLoad();
     await loadComparisonSources();
     return;
   }
@@ -1026,55 +1138,6 @@ watch(selectedTabId, async () => {
   endDateStr.value = "";
   selectedBenchmarks.value = [];
   await loadCurrentTabData();
-});
-
-watch([selectedBranch, startDateStr, endDateStr], async () => {
-  if (isHydrating.value) return;
-  if (!selectedBranch.value) return;
-  if (
-    quickRangePreset.value !== "lastTenRuns" &&
-    (!startDateStr.value || !endDateStr.value)
-  ) {
-    return;
-  }
-
-  if (!allRuns.value.length || !allRuns.value.some((run) => run.hash)) {
-    return;
-  }
-
-  await refreshRuns();
-});
-
-watch(quickRangePreset, async (preset) => {
-  if (isHydrating.value) return;
-  if (!preset) return;
-  if (!selectedBranch.value) return;
-  if (!allRuns.value.length || !allRuns.value.some((run) => run.hash)) {
-    return;
-  }
-  await refreshRuns();
-});
-
-watch(selectedBranch, async () => {
-  if (isHydrating.value) return;
-  if (!selectedBranch.value) return;
-  await updateChartSubsets(activeChartTab.value, selectedBranch.value);
-  allRuns.value = await loadRunIndex(
-    activeChartTab.value,
-    selectedBranch.value,
-    activeChartSubset.value,
-  );
-  if (quickRangePreset.value === "lastWeek") {
-    setQuickPreset("lastWeek", false);
-  } else if (quickRangePreset.value === "lastMonth") {
-    setQuickPreset("lastMonth", false);
-  } else if (quickRangePreset.value === "last3Months") {
-    setQuickPreset("last3Months", false);
-  } else if (!quickRangePreset.value) {
-    setQuickPreset(defaultQuickRangePreset, false);
-  }
-  runDataByHash.value = {};
-  await refreshRuns();
 });
 
 onMounted(async () => {

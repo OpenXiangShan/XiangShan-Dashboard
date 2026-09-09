@@ -10,22 +10,27 @@ import {
   type ReportPayload,
 } from "../types/data";
 
-async function fetchJson(path: string): Promise<unknown> {
-  const response = await fetch(path);
+async function fetchJson(path: string, signal?: AbortSignal): Promise<unknown> {
+  const response = await fetch(path, { signal });
   if (!response.ok) {
     throw new Error(`failed to fetch ${path}: ${response.status}`);
   }
   return response.json();
 }
 
-export async function loadBranchList(tab: ChartConfig) {
-  const payloadRaw = await fetchJson(`${tab.datasetRoot}/branch.json`);
+export async function loadBranchList(tab: ChartConfig, signal?: AbortSignal) {
+  const payloadRaw = await fetchJson(`${tab.datasetRoot}/branch.json`, signal);
   return assertBranchList(payloadRaw);
 }
 
-export async function loadSubsetList(tab: ChartConfig, branch: string) {
+export async function loadSubsetList(
+  tab: ChartConfig,
+  branch: string,
+  signal?: AbortSignal,
+) {
   const payloadRaw = await fetchJson(
     `${tab.datasetRoot}/${branch}/subset.json`,
+    signal,
   );
   return assertSubsetList(payloadRaw);
 }
@@ -45,9 +50,11 @@ export async function loadRunIndex(
   tab: ChartConfig,
   branch: string,
   subset?: string,
+  signal?: AbortSignal,
 ): Promise<NormalizedRun[]> {
   const indexRaw = await fetchJson(
     `${getDatasetPath(tab, branch, subset)}/data.json`,
+    signal,
   );
   const index = assertRunIndex(indexRaw);
   return Object.entries(index.data)
@@ -70,9 +77,11 @@ export async function loadReport(
   branch: string,
   hash: string,
   subset?: string,
+  signal?: AbortSignal,
 ): Promise<ReportPayload> {
   const payloadRaw = await fetchJson(
     `${getDatasetPath(tab, branch, subset)}/${hash}.json`,
+    signal,
   );
   const payload = assertReportPayload(payloadRaw);
   return tab.metricKey === "score" ? normalizeReportPayload(payload) : payload;
