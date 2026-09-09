@@ -57,9 +57,12 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import { toPng } from "html-to-image";
-import { getSpecGeomeanName, getSpecGroup, SPEC_BENCHMARK_GROUPS } from "../../config/spec";
+import {
+  getSpecGeomeanName,
+  getSpecGroup,
+  SPEC_BENCHMARK_GROUPS,
+} from "../../config/spec";
 import type { SpecCategory, SpecVersion } from "../../config/spec";
-import { isSpecBenchmark } from "../../composables/useBenchmarkSelection";
 import { formatDisplayDate } from "../../services/dataService";
 import type { ReportPayload } from "../../types/data";
 import type { ComparisonSource } from "../../types/comparison";

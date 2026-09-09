@@ -1,0 +1,4 @@
+{
+  "default": "xs-gcc",
+  "subsets": ["xs-gcc"]
+}

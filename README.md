@@ -37,22 +37,23 @@ data/
 	nightly/ # Nightly Regression workflow
 		branch.json
 		<branch>/
-			data.json
-			<commit>.json
+			subset.json
+			<subset>/
+				data.json
+				<commit>.json
 	weekly/ # Weekly Regression workflow
 		branch.json
 		<branch>/
-			gcc/
-				data.json
-				<commit>.json
-			xscc/
+			subset.json
+			<subset>/
 				data.json
 				<commit>.json
 ```
 
 Schema constraints:
 
-- `branch.json`: list of branch name strings.
+- `branch.json`: `{ "default": branch, "branches": [branch] }`.
+- `subset.json`: `{ "default": subset, "subsets": [subset] }`.
 - `data.json`: `{ "data": { run_id: { "hash", "title", "date", "note (optional)" } } }`.
 - `<commit>.json` / `<date>.json`: `{ benchmark: { metric } }`.
 - `run_id`: numeric string.

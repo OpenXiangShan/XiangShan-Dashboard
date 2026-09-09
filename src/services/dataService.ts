@@ -10,8 +10,6 @@ import {
   type ReportPayload,
 } from "../types/data";
 
-const dayMs = 24 * 60 * 60 * 1000;
-
 async function fetchJson(path: string): Promise<unknown> {
   const response = await fetch(path);
   if (!response.ok) {

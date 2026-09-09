@@ -164,6 +164,7 @@ import {
 } from "./composables/useBenchmarkSelection";
 import {
   getSpecGeomeanName,
+  SPEC_VERSIONS,
   specVersionFromText,
   specVersionFromSubset,
   type SpecCategory,
@@ -187,14 +188,10 @@ import type { ComparisonDataset, ComparisonSource } from "./types/comparison";
 const dayMs = 24 * 60 * 60 * 1000;
 const defaultQuickRangePreset: QuickRangePreset = "lastWeek";
 const tabs = DASHBOARD_TABS;
-const nightlyTab = tabs.find(
+const regressionTabs = tabs.filter(
   (tab): tab is ChartConfig =>
-    tab.kind === "chart" && tab.id === "score-nightly",
-)!;
-const weeklyTab = tabs.find(
-  (tab): tab is ChartConfig =>
-    tab.kind === "chart" && tab.id === "score-weekly",
-)!;
+    tab.kind === "chart" && tab.metricKey === "score",
+);
 const { t } = useLocale();
 const {
   state: settings,
@@ -214,7 +211,7 @@ const activeChartTab = computed(() =>
 );
 
 function chartTabHasSubsets(tab: ChartConfig): boolean {
-  return tab.id === "score-weekly";
+  return tab.metricKey === "score";
 }
 
 function displayTabTitle(tab: (typeof tabs)[number]) {
@@ -223,7 +220,6 @@ function displayTabTitle(tab: (typeof tabs)[number]) {
 
 const branches = ref<string[]>([]);
 const chartSubsets = ref<string[]>([]);
-const chartDefaultSubset = ref("");
 const selectedBranch = ref(settings.selectedBranch || "");
 const selectedSubset = ref(settings.selectedSubset || "");
 const activeChartSubset = computed(() => {
@@ -231,7 +227,7 @@ const activeChartSubset = computed(() => {
   if (!subsets.length) return undefined;
   return subsets.includes(selectedSubset.value)
     ? selectedSubset.value
-    : chartDefaultSubset.value || subsets[0];
+    : subsets[0];
 });
 const startDateStr = ref(settings.startDateStr || "");
 const endDateStr = ref(settings.endDateStr || "");
@@ -314,7 +310,7 @@ const comparisonSpecVersion = computed(() => {
     .find((value) => value !== undefined);
   return dataset?.subset
     ? specVersionFromSubset(dataset.subset)
-    : dataset?.tab.defaultSpecVersion || nightlyTab.defaultSpecVersion;
+    : dataset?.tab.defaultSpecVersion || SPEC_VERSIONS[0];
 });
 
 const comparisonBenchmarkCount = computed(() => {
@@ -349,41 +345,45 @@ function withDefaultFirst(values: string[], defaultValue: string): string[] {
 }
 
 async function loadComparisonDatasets() {
-  const [nightlyBranchConfig, weeklyBranchConfig] = await Promise.all([
-    loadBranchList(nightlyTab),
-    loadBranchList(weeklyTab),
-  ]);
-  const nightlyBranches = withDefaultFirst(
-    nightlyBranchConfig.branches,
-    nightlyBranchConfig.default,
+  const datasetsByTab = await Promise.all(
+    regressionTabs.map(async (tab) => {
+      const branchConfig = await loadBranchList(tab);
+      const branches = withDefaultFirst(
+        branchConfig.branches,
+        branchConfig.default,
+      );
+      return Promise.all(
+        branches.map(async (branch) => ({
+          tab,
+          branch,
+          subsetConfig: await loadSubsetList(tab, branch),
+        })),
+      );
+    }),
   );
-  const weeklyBranches = withDefaultFirst(
-    weeklyBranchConfig.branches,
-    weeklyBranchConfig.default,
-  );
-  const weeklySubsetsByBranch = await Promise.all(
-    weeklyBranches.map(async (branch) => ({
-      branch,
-      config: await loadSubsetList(weeklyTab, branch),
-    })),
-  );
-  comparisonDatasets.value = [
-    ...nightlyBranches.map((branch) => ({
-      id: comparisonDatasetId(nightlyTab, branch),
-      label: `${branch} · ${t("comparisonNightly")}`,
-      tab: nightlyTab,
-      branch,
-    })),
-    ...weeklySubsetsByBranch.flatMap(({ branch, config }) =>
-      withDefaultFirst(config.subsets, config.default).map((subset) => ({
-        id: comparisonDatasetId(weeklyTab, branch, subset),
-        label: `${branch} · ${t("comparisonWeeklySubset").replace("{0}", subset)}`,
-        tab: weeklyTab,
-        branch,
-        subset,
-      })),
+  comparisonDatasets.value = datasetsByTab.flatMap((branchDatasets) =>
+    branchDatasets.flatMap(({ tab, branch, subsetConfig }) =>
+      withDefaultFirst(subsetConfig.subsets, subsetConfig.default).map(
+        (subset) => ({
+          id: comparisonDatasetId(tab, branch, subset),
+          label: `${branch} · ${t(tab.titleKey)} · ${subset}`,
+          tab,
+          branch,
+          subset,
+        }),
+      ),
     ),
-  ];
+  );
+}
+
+async function updateChartSubsets(tab: ChartConfig, branch: string) {
+  const subsetConfig = chartTabHasSubsets(tab)
+    ? await loadSubsetList(tab, branch)
+    : { default: "", subsets: [] };
+  chartSubsets.value = subsetConfig.subsets;
+  if (!chartSubsets.value.includes(selectedSubset.value)) {
+    selectedSubset.value = subsetConfig.default || chartSubsets.value[0] || "";
+  }
 }
 
 async function loadComparisonSource(source: ComparisonSource) {
@@ -820,14 +820,7 @@ async function loadCurrentTabData() {
         `${activeChartTab.value.datasetRoot}/${selectedBranch.value}/subset.json`,
       );
     }
-    const subsetConfig = chartTabHasSubsets(activeChartTab.value)
-      ? await loadSubsetList(activeChartTab.value, selectedBranch.value)
-      : { default: "", subsets: [] };
-    chartSubsets.value = subsetConfig.subsets;
-    chartDefaultSubset.value = subsetConfig.default;
-    selectedSubset.value = chartSubsets.value.includes(selectedSubset.value)
-      ? selectedSubset.value
-      : chartDefaultSubset.value || chartSubsets.value[0] || "";
+    await updateChartSubsets(activeChartTab.value, selectedBranch.value);
 
     setLoading(
       `${activeChartTab.value.datasetRoot}/${selectedBranch.value}/${activeChartSubset.value ? `${activeChartSubset.value}/` : ""}data.json`,
@@ -1003,15 +996,7 @@ watch(quickRangePreset, async (preset) => {
 watch(selectedBranch, async () => {
   if (isHydrating.value) return;
   if (!selectedBranch.value) return;
-  const subsetConfig = chartTabHasSubsets(activeChartTab.value)
-    ? await loadSubsetList(activeChartTab.value, selectedBranch.value)
-    : { default: "", subsets: [] };
-  chartSubsets.value = subsetConfig.subsets;
-  chartDefaultSubset.value = subsetConfig.default;
-  if (!chartSubsets.value.includes(selectedSubset.value)) {
-    selectedSubset.value =
-      chartDefaultSubset.value || chartSubsets.value[0] || "";
-  }
+  await updateChartSubsets(activeChartTab.value, selectedBranch.value);
   allRuns.value = await loadRunIndex(
     activeChartTab.value,
     selectedBranch.value,
