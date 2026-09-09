@@ -2,6 +2,7 @@
   "default": "xs-gcc",
   "subsets": [
     "xs-gcc",
-    "xs-xscc"
+    "xs-xscc",
+    "gem5-gcc"
   ]
 }
