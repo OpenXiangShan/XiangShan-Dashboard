@@ -262,7 +262,7 @@ const chartSummary = computed(() => {
       );
     } else {
       parts.push(
-        `${formatDisplayDate(first.dateMs)}·${first.hash.slice(0, 8)} ~ ${formatDisplayDate(last.dateMs)}·${last.hash.slice(0, 8)}`,
+        `${formatDisplayDate(first.dateMs)} · ${first.hash.slice(0, 8)} ~ ${formatDisplayDate(last.dateMs)} · ${last.hash.slice(0, 8)}`,
       );
     }
   }
@@ -343,9 +343,7 @@ const comparisonSpecVersion = computed(() => {
   const dataset = comparisonSources.value
     .map((source) => source.dataset)
     .find((value) => value !== undefined);
-  return dataset?.subset
-    ? specVersionFromSubset(dataset.subset)
-    : dataset?.tab.defaultSpecVersion || SPEC_VERSIONS[0];
+  return dataset ? specVersionFromSubset(dataset.subset) : SPEC_VERSIONS[0];
 });
 
 const comparisonBenchmarkCount = computed(() => {
@@ -368,9 +366,9 @@ const comparisonBenchmarkCount = computed(() => {
 function comparisonDatasetId(
   tab: ChartConfig,
   branch: string,
-  subset?: string,
+  subset: string,
 ): string {
-  return [tab.id, branch, subset].filter(Boolean).join(":");
+  return `${tab.id}:${branch}:${subset}`;
 }
 
 function withDefaultFirst(values: string[], defaultValue: string): string[] {

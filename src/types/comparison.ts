@@ -14,7 +14,7 @@ export interface ComparisonDataset {
   label: string;
   tab: ChartConfig;
   branch: string;
-  subset?: string;
+  subset: string;
 }
 
 export interface ComparisonSource {

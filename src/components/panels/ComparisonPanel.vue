@@ -3,7 +3,7 @@
     <section class="panel-surface panel-shell">
       <div class="panel-header">
         <h2 class="panel-title">
-          {{ t("comparisonTitle") }} ({{ coverage }})
+          {{ t("comparisonTitle").replace("{0}", specVersion) }}({{ coverage }})
           <span class="panel-subtitle"
             >{{ sourceAName }} <strong>vs</strong> {{ sourceBName }}</span
           >
@@ -16,13 +16,15 @@
         {{ t("comparisonNoData") }}
       </div>
       <div v-else class="comparison-tables">
-        <div v-for="group in tableGroups" :key="group.key" class="table-group">
-          <h3>{{ group.title }}</h3>
+        <div v-for="group in tableGroups" :key="group" class="table-group">
           <div class="table-wrap">
             <table>
               <thead>
                 <tr>
-                  <th>{{ t("comparisonBenchmark") }}</th>
+                  <th>
+                    {{ t("comparisonBenchmark")
+                    }}<span class="benchmark-category">({{ group }})</span>
+                  </th>
                   <th>{{ t("comparisonSourceA") }}</th>
                   <th>{{ t("comparisonSourceB") }}</th>
                   <th>{{ t("comparisonDiff") }}</th>
@@ -31,7 +33,7 @@
               </thead>
               <tbody>
                 <tr
-                  v-for="row in rowsByClass[group.key]"
+                  v-for="row in rowsByClass[group]"
                   :key="row.name"
                   :class="{ 'geomean-row': row.name.startsWith('GEOMEAN') }"
                 >
@@ -57,11 +59,7 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import { toPng } from "html-to-image";
-import {
-  getSpecGeomeanName,
-  getSpecGroup,
-  SPEC_BENCHMARK_GROUPS,
-} from "../../config/spec";
+import { SPEC_BENCHMARK_GROUPS } from "../../config/spec";
 import type { SpecCategory, SpecVersion } from "../../config/spec";
 import { formatDisplayDate } from "../../services/dataService";
 import type { ReportPayload } from "../../types/data";
@@ -91,12 +89,7 @@ const exportRoot = ref<HTMLElement | null>(null);
 const sources = computed(() => props.sources);
 const sourceAName = computed(() => sourceName(sources.value[0]));
 const sourceBName = computed(() => sourceName(sources.value[1]));
-const tableGroups = computed(() =>
-  (["int", "fp"] as const).map((key) => ({
-    key,
-    title: getSpecGroup(props.specVersion, key).name,
-  })),
-);
+const tableGroups: readonly SpecCategory[] = ["int", "fp"];
 const rowsByClass = computed<Record<SpecCategory, ComparisonRow[]>>(() => ({
   int: buildRows("int"),
   fp: buildRows("fp"),
@@ -179,10 +172,7 @@ function buildRows(category: SpecCategory): ComparisonRow[] {
   );
   const aGeo = geometricMean(rows.map((row) => row.a));
   const bGeo = geometricMean(rows.map((row) => row.b));
-  return [
-    makeRow(getSpecGeomeanName(props.specVersion, category), aGeo, bGeo),
-    ...rows,
-  ];
+  return [makeRow("GEOMEAN", aGeo, bGeo), ...rows];
 }
 
 function makeRow(
@@ -225,16 +215,9 @@ function sourceName(source?: ComparisonSource) {
       : props.t("comparisonClipboard");
   }
   const run = source.runs.find((item) => item.runId === source.runId);
-  return run
-    ? `${sourceDatasetName(source)} · ${run.runId} · ${run.hash.slice(0, 8)} · ${formatDisplayDate(run.dateMs)}`
+  return run && source.dataset
+    ? `${source.dataset.subset} · ${formatDisplayDate(run.dateMs)} · ${run.hash.slice(0, 8)} · ${run.runId}`
     : source.label;
-}
-
-function sourceDatasetName(source: ComparisonSource): string {
-  if (!source.dataset) return "";
-  return [source.dataset.branch, source.dataset.subset]
-    .filter(Boolean)
-    .join(" · ");
 }
 
 function sourceCoverage(source?: ComparisonSource): string | undefined {
@@ -373,11 +356,6 @@ defineExpose({ exportPng });
   flex-direction: column;
   overflow: hidden;
 }
-.table-group h3 {
-  margin: 0 0 8px;
-  font-size: 14px;
-  color: var(--muted);
-}
 .comparison-warnings {
   margin: -4px 0 12px;
   padding: 9px 12px;
@@ -422,6 +400,9 @@ th {
   top: 0;
   background: #fff;
   z-index: 1;
+}
+.benchmark-category {
+  text-transform: none;
 }
 td:first-child {
   font-weight: 700;

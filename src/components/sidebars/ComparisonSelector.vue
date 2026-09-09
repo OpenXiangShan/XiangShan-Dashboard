@@ -30,8 +30,8 @@
           {{ t("comparisonNoRuns") }}
         </option>
         <option v-for="run in sortedRuns" :key="run.hash" :value="run.runId">
-          {{ run.runId }} · {{ run.hash.slice(0, 8) }} ·
-          {{ formatDisplayDate(run.dateMs) }}
+          {{ formatDisplayDate(run.dateMs) }} · {{ run.hash.slice(0, 8) }} ·
+          {{ run.runId }}
         </option>
       </select>
     </div>
