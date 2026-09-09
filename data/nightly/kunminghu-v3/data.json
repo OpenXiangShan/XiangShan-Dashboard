@@ -1,0 +1,74 @@
+{
+  "data": {
+    "34246269125": {
+      "hash": "02ea699276547160c3c6ed15f7bf2d19307a1b83",
+      "title": "feat(VIDiv): support VIDiv",
+      "date": 1788867039
+    },
+    "34139363953": {
+      "hash": "421ad2da1836ad966a98e2f727dc1c319d098f40",
+      "title": "fix(ROD):align ROD encoding (#6509)",
+      "date": 1788773611
+    },
+    "34042939544": {
+      "hash": "a2340a516c7fa36076a4fa59a68a406d58a61d25",
+      "title": "feat(Exu): write full whole-register move results",
+      "date": 1788688601,
+      "note": "2 out of 145 checkpoints failed, score may be inaccurate"
+    },
+    "33975420726": {
+      "hash": "090d297a2a1eef8551d75370221672cd27e3fe8e",
+      "title": "ci(emu-performance): dedup & eta filter & disable xscc (#6488)",
+      "date": 1788620437
+    },
+    "33773941319": {
+      "hash": "92cc48d2cb6af52a1fb2922f9eb99a37918654b3",
+      "title": "refactor(VCVT): initial support of new VCVTWrapper",
+      "date": 1788437655
+    },
+    "33650288868": {
+      "hash": "b81cb7875254425dce4f7d5f70a022caf58f0563",
+      "title": "timing(DecodeStage): Register uop fire/exception/uopBits to cut timing path",
+      "date": 1788353614
+    },
+    "33528380004": {
+      "hash": "a355c5525a87981a89f50020ef4ddba8a29884df",
+      "title": "chore(docker): remove LC_ALL ENV (#6446)",
+      "date": 1788231050
+    },
+    "33409675070": {
+      "hash": "e5c70547f3a966accf20a4b065ec1d8e33443180",
+      "title": "perf(l2pf): add F-POP prefetch controller (#6255)",
+      "date": 1788165677
+    },
+    "33320200911": {
+      "hash": "986e0072cd529c9a220c59e2a100fbd55a9e9d58",
+      "title": "fix(difftest): record the dedicated VL RAT destination",
+      "date": 1788083020,
+      "note": "80 out of 145 checkpoints failed, score may be inaccurate"
+    },
+    "33260773066": {
+      "hash": "ac4b54afcc7f32c7b00d991df697d5e8ecd2fd95",
+      "title": "ci(perf): add KunminghuV2Config trigger option (#6437)",
+      "date": 1787987799,
+      "note": "80 out of 145 checkpoints failed, score may be inaccurate"
+    },
+    "33204420012": {
+      "hash": "dfcb5748e9e7e6f710871a783102bdbf53317d17",
+      "title": "feat(decode,mem): add ZICBO extension and unify cbo opcode via LSUOpType",
+      "date": 1787906666,
+      "note": "80 out of 145 checkpoints failed, score may be inaccurate"
+    },
+    "33107034473": {
+      "hash": "be6693043b6090276d2a4016ea8bde0a339f2aa0",
+      "title": "fix(MMU): align CSR-change TLB flush latency (#6421)",
+      "date": 1787822066
+    },
+    "32986659591": {
+      "hash": "f91bdbb8c69e2ad9e041a7dcd92146f5a397d61c",
+      "title": "fix(Bpu): fix s3_override (#6417)",
+      "date": 1787662987
+    }
+  },
+  "version": 1
+}
