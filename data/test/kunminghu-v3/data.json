@@ -1,5 +1,15 @@
 {
   "data": {
+    "34458497894": {
+      "hash": "f922da4b6dd2c081ddaa544ed1b8305639c87b8e",
+      "title": "fix(vector): propagate vxsat write enable",
+      "date": 1789030986
+    },
+    "34458380106": {
+      "hash": "0fbc20a972f32364a5ed80afa1009168940e2928",
+      "title": "chore(vector): remove VPUCtrlSignals",
+      "date": 1789030909
+    },
     "34423843329": {
       "hash": "8c9ffcd4cb4ecf34821a8d387247c049638d1f5a",
       "title": "fix(build/xspdb): add required filelist arg for new picker (#6523)",

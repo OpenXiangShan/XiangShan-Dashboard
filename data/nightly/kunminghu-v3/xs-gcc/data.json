@@ -1,5 +1,10 @@
 {
   "data": {
+    "34371782210": {
+      "hash": "eedc9aa511dbcb3bf1072d31c729dd68be6cfca0",
+      "title": "fix(decode,rename): handle JAL/JALR link and jump uops",
+      "date": 1788968218
+    },
     "34246269125": {
       "hash": "02ea699276547160c3c6ed15f7bf2d19307a1b83",
       "title": "feat(VIDiv): support VIDiv",
