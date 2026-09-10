@@ -1,5 +1,15 @@
 {
   "data": {
+    "34371409990": {
+      "hash": "eedc9aa511dbcb3bf1072d31c729dd68be6cfca0",
+      "title": "fix(decode,rename): handle JAL/JALR link and jump uops",
+      "date": 1788968218
+    },
+    "34361477338": {
+      "hash": "dda18ff23d92eecf1d1207e2e415aed6e75c4da4",
+      "title": "refactor(vector): remove VFAlu wrapper and set fuGen to null in VfaluCfg",
+      "date": 1788962812
+    },
     "34323120600": {
       "hash": "2914d0ed7755fe1b506e9f0e6df68c8b0409bd40",
       "title": "ci(emu): determine emu-mc threads with verilator version (#6517)",
