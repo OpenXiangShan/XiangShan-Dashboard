@@ -1,5 +1,10 @@
 {
   "data": {
+    "34246269125": {
+      "hash": "02ea699276547160c3c6ed15f7bf2d19307a1b83",
+      "title": "feat(VIDiv): support VIDiv",
+      "date": 1788867039
+    },
     "34139363953": {
       "hash": "421ad2da1836ad966a98e2f727dc1c319d098f40",
       "title": "fix(ROD):align ROD encoding (#6509)",

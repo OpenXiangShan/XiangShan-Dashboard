@@ -37,7 +37,9 @@ WORKFLOW_NAMES = {
 
 SCORE_ARTIFACT_NAMES = {
     "xs": {
-        "nightly": "score",
+        "nightly": {
+            "gcc": "score",
+        },
         "weekly": {
             "gcc": "score",
             "xscc": "score-xscc",
@@ -286,20 +288,12 @@ def update_regression_gh(
     compiler: RegressionCompiler,
 ) -> None:
     """Update data for the Regression workflow"""
-    match target:
-        case "nightly":
-            workflow = WORKFLOW_NAMES[repo]["nightly"]
-            data_path = DATA_PATH / target / args.branch
-            score_artifact_name = SCORE_ARTIFACT_NAMES[repo]["nightly"]
-        case "weekly":
-            workflow = WORKFLOW_NAMES[repo]["weekly"]
-            data_path = DATA_PATH / target / args.branch / f"{repo}-{compiler}"
-            score_artifact_name = SCORE_ARTIFACT_NAMES[repo]["weekly"][compiler]
-        case _:
-            raise ValueError(f"Invalid target ({target}) for regression update")
+    workflow = WORKFLOW_NAMES[repo][target]
+    branch = BRANCH_NAMES[repo][args.branch]
+    data_path = DATA_PATH / target / args.branch / f"{repo}-{compiler}"
+    score_artifact_name = SCORE_ARTIFACT_NAMES[repo][target][compiler]
 
     data = DataJson.from_json(data_path / "data.json")
-    branch = BRANCH_NAMES[repo][args.branch]
 
     # get latest action runs for this workflow
     found_existing = False
@@ -419,15 +413,8 @@ def update_regression_local(
             "Local update for gem5 regression is not implemented yet"
         )
 
-    match target:
-        case "nightly":
-            workflow = WORKFLOW_NAMES[repo]["nightly"]
-            data_path = DATA_PATH / target / args.branch
-        case "weekly":
-            workflow = WORKFLOW_NAMES[repo]["weekly"]
-            data_path = DATA_PATH / target / args.branch / f"{repo}-{compiler}"
-        case _:
-            raise ValueError(f"Invalid target ({target}) for regression update")
+    workflow = WORKFLOW_NAMES[repo][target]
+    data_path = DATA_PATH / target / args.branch / f"{repo}-{compiler}"
 
     data = DataJson.from_json(data_path / "data.json")
 
