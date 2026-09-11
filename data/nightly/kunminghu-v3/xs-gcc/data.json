@@ -1,5 +1,10 @@
 {
   "data": {
+    "34497040717": {
+      "hash": "f922da4b6dd2c081ddaa544ed1b8305639c87b8e",
+      "title": "fix(vector): propagate vxsat write enable",
+      "date": 1789030986
+    },
     "34371782210": {
       "hash": "eedc9aa511dbcb3bf1072d31c729dd68be6cfca0",
       "title": "fix(decode,rename): handle JAL/JALR link and jump uops",
