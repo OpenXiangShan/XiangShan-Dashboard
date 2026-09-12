@@ -1,5 +1,15 @@
 {
   "data": {
+    "34687942123": {
+      "hash": "ce5476e72df69cd0c948ec53780b3d70cb7b40d4",
+      "title": "feat(vector): support vector divide instruction",
+      "date": 1789208097
+    },
+    "34600409053": {
+      "hash": "b5d56fb2ab0dd1600a64aced305a978ed1436fa0",
+      "title": "feat(decode): add back conditional Smmtt extension support",
+      "date": 1789130612
+    },
     "34576846080": {
       "hash": "0eea07ed92075d8c5fb968c5e1023fb2fdcf035f",
       "title": "fix(ICache): support 2fetch replacer touch (#6416)",
