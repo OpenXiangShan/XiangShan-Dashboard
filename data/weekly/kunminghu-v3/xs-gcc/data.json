@@ -1,0 +1,139 @@
+{
+  "data": {
+    "34587152666": {
+      "hash": "0eea07ed92075d8c5fb968c5e1023fb2fdcf035f",
+      "title": "fix(ICache): support 2fetch replacer touch (#6416)",
+      "date": 1789113466,
+      "note": "1 out of 1094 checkpoints failed, score may be inaccurate"
+    },
+    "33942508983": {
+      "hash": "3d03eac509eb9c79c171fed7e5ee1c9243486ed4",
+      "title": "fix(GPAMem): correct GPA offset for non-RVC instructions (#6476)",
+      "date": 1788515636,
+      "note": "3 out of 1094 checkpoints failed, score may be inaccurate"
+    },
+    "33241720317": {
+      "hash": "be6693043b6090276d2a4016ea8bde0a339f2aa0",
+      "title": "fix(MMU): align CSR-change TLB flush latency (#6421)",
+      "date": 1787822066
+    },
+    "32559003217": {
+      "hash": "53a9576674bd8f99e2d17491d7b8e6f9241b7b09-1",
+      "title": "perf(ubtb): use resolve+fast train (#6237)",
+      "date": 1787297494,
+      "note": "Switched to new gcc16-rva23-novec checkpoints, which may cause some performance differences. Do not compare with previous runs."
+    },
+    "32471083293": {
+      "hash": "53a9576674bd8f99e2d17491d7b8e6f9241b7b09",
+      "title": "perf(ubtb): use resolve+fast train (#6237)",
+      "date": 1787297494
+    },
+    "31791760711": {
+      "hash": "ff4720da42bf8a3a6eef996b0a712cf029523578",
+      "title": "fix(csr): fix first fetch fault after satp flush (#6014)",
+      "date": 1786690953
+    },
+    "31148270969": {
+      "hash": "c7b373bdbe9a9417b4c22ede4ddd0d970eb48b73",
+      "title": "timing(Ftq,ICache): fix meta read port timing (#6281)",
+      "date": 1786006066
+    },
+    "30606307371": {
+      "hash": "a975701442ba4602bd81969f6d291a6ddadcb4e0",
+      "title": "chore: bump chisel and submodules (#6297)",
+      "date": 1785375240
+    },
+    "30068645473": {
+      "hash": "0454478c247c7137301276b85173ed5a99f786bf",
+      "title": "refactor(Frontend): replace takenCfiOffset with endPosition (#6253)",
+      "date": 1784862007
+    },
+    "29556572977": {
+      "hash": "538ef487c903e14ff8d2f1b139e95724629ec08b",
+      "title": "ci(perf): upload score.txt in template (#6245)",
+      "date": 1784182599
+    },
+    "29071339329": {
+      "hash": "0e5469ce17236e21d61e60795c3dd2dbf381067e",
+      "title": "feat(Ftq): add rolling counter (#6193)",
+      "date": 1783594302
+    },
+    "28640316592": {
+      "hash": "59ef4ea7d45c712d0f67f83ee4a2fbd3fa202b55",
+      "title": "timing(loadQueueRAW): use age matrix for RAW oldest select (#6120)",
+      "date": 1783048987,
+      "note": "Switched to new checkpoints, which may cause some performance differences. Do not compare with previous runs."
+    },
+    "28219406785": {
+      "hash": "96c3f568f943a096ffd3d712dc6f462ac4b1ba33",
+      "title": "perf(Sbuffer): set in.req.ready to true if req can be merged (#6117)",
+      "date": 1782185101
+    },
+    "27808232814": {
+      "hash": "8c4daa743fbea8da85747e51ebb053f0e5de5953",
+      "title": "timing(ibuffer): optimize ibuffer bypass logic to improve timing (#6047)",
+      "date": 1781774138
+    },
+    "27397173296": {
+      "hash": "be3c06aa4750dcd9681c85ee8b42748734d93960",
+      "title": "perf(LSQ): enlarge default LSQ capacity (#6089)",
+      "date": 1781232864
+    },
+    "26997736256": {
+      "hash": "9443d04bd410311c485f22688e0bc219f4610747",
+      "title": "submodule(ready-to-run): bump ready-to-run to support tdata3",
+      "date": 1780628635
+    },
+    "26620174316": {
+      "hash": "b30d9d321f06274ff88cf3db27c6b6b9f5eef40a",
+      "title": "ci(emu): better log archive (#6033)",
+      "date": 1779936839
+    },
+    "26270266898": {
+      "hash": "dcc1d26893afe367b73ec69e5e30faef2be7d505",
+      "title": "chore: add pfLateHitType and Berti monitor (#5964)",
+      "date": 1779372875
+    },
+    "25901955295": {
+      "hash": "5123974942833f8d63672f0c132ec9787e8a650a",
+      "title": "fix(backend, ctrlblock): export empty state to ftq when backend drains (#5787)",
+      "date": 1778810127
+    },
+    "25537970943": {
+      "hash": "f65a4e6c3f211406fb3509252dcaee30dac86dbd",
+      "title": "timing(bpu): hoist MBTB attribute checks to S2 for timing (#5842)",
+      "date": 1778147140
+    },
+    "25203552668": {
+      "hash": "4bfb226bfaaaf2114a97a1cd3e439c660296f52b",
+      "title": "area(tage): use SRAM to store usefulCtr (#5852)",
+      "date": 1777536343
+    },
+    "24873331705": {
+      "hash": "82d2669b231178175f34a56923f33743771d0787",
+      "title": "chore: update issue template (#5853)",
+      "date": 1776942343
+    },
+    "24548740155": {
+      "hash": "903b531f0a09b5b20159b79f3fd90c02c0a5cfd4",
+      "title": "feat(DCache, CoupledL2): add PC field for L2 NextLine prefetcher (#5793)",
+      "date": 1776333023
+    },
+    "24227383328": {
+      "hash": "1f4b947e319a42f040b73db60c18dc1e01fdbb29",
+      "title": "fix(LoadUnit): fix unalignedHead replay stuck (#5783)",
+      "date": 1775789422
+    },
+    "23934363238": {
+      "hash": "33995fbb9fe12cd13450bd8c58ef586311ae8b99",
+      "title": "fix(utils): fix one hot check condition (#5726)",
+      "date": 1775125876
+    },
+    "23631797661": {
+      "hash": "87d03b2cc066980ce7133f4ccbe3030bdf0e6236",
+      "title": "misc(CODEOWNERS): modify CODEOWNERS for frontend (#5717)",
+      "date": 1774360212
+    }
+  },
+  "version": 1
+}

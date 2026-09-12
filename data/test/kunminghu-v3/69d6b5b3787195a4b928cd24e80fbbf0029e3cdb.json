@@ -1,0 +1,116 @@
+{
+  "astar_rivers_8728": {
+    "ipc": 2.37217
+  },
+  "GemsFDTD_49458": {
+    "ipc": 1.409746
+  },
+  "bzip2_liberty_739": {
+    "ipc": 7.377151
+  },
+  "bwaves_30350": {
+    "ipc": 1.04179
+  },
+  "cactusADM_61235": {
+    "ipc": 4.172546
+  },
+  "calculix_53456": {
+    "ipc": 5.398508
+  },
+  "gamess_gradient_36450": {
+    "ipc": 4.977463
+  },
+  "dealII_13061": {
+    "ipc": 4.131362
+  },
+  "gobmk_nngs_453": {
+    "ipc": 0.759231
+  },
+  "gcc_s04_2772": {
+    "ipc": 2.196413
+  },
+  "gromacs_2907": {
+    "ipc": 2.056058
+  },
+  "h264ref_foreman.main_10053": {
+    "ipc": 4.345778
+  },
+  "hmmer_nph3_33214": {
+    "ipc": 5.817051
+  },
+  "lbm_31064": {
+    "ipc": 2.562678
+  },
+  "legacy-astar": {
+    "ipc": 2.146882
+  },
+  "legacy-gcc": {
+    "ipc": 1.5294
+  },
+  "legacy-gromacs": {
+    "ipc": 3.055066
+  },
+  "legacy-lbm": {
+    "ipc": 2.653707
+  },
+  "legacy-mcf": {
+    "ipc": 1.184062
+  },
+  "legacy-milc": {
+    "ipc": 1.865202
+  },
+  "legacy-namd": {
+    "ipc": 3.698539
+  },
+  "legacy-wrf": {
+    "ipc": 2.736658
+  },
+  "leslie3d_37552": {
+    "ipc": 2.086055
+  },
+  "legacy-xalancbmk": {
+    "ipc": 3.996149
+  },
+  "libquantum_81539": {
+    "ipc": 5.215192
+  },
+  "mcf_6388": {
+    "ipc": 0.479663
+  },
+  "namd_75757": {
+    "ipc": 3.390937
+  },
+  "milc_7124": {
+    "ipc": 2.685394
+  },
+  "omnetpp_14042": {
+    "ipc": 0.882012
+  },
+  "perlbench_splitmail_3995": {
+    "ipc": 4.272481
+  },
+  "sjeng_64284": {
+    "ipc": 2.163443
+  },
+  "povray_8362": {
+    "ipc": 2.790397
+  },
+  "soplex_ref_10774": {
+    "ipc": 4.285583
+  },
+  "sphinx3_141036": {
+    "ipc": 3.929923
+  },
+  "tonto_69015": {
+    "ipc": 4.221856
+  },
+  "wrf_112496": {
+    "ipc": 2.429316
+  },
+  "xalancbmk_9874": {
+    "ipc": 3.236085
+  },
+  "zeusmp_45598": {
+    "ipc": 3.357401
+  }
+}

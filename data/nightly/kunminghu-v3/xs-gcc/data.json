@@ -1,0 +1,521 @@
+{
+  "data": {
+    "34617393631": {
+      "hash": "b5d56fb2ab0dd1600a64aced305a978ed1436fa0",
+      "title": "feat(decode): add back conditional Smmtt extension support",
+      "date": 1789130612
+    },
+    "34497040717": {
+      "hash": "f922da4b6dd2c081ddaa544ed1b8305639c87b8e",
+      "title": "fix(vector): propagate vxsat write enable",
+      "date": 1789030986
+    },
+    "34371782210": {
+      "hash": "eedc9aa511dbcb3bf1072d31c729dd68be6cfca0",
+      "title": "fix(decode,rename): handle JAL/JALR link and jump uops",
+      "date": 1788968218
+    },
+    "34246269125": {
+      "hash": "02ea699276547160c3c6ed15f7bf2d19307a1b83",
+      "title": "feat(VIDiv): support VIDiv",
+      "date": 1788867039
+    },
+    "34139363953": {
+      "hash": "421ad2da1836ad966a98e2f727dc1c319d098f40",
+      "title": "fix(ROD):align ROD encoding (#6509)",
+      "date": 1788773611
+    },
+    "34042939544": {
+      "hash": "a2340a516c7fa36076a4fa59a68a406d58a61d25",
+      "title": "feat(Exu): write full whole-register move results",
+      "date": 1788688601,
+      "note": "2 out of 145 checkpoints failed, score may be inaccurate"
+    },
+    "33975420726": {
+      "hash": "090d297a2a1eef8551d75370221672cd27e3fe8e",
+      "title": "ci(emu-performance): dedup & eta filter & disable xscc (#6488)",
+      "date": 1788620437
+    },
+    "33773941319": {
+      "hash": "92cc48d2cb6af52a1fb2922f9eb99a37918654b3",
+      "title": "refactor(VCVT): initial support of new VCVTWrapper",
+      "date": 1788437655
+    },
+    "33650288868": {
+      "hash": "b81cb7875254425dce4f7d5f70a022caf58f0563",
+      "title": "timing(DecodeStage): Register uop fire/exception/uopBits to cut timing path",
+      "date": 1788353614
+    },
+    "33528380004": {
+      "hash": "a355c5525a87981a89f50020ef4ddba8a29884df",
+      "title": "chore(docker): remove LC_ALL ENV (#6446)",
+      "date": 1788231050
+    },
+    "33409675070": {
+      "hash": "e5c70547f3a966accf20a4b065ec1d8e33443180",
+      "title": "perf(l2pf): add F-POP prefetch controller (#6255)",
+      "date": 1788165677
+    },
+    "33320200911": {
+      "hash": "986e0072cd529c9a220c59e2a100fbd55a9e9d58",
+      "title": "fix(difftest): record the dedicated VL RAT destination",
+      "date": 1788083020,
+      "note": "80 out of 145 checkpoints failed, score may be inaccurate"
+    },
+    "33260773066": {
+      "hash": "ac4b54afcc7f32c7b00d991df697d5e8ecd2fd95",
+      "title": "ci(perf): add KunminghuV2Config trigger option (#6437)",
+      "date": 1787987799,
+      "note": "80 out of 145 checkpoints failed, score may be inaccurate"
+    },
+    "33204420012": {
+      "hash": "dfcb5748e9e7e6f710871a783102bdbf53317d17",
+      "title": "feat(decode,mem): add ZICBO extension and unify cbo opcode via LSUOpType",
+      "date": 1787906666,
+      "note": "80 out of 145 checkpoints failed, score may be inaccurate"
+    },
+    "33107034473": {
+      "hash": "be6693043b6090276d2a4016ea8bde0a339f2aa0",
+      "title": "fix(MMU): align CSR-change TLB flush latency (#6421)",
+      "date": 1787822066
+    },
+    "32986659591": {
+      "hash": "f91bdbb8c69e2ad9e041a7dcd92146f5a397d61c",
+      "title": "fix(Bpu): fix s3_override (#6417)",
+      "date": 1787662987
+    },
+    "32747139204": {
+      "hash": "12df8283f42ca9e286de7520c9e1a7eb07b3cbcf",
+      "title": "fix(MMU, COVE) : fix mpt walker bug, pre-flush transaction not properly cleaned (#6314)",
+      "date": 1787584374
+    },
+    "32649295355": {
+      "hash": "91ea1a167a2a8a598d514c6cc840d7c0804c2e6d",
+      "title": "chore(perf): update checkpoints (#6402)",
+      "date": 1787382729,
+      "note": "Switched to new gcc16-rva23-novec checkpoints, which may cause some performance differences. Do not compare with previous runs."
+    },
+    "32500603650": {
+      "hash": "59086b8a5d0e574f6a80ae113dc7715403afe4e0",
+      "title": "fix(IFU): ifu redirect canTrain add notCfiTaken signal (#6398)",
+      "date": 1787320070
+    },
+    "32389516647": {
+      "hash": "cb9ff1d8d4c6b624667a0fb6e95adbdbf5a9b3b7",
+      "title": "perf(Tage): optimize UseAltOnNa (#6328)",
+      "date": 1787217842
+    },
+    "32273227122": {
+      "hash": "891cc659764c0ffa1165542b8b7e0220f1821d04",
+      "title": "fix(StoreUnit): kill younger cross-page unalign head store (#6382)",
+      "date": 1787118991
+    },
+    "32157656610": {
+      "hash": "a7fc87df1e82211eb47f3c74a8c93cd9d425572b",
+      "title": "docs(Pc): add scaladoc",
+      "date": 1787020869
+    },
+    "31893350134": {
+      "hash": "ff4720da42bf8a3a6eef996b0a712cf029523578",
+      "title": "fix(csr): fix first fetch fault after satp flush (#6014)",
+      "date": 1786690953
+    },
+    "31717750438": {
+      "hash": "31350f1295e763820be8ca35ddffb51f1d2548a1",
+      "title": "perf(berti): bugfix and enhance (#5965)",
+      "date": 1786619484
+    },
+    "31614672446": {
+      "hash": "a4f4b53068d85b583bb09f7d8a8ec04905678aad",
+      "title": "ci(perf): drop legacy and add new gcc15-spec26 checkpoints (#6352)",
+      "date": 1786525790
+    },
+    "31509411521": {
+      "hash": "689018340eb22cb639bdfa1f83c5abb508be0df5",
+      "title": "fix(loadPipe): fix index error in latency flag write (#6339)",
+      "date": 1786433602
+    },
+    "31405964257": {
+      "hash": "8d06a184d8f15104f5797da46d56a102245141f8",
+      "title": "fix(StoreUnit): only send paddr to UnalignQueue when both TLB  hit (#6332)",
+      "date": 1786353286
+    },
+    "31321934527": {
+      "hash": "97e650416321452e45efcabac0f5c91213c842f3",
+      "title": "fix(ifu): fix s1_instrCount calculation when an exception occurs (#6301)",
+      "date": 1786173519
+    },
+    "31194754693": {
+      "hash": "766b9f264144a7e263f766e5ee76e638d078053d",
+      "title": "fix(WriteBuffer): read-write conflict on the same entry caused an error (#6315)",
+      "date": 1786115465
+    },
+    "31024059147": {
+      "hash": "00eb9ee7c544caddef192eef81f9490533ffbad3",
+      "title": "fix(Rename): fix vl free-list leak that permanently stalls rename (#6246)",
+      "date": 1785920618
+    },
+    "30646168249": {
+      "hash": "4ce2f88ae780f0766372aa2fbc7d00cfaf33a4e7",
+      "title": "feat(loadUnit): add support of arbiter of RRBankConflict (#6242)",
+      "date": 1785479185
+    },
+    "30559871639": {
+      "hash": "a975701442ba4602bd81969f6d291a6ddadcb4e0",
+      "title": "chore: bump chisel and submodules (#6297)",
+      "date": 1785375240
+    },
+    "30468942367": {
+      "hash": "c1bf7dc2e5fb98212ff8c3714bf1241bf699f6f2",
+      "title": "perf(mdp): refine strict StoreSet prediction (#6286)",
+      "date": 1785318418
+    },
+    "30107754661": {
+      "hash": "4cf8b8d4ae343e01dfb54e5ae8febdaeaa9992ae",
+      "title": "fix(L1PF, LSQ): reject stale TLB updates and nonphysical store wakeups (#6275)",
+      "date": 1784878636
+    },
+    "29936266605": {
+      "hash": "06f4a74041023799b9ed32c0447c7d55c762f999",
+      "title": "feat(DCache): add one more dcache node (#6178)",
+      "date": 1784704373
+    },
+    "29846873542": {
+      "hash": "79ce25ebee89ca0a0db6ed029aaa303fbaaf9269",
+      "title": "timing(icache, ifu): retime IFU compact and ICache miss response paths (#6219)",
+      "date": 1784626415
+    },
+    "29758194180": {
+      "hash": "2b5769e8b2e3bb0fe63dc8294b9f5db70988567d",
+      "title": "timing(ICache): fix timing of 2-fetch related logic (#6221)",
+      "date": 1784536087
+    },
+    "29650831855": {
+      "hash": "b90dbba40d16d54f2814870ff8b4d8809a41e680",
+      "title": "submodule(ready-to-run): bump nemu ref in ready-to-run",
+      "date": 1784282524
+    },
+    "29513739840": {
+      "hash": "538ef487c903e14ff8d2f1b139e95724629ec08b",
+      "title": "ci(perf): upload score.txt in template (#6245)",
+      "date": 1784182599
+    },
+    "29430903303": {
+      "hash": "c30b2f523d6cc5c4639af15acbc354f16c9be480",
+      "title": "submoudle(ready-to-run):bump nemu ref in ready-to-run",
+      "date": 1784122249
+    },
+    "29347857608": {
+      "hash": "ec493a5f649b0c7b7789a76915b3d99a85c29dfc",
+      "title": "fix(Ftq): fix backendExceptionPtr (#6235)",
+      "date": 1784013793
+    },
+    "29266161060": {
+      "hash": "3d248c18075dc5d310348b6c05daf1db96ea5a95",
+      "title": "fix(Ittage): fix altDiffer condition (#6167)",
+      "date": 1783945637
+    },
+    "29158715502": {
+      "hash": "8a42e727cc58db2b00d4bb2de7b397355f89257c",
+      "title": "fix(Ifu): fix uncache with prevHalfRvi (#6213)",
+      "date": 1783670730
+    },
+    "29033170266": {
+      "hash": "0e5469ce17236e21d61e60795c3dd2dbf381067e",
+      "title": "feat(Ftq): add rolling counter (#6193)",
+      "date": 1783594302
+    },
+    "28957622455": {
+      "hash": "4f6732c0aa2f6ab3a1050246051ab0d037f24ab3",
+      "title": "fix(LoadPipe): suppress S3 hit metadata updates on s2 kill (#6185)",
+      "date": 1783507833
+    },
+    "28881729084": {
+      "hash": "2fa9c2db43dc56912f5173f083e981e9195aff27",
+      "title": "chore: add chiseldb and rollingdb support to perf trigger and xiangshan.py",
+      "date": 1783404652
+    },
+    "28807362957": {
+      "hash": "70fb518c47228f24a9711d75e3a613dfe57d8b65",
+      "title": "docs: update copyright year in readme (#6194)",
+      "date": 1783327955
+    },
+    "28671667945": {
+      "hash": "59ef4ea7d45c712d0f67f83ee4a2fbd3fa202b55",
+      "title": "timing(loadQueueRAW): use age matrix for RAW oldest select (#6120)",
+      "date": 1783048987
+    },
+    "28604814134": {
+      "hash": "67b4d20be884531f315ae1f2fe6a10d473c94f13",
+      "title": "timing(L1PrefetchComponent): defer sent_vec updates to pf fire (#6102)",
+      "date": 1782989167,
+      "note": "Switched to new checkpoints, which may cause some performance differences. Do not compare with previous runs."
+    },
+    "28459467034": {
+      "hash": "567d1da56d968a6dde8fbfe829896bc9b9ca2605",
+      "title": "feat(DCache): support 32x2B banked data array (#6118)",
+      "date": 1782803854
+    },
+    "28387959994": {
+      "hash": "0aff3b4899fa89fb3e7d48ee5ff336047d47b1ff",
+      "title": "fix(Ifu): Pbmt.IO should wait for last commit (#6144)",
+      "date": 1782717565
+    },
+    "28327800669": {
+      "hash": "88d1c50ae38e441595f98e0f704b24ef958f1791",
+      "title": "refactor(pf): setting the prefetcher config only in Parameters.scala (#5382)",
+      "date": 1782627983
+    },
+    "28040440793": {
+      "hash": "96c3f568f943a096ffd3d712dc6f462ac4b1ba33",
+      "title": "perf(Sbuffer): set in.req.ready to true if req can be merged (#6117)",
+      "date": 1782185101
+    },
+    "27970509438": {
+      "hash": "6ae5922ed27cf6528f7e016d7db28ef4648436c5",
+      "title": "ci: bump actions/checkout from 6 to 7 in the github-actions group (#6114)",
+      "date": 1782098906
+    },
+    "27774866071": {
+      "hash": "8c4daa743fbea8da85747e51ebb053f0e5de5953",
+      "title": "timing(ibuffer): optimize ibuffer bypass logic to improve timing (#6047)",
+      "date": 1781774138
+    },
+    "27704880190": {
+      "hash": "3b896fba08d216f72195c5842a3ae94763b6f2d0",
+      "title": "chore: explicitly pass OBJCACHE to difftest/verilator.mk (#5907)",
+      "date": 1781664270
+    },
+    "27635358613": {
+      "hash": "5ff19c2b59979fc3b2db2e44a823a22e4ba13642",
+      "title": "submodule(difftest): expose CPU/MEM AXI for fpgadiff (#6098)",
+      "date": 1781597496
+    },
+    "27563735618": {
+      "hash": "d0b3436f5fcbbfd22e8b24f72fab4d38c180770c",
+      "title": "timing(utage): train and predict using the history from the previous cycle (#5517)",
+      "date": 1781535041
+    },
+    "27471768016": {
+      "hash": "be3c06aa4750dcd9681c85ee8b42748734d93960",
+      "title": "perf(LSQ): enlarge default LSQ capacity (#6089)",
+      "date": 1781232864
+    },
+    "27291249843": {
+      "hash": "5174231e44bd8614b275a64533604f28615ad3cc",
+      "title": "submodule: bump XSCache (#6072)",
+      "date": 1781082724
+    },
+    "27153103177": {
+      "hash": "96f3a4d4b02dbc84f954d29a35fbabb3809667ab",
+      "title": "feat(mpt): add mpt v0.4 support for Xiangshan (#5915)",
+      "date": 1780804795
+    },
+    "27066927608": {
+      "hash": "9443d04bd410311c485f22688e0bc219f4610747",
+      "title": "submodule(ready-to-run): bump ready-to-run to support tdata3",
+      "date": 1780628635
+    },
+    "26965356441": {
+      "hash": "11c980d9593aaf9b2afea4cde0624d1416dbaa52",
+      "title": "misc: update CODEOWNERS of frontend (#6054)",
+      "date": 1780566795
+    },
+    "26835387467": {
+      "hash": "4c742fa44b76fe372f70c74aad2ca826be0de155",
+      "title": "fix(AXI4Memory): re-written AXI interface of AXI4Memory (#6045)",
+      "date": 1780366880
+    },
+    "26650233474": {
+      "hash": "f09207872dac6a694f2142e7220092a2d9c188e4",
+      "title": "chore: use dependabot to track actions updates (#6011)",
+      "date": 1780039636
+    },
+    "26525226846": {
+      "hash": "7016efa0465169eac61af1425bc17782363a708c",
+      "title": "timing(IBuffer): fix IBuffer instruction enqueue timing and exception signal timing (#5946)",
+      "date": 1779871194
+    },
+    "26462251742": {
+      "hash": "f464649442c85122dbb6d71bd77fd0b5e9bec040",
+      "title": "fix(StoreQueue): fix bug of fullOverlap when store is cross16B (#6003)",
+      "date": 1779764142
+    },
+    "26409986989": {
+      "hash": "37df69816dc83ebc993785170d1ba00d8f71c801",
+      "title": "refactor(backend): delete stale code in ExceptSparseVec",
+      "date": 1779704593
+    },
+    "26299310101": {
+      "hash": "4b7f0725128f5adc2be03f4df96f76f8d081c75d",
+      "title": "fix(ifu): fix instruction concatenation error during cross-channel fetch (#5985)",
+      "date": 1779437168
+    },
+    "26239039248": {
+      "hash": "dcc1d26893afe367b73ec69e5e30faef2be7d505",
+      "title": "chore: add pfLateHitType and Berti monitor (#5964)",
+      "date": 1779372875
+    },
+    "26176183762": {
+      "hash": "91e449d5ca1c0e904620465484ca752ba5659e60",
+      "title": "feat(DCacheWrapper): add perfcnt for l2 hint accuracy (#5993)",
+      "date": 1779265136
+    },
+    "26111136614": {
+      "hash": "a4712159773e25bda5332be8d8dc61c9e5fb4968",
+      "title": "timing(Phr): fix s1 phr timing (#5892)",
+      "date": 1779181814
+    },
+    "26046813189": {
+      "hash": "3931c5112c528299a23c256bdd77fb90813afa6e",
+      "title": "feat(Config): set L2Cache size to 2MB (#5969)",
+      "date": 1779099541
+    },
+    "25995532243": {
+      "hash": "6498a52a00d92eafc9b6beba7b66b39d1e414b20",
+      "title": "feat(device): implement UART ns16550a simulation model (#5979)",
+      "date": 1779007653
+    },
+    "25928406129": {
+      "hash": "5123974942833f8d63672f0c132ec9787e8a650a",
+      "title": "fix(backend, ctrlblock): export empty state to ftq when backend drains (#5787)",
+      "date": 1778810127
+    },
+    "25871357332": {
+      "hash": "af4cdce9b20579d12a4c6c724a412b81333d1bf4",
+      "title": "fix(StoreQueue): fix entry of invalid in unalignQueue (#5913)",
+      "date": 1778751200
+    },
+    "25811918184": {
+      "hash": "ed346cdc8ca174210c48df96620b8887329f8e92",
+      "title": "timing(sc): fix sc t1 training timing (#5923)",
+      "date": 1778669608
+    },
+    "25747481545": {
+      "hash": "8604d87ff5e7c2f41b4a82361e37c734e7d11be6",
+      "title": "fix(ci): checkout target branch for manually triggered release jobs (#5936)",
+      "date": 1778569973
+    },
+    "25682796070": {
+      "hash": "4fc4c7cfab7aa8249a488e597628481582660741",
+      "title": "timing(mbtb): fix t1 timing (#5897)",
+      "date": 1778491912
+    },
+    "25633055613": {
+      "hash": "b0b33c5872ac6e9797c6e3be7c1e6ed55fb6c894",
+      "title": "feat(utils): add correlation analysis for rolling perf counters (#5906)",
+      "date": 1778319143
+    },
+    "25565699840": {
+      "hash": "0f72de270203701e4793cbfe4c20f3c9f398c4c8",
+      "title": "fix(mbtb): remove unused NumAlignBanks param (#5891)",
+      "date": 1778226762
+    },
+    "25508002011": {
+      "hash": "f65a4e6c3f211406fb3509252dcaee30dac86dbd",
+      "title": "timing(bpu): hoist MBTB attribute checks to S2 for timing (#5842)",
+      "date": 1778147140
+    },
+    "25446978900": {
+      "hash": "fdc671fc2d2f7d3e3d76f07a7c53cc4fe0e8857b",
+      "title": "fix(ifu): do not defer exception signal until instruction reassembly is complete (#5874)",
+      "date": 1778052101
+    },
+    "25387809714": {
+      "hash": "4bfb226bfaaaf2114a97a1cd3e439c660296f52b",
+      "title": "area(tage): use SRAM to store usefulCtr (#5852)",
+      "date": 1777507543
+    },
+    "25120073474": {
+      "hash": "740f25b2df50a36e03acd0d7d10a513b62c07b9f",
+      "title": "feat(constantin): add custom constantin file and dry run function (#5836)",
+      "date": 1777427489
+    },
+    "25064484838": {
+      "hash": "7f1a8e7dceb02eb2fba1c280f489051fd3b94f05",
+      "title": "fix(Bitmap): cfs indexed with wrong truncated PPN in L2TLB (#5858)",
+      "date": 1777277490
+    },
+    "24898781453": {
+      "hash": "b8ff9a271d5c6794083ded7c1954e29e670e8986",
+      "title": "refactor(frontend): drop unused wrbypass (#5821)",
+      "date": 1777019469
+    },
+    "24788509186": {
+      "hash": "7a3e976da3c3a13fa612cea352b4a18750a50ce8",
+      "title": "power(tage): separate tage write ctr and write useful (#5782)",
+      "date": 1776841122
+    },
+    "24732598723": {
+      "hash": "001f69e97d07b252e716dd4dda6091eb2345f2b1",
+      "title": "ci(emu): disable lightSSS for gsim jobs (#5822)",
+      "date": 1776756103
+    },
+    "24608220923": {
+      "hash": "00ab5f07350dbb36fa2cac9a1aabc1c48178a010",
+      "title": "feat(csr): add CSR CSV export and inline field docs (#5820)",
+      "date": 1776419794
+    },
+    "24520733032": {
+      "hash": "903b531f0a09b5b20159b79f3fd90c02c0a5cfd4",
+      "title": "feat(DCache, CoupledL2): add PC field for L2 NextLine prefetcher (#5793)",
+      "date": 1776333023
+    },
+    "24464415291": {
+      "hash": "1e9baaf8039ca75789fe3081b9a70dbbad9de703",
+      "title": "fix(topdown): fix backend other core and topdown script",
+      "date": 1776225614
+    },
+    "24409190425": {
+      "hash": "1e64239649566a1217ea26efad20ace05771cb11",
+      "title": "feat(sc): fix the bug in the bw table and open the bw table (#5796)",
+      "date": 1776157622
+    },
+    "24353303771": {
+      "hash": "0b6988149d9165f48d5e7e608df52b007766e834",
+      "title": "fix(uras): correct S1-level RAS stack top address during override (#5680)",
+      "date": 1776050334
+    },
+    "24285916525": {
+      "hash": "5623d8c5195c738c0f8a09dbca59db8b192e8eb2",
+      "title": "timing(bpu): use sram.resetDone instead of r.req.ready (#5735)",
+      "date": 1775804908
+    },
+    "24200295522": {
+      "hash": "75bf3fb72ab0194e2983f418d0f5abb75c543eed",
+      "title": "fix(Rename): fix psrcVl bypass to use pdestVl (#5743)",
+      "date": 1775729170
+    },
+    "23982166921": {
+      "hash": "fb0b7e3ea72c1882af20956686346f33374d81cd",
+      "title": "Bump ready-to-run ref in Xiangshan",
+      "date": 1775207135
+    },
+    "23909300798": {
+      "hash": "33995fbb9fe12cd13450bd8c58ef586311ae8b99",
+      "title": "fix(utils): fix one hot check condition (#5726)",
+      "date": 1775125876
+    },
+    "23857898539": {
+      "hash": "44e03594ff77d0db91daf42d9bb4642476e1f23f",
+      "title": "fix(storeQueue): fix bug of `pbmt` & `hsv_*` access device region (#5751)",
+      "date": 1775039882
+    },
+    "23806687739": {
+      "hash": "64422f305929e8c173fe7c05f917ed1374a1eb4c",
+      "title": "chore(xiangshan.py): cache numa_info",
+      "date": 1774943330
+    },
+    "23754161417": {
+      "hash": "e1f729be0342684c34f54676c78996862f9c7247",
+      "title": "ci(nightly): do not create link if current exists (#5731)",
+      "date": 1774863517
+    },
+    "23498923188": {
+      "hash": "87d03b2cc066980ce7133f4ccbe3030bdf0e6236",
+      "title": "misc(CODEOWNERS): modify CODEOWNERS for frontend (#5717)",
+      "date": 1774360212
+    }
+  },
+  "version": 1
+}
