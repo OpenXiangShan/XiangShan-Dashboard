@@ -1,5 +1,15 @@
 {
   "data": {
+    "34747521804": {
+      "hash": "9d4e20172c7ed53b66674e54803204c2c7227d75",
+      "title": "refactor(backend): remove obsolete VL nonzero state",
+      "date": 1789287561
+    },
+    "34747382006": {
+      "hash": "a824338571446f0349712eadca0ac8a86bff3638",
+      "title": "chore(vector): remove useless classes and methods",
+      "date": 1789287548
+    },
     "34687942123": {
       "hash": "ce5476e72df69cd0c948ec53780b3d70cb7b40d4",
       "title": "feat(vector): support vector divide instruction",
