@@ -56,7 +56,7 @@ Schema constraints:
 - `subset.json`: `{ "default": subset, "subsets": [subset] }`.
 - `data.json`: `{ "data": { run_id: { "hash", "title", "date", "note (optional)" } } }`.
 - `<commit>.json` / `<date>.json`: `{ benchmark: { metric } }`.
-- `run_id`: numeric string.
+- `run_id`: a numeric string or `imported-` followed by a numeric string.
 - `metric` key: `ipc` or `score`.
 - `metric` value: float number.
 

@@ -62,6 +62,7 @@ import type {
   ComparisonSourceId,
 } from "../../types/comparison";
 import { formatDate } from "../../services/dataService";
+import { compareRunIds } from "../../types/data";
 
 const props = defineProps<{
   t: (key: string) => string;
@@ -79,7 +80,7 @@ const emit = defineEmits<{
 }>();
 
 const sortedRuns = computed(() =>
-  [...props.source.runs].sort((a, b) => Number(b.runId) - Number(a.runId)),
+  [...props.source.runs].sort((a, b) => compareRunIds(b.runId, a.runId)),
 );
 
 async function paste() {

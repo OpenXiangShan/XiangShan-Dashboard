@@ -22,7 +22,7 @@ CURRENT_VERSION = 1
 class DataJson:
     """Describe the entire data.json structure"""
 
-    data: dict[int, DataJsonEntry]
+    data: dict[str, DataJsonEntry]
     version: int = CURRENT_VERSION
 
     @staticmethod
@@ -40,7 +40,7 @@ class DataJson:
                 return DataJson(
                     version=version,
                     data={
-                        int(k): DataJsonEntry(**v) for k, v in raw_data["data"].items()
+                        str(k): DataJsonEntry(**v) for k, v in raw_data["data"].items()
                     },
                 )
             case _:
@@ -65,15 +65,27 @@ class DataJson:
         return commit in map(lambda entry: entry.hash, self.data.values())
 
     def append(
-        self, run_id: int, commit: str, title: str, date: int, note: str | None = None
+        self,
+        run_id: str | int,
+        commit: str,
+        title: str,
+        date: int,
+        note: str | None = None,
     ) -> None:
         """Append a single workflow run to dataset"""
-        self.data[run_id] = DataJsonEntry(
+        self.data[str(run_id)] = DataJsonEntry(
             hash=commit, title=title, date=date, note=note
         )
 
     def sort(self) -> None:
         """Sort data by run_id descending"""
+
+        def sort_key(item: tuple[str, DataJsonEntry]) -> tuple[int, str]:
+            run_id = item[0]
+            if run_id.startswith("imported-"):
+                run_id = run_id[len("imported-") :]
+            return (int(run_id), item[0])
+
         self.data = dict(
-            sorted(self.data.items(), key=lambda item: item[0], reverse=True)
+            sorted(self.data.items(), key=sort_key, reverse=True)
         )

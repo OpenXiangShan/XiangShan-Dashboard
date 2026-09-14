@@ -98,7 +98,7 @@
       "hash": "91ea1a167a2a8a598d514c6cc840d7c0804c2e6d",
       "title": "chore(perf): update checkpoints (#6402)",
       "date": 1787382729,
-      "note": "Switched to new gcc16-rva23-novec checkpoints, which may cause some performance differences. Do not compare with previous runs."
+      "note": "Switched to new gcc16-rva23-novec-0820 checkpoints, which may cause some performance differences. Do not compare with previous runs."
     },
     "32500603650": {
       "hash": "59086b8a5d0e574f6a80ae113dc7715403afe4e0",
@@ -254,7 +254,7 @@
       "hash": "67b4d20be884531f315ae1f2fe6a10d473c94f13",
       "title": "timing(L1PrefetchComponent): defer sent_vec updates to pf fire (#6102)",
       "date": 1782989167,
-      "note": "Switched to new checkpoints, which may cause some performance differences. Do not compare with previous runs."
+      "note": "Switched to new gcc15-gcb-0604 checkpoints, which may cause some performance differences. Do not compare with previous runs."
     },
     "28459467034": {
       "hash": "567d1da56d968a6dde8fbfe829896bc9b9ca2605",

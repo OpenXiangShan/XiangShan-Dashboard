@@ -133,7 +133,8 @@
     "33973490456": {
       "hash": "090d297a2a1eef8551d75370221672cd27e3fe8e",
       "title": "ci(emu-performance): dedup & eta filter & disable xscc (#6488)",
-      "date": 1788620437
+      "date": 1788620437,
+      "note": "Switched to new gcc16-rva23-novec-0820 checkpoints, which may cause some performance differences. Do not compare with previous runs."
     },
     "33964886943": {
       "hash": "b5ec9e2f89cf8b8b99ea757e9ddade407b2be3d1",
@@ -158,7 +159,8 @@
     "33838930307": {
       "hash": "0cdabfc7ca585bcb02790d7638c9764d9b49d529",
       "title": "ci(emu-performance): scripted ckpt selection (#6450)",
-      "date": 1788498066
+      "date": 1788498066,
+      "note": "Using new checkpoint selection mechanism, which may cause some performance differences. Do not compare with previous runs."
     },
     "33832988283": {
       "hash": "39b79b252f14c73e218144406ddb7e1858593315",
@@ -739,7 +741,7 @@
       "hash": "0128420959aed41d26c04dcb5dffb7e6ff9d8c05",
       "title": "ci(emu): migrate to new checkpoints (#6186)",
       "date": 1783319665,
-      "note": "Switched to new checkpoints, which may cause some performance differences. Do not compare with previous runs."
+      "note": "Switched to new gcc15-gcb-0604 checkpoints, which may cause some performance differences. Do not compare with previous runs."
     },
     "28761382777": {
       "hash": "d97789de12ea371909ebc1bf89a4fbaf136bb994",

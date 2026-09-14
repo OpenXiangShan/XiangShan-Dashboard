@@ -6,6 +6,7 @@ import {
   assertReportPayload,
   assertRunIndex,
   assertSubsetList,
+  compareRunIds,
   type NormalizedRun,
   type ReportPayload,
 } from "../types/data";
@@ -69,7 +70,7 @@ export async function loadRunIndex(
         ? specVersionFromSubset(subset)
         : tab.defaultSpecVersion,
     }))
-    .sort((a, b) => Number(a.runId) - Number(b.runId));
+    .sort((a, b) => compareRunIds(a.runId, b.runId));
 }
 
 export async function loadReport(

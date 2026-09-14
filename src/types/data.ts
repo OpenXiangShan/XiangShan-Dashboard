@@ -13,6 +13,14 @@ export interface RunIndex {
   data: Record<string, RunIndexEntry>;
 }
 
+const RUN_ID_PATTERN = /^(?:imported-)?\d+$/;
+
+export function compareRunIds(a: string, b: string): number {
+  const normalizedA = a.startsWith("imported-") ? a.slice(9) : a;
+  const normalizedB = b.startsWith("imported-") ? b.slice(9) : b;
+  return Number(normalizedA) - Number(normalizedB);
+}
+
 export interface BranchList {
   default: string;
   branches: string[];
@@ -87,8 +95,10 @@ export function assertRunIndex(value: unknown): RunIndex {
 
   const entries = obj.data as Record<string, unknown>;
   for (const [runId, raw] of Object.entries(entries)) {
-    if (!/^\d+$/.test(runId)) {
-      throw new Error(`run_id must be numeric string, got: ${runId}`);
+    if (!RUN_ID_PATTERN.test(runId)) {
+      throw new Error(
+        `run_id must be numeric or imported-numeric string, got: ${runId}`,
+      );
     }
     if (!raw || typeof raw !== "object") {
       throw new Error(`run ${runId} must be an object`);
