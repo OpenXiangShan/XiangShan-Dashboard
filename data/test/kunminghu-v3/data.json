@@ -1,5 +1,40 @@
 {
   "data": {
+    "34858295112": {
+      "hash": "37ce1b50b5b8fa1865205e76175e48fc636454d6",
+      "title": "fix(Bpu): enable & debug-related fix & cleanup (#6461)",
+      "date": 1789397458
+    },
+    "34857388104": {
+      "hash": "b900bf5781d9d2ff1205be84d772f7da44406405",
+      "title": "fix(ifu, ftq): add direct jump branch training on misprediction to handle misprediction caused by self-modifying code (#6484)",
+      "date": 1789396960
+    },
+    "34857263619": {
+      "hash": "b657b5fe8edea61cc0d885f8d9cb4a1bc2a3c83e",
+      "title": "fix(ittage): derive useful counter masks from entry fields (#6569)",
+      "date": 1789396893
+    },
+    "34814652112": {
+      "hash": "26703a414dccb78176cccb937c36c783a99548af",
+      "title": "ci(emu-performance): drop 0604 legacy (#6553)",
+      "date": 1789368201
+    },
+    "34814612644": {
+      "hash": "80c273dbe2294e9bc7e908cc79970b7a44ba76cb",
+      "title": "fix(IFU): When exception and uncache trigger at the same time, pass the exception pc (#6428)",
+      "date": 1789368167
+    },
+    "34801190083": {
+      "hash": "9fcbc0bb205e60f5bf43a0a6a662e2880f883571",
+      "title": "feat(vector): move src reverse after read register (#6565)",
+      "date": 1789354928
+    },
+    "34801148493": {
+      "hash": "30565c5df1b285a3bf3d804f254fc097f2a39d21",
+      "title": "fix(vector): add FP boxing for VMove results (#6564)",
+      "date": 1789354884
+    },
     "34747521804": {
       "hash": "9d4e20172c7ed53b66674e54803204c2c7227d75",
       "title": "refactor(backend): remove obsolete VL nonzero state",
