@@ -2,10 +2,7 @@ import { reactive } from "vue";
 import { version as appVersion } from "../../package.json";
 
 export type QuickRangePreset =
-  | "lastWeek"
-  | "lastMonth"
-  | "last3Months"
-  | "lastTenRuns";
+  "lastWeek" | "lastMonth" | "last3Months" | "lastTenRuns" | "allRuns";
 
 export interface DashboardSettings {
   selectedBranch: string;

@@ -259,6 +259,10 @@ const chartSummary = computed(() => {
       parts.push(
         `${t("lastTenRuns")} · ${first.hash.slice(0, 8)} ~ ${last.hash.slice(0, 8)}`,
       );
+    } else if (quickRangePreset.value === "allRuns") {
+      parts.push(
+        `${t("allRuns")} · ${first.hash.slice(0, 8)} ~ ${last.hash.slice(0, 8)}`,
+      );
     } else {
       parts.push(
         `${formatDate(first.dateMs)} · ${first.hash.slice(0, 8)} ~ ${formatDate(last.dateMs)} · ${last.hash.slice(0, 8)}`,
@@ -818,6 +822,7 @@ async function refreshRuns(context: ChartLoadContext) {
   if (!isCurrentChartLoad(context)) return;
   if (
     quickRangePreset.value !== "lastTenRuns" &&
+    quickRangePreset.value !== "allRuns" &&
     (!startDateStr.value || !endDateStr.value)
   ) {
     return;
@@ -830,6 +835,8 @@ async function refreshRuns(context: ChartLoadContext) {
   let filtered: NormalizedRun[];
   if (preset === "lastTenRuns") {
     filtered = context.runs.slice(-10);
+  } else if (preset === "allRuns") {
+    filtered = context.runs;
   } else {
     const { startMs, endMs } = getDateRange(startDate, endDate);
     filtered = context.runs.filter(
@@ -922,6 +929,7 @@ async function refreshCurrentRuns() {
   if (!allRuns.value.length || !allRuns.value.some((run) => run.hash)) return;
   if (
     quickRangePreset.value !== "lastTenRuns" &&
+    quickRangePreset.value !== "allRuns" &&
     (!startDateStr.value || !endDateStr.value)
   ) {
     return;
@@ -1000,6 +1008,11 @@ async function loadCurrentTabData() {
       quickRangePreset.value = "lastMonth";
     } else if (
       quickRangePreset.value === "last3Months" &&
+      request.tab.id !== "score-weekly"
+    ) {
+      quickRangePreset.value = "lastMonth";
+    } else if (
+      quickRangePreset.value === "allRuns" &&
       request.tab.id !== "score-weekly"
     ) {
       quickRangePreset.value = "lastMonth";
@@ -1099,7 +1112,7 @@ function onEndDateChange(value: string) {
 
 function setQuickPreset(preset: QuickRangePreset, shouldPersist = true) {
   quickRangePreset.value = preset;
-  if (preset === "lastTenRuns") {
+  if (preset === "lastTenRuns" || preset === "allRuns") {
     if (shouldPersist) {
       persist();
       void refreshCurrentRuns();

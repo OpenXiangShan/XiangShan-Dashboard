@@ -33,7 +33,11 @@
       <label>{{ t("startDate") }}</label>
       <input
         class="control-input"
-        :class="{ 'input-inactive': activeQuickPreset === 'lastTenRuns' }"
+        :class="{
+          'input-inactive':
+            activeQuickPreset === 'lastTenRuns' ||
+            activeQuickPreset === 'allRuns',
+        }"
         type="date"
         :value="startDateStr"
         @change="
@@ -45,7 +49,11 @@
       <label>{{ t("endDate") }}</label>
       <input
         class="control-input"
-        :class="{ 'input-inactive': activeQuickPreset === 'lastTenRuns' }"
+        :class="{
+          'input-inactive':
+            activeQuickPreset === 'lastTenRuns' ||
+            activeQuickPreset === 'allRuns',
+        }"
         type="date"
         :value="endDateStr"
         @change="
@@ -87,6 +95,15 @@
         @click="$emit('setQuickPreset', 'lastTenRuns')"
       >
         {{ t("lastTenRuns") }}
+      </button>
+      <button
+        v-if="tab.id === 'score-weekly'"
+        class="sidebar-btn"
+        :class="{ active: activeQuickPreset === 'allRuns' }"
+        type="button"
+        @click="$emit('setQuickPreset', 'allRuns')"
+      >
+        {{ t("allRuns") }}
       </button>
     </div>
   </div>
