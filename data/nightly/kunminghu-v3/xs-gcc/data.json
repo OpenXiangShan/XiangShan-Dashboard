@@ -1,5 +1,11 @@
 {
   "data": {
+    "34863746373": {
+      "hash": "37ce1b50b5b8fa1865205e76175e48fc636454d6",
+      "title": "fix(Bpu): enable & debug-related fix & cleanup (#6461)",
+      "date": 1789397458,
+      "note": "9 out of 145 checkpoints failed, score may be inaccurate"
+    },
     "34766199841": {
       "hash": "9d4e20172c7ed53b66674e54803204c2c7227d75",
       "title": "refactor(backend): remove obsolete VL nonzero state",
