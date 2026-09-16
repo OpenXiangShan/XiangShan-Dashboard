@@ -1,5 +1,20 @@
 {
   "data": {
+    "35075604022": {
+      "hash": "dfcb32dfb7ba0b133623f92d8bca3148a3d9f7df",
+      "title": "timing(PTW): optimize generation of l2addr",
+      "date": 1789548367
+    },
+    "35050777051": {
+      "hash": "e522fe483e964f78e2753f4eb70ca3234dd88713",
+      "title": "feat: integrate ZhuJiang single-core topology (#6122)",
+      "date": 1789528213
+    },
+    "35046949068": {
+      "hash": "ede751b7c5478ab4963340d8f193f38ca784982d",
+      "title": "fix(ci): update xsdev docker image for kunminghu-v3 instead of master (#6574)",
+      "date": 1789524617
+    },
     "34948349351": {
       "hash": "1ac5c4d2fb86f9f11ff77cbdb3512b7de0553b93",
       "title": "fix(CommonHR): fix incorrect s0_commonHR usage after s2_override (#6557)",
