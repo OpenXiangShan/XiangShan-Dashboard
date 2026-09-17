@@ -1,8 +1,10 @@
 {
-  "default": "xs-gcc",
+  "default": "xs-gcc-spec06",
   "subsets": [
-    "xs-gcc",
-    "xs-xscc",
-    "gem5-gcc"
+    "xs-gcc-spec06",
+    "xs-gcc-spec17",
+    "xs-xscc-spec06",
+    "gem5-gcc-spec06",
+    "gem5-gcc-spec17"
   ]
 }

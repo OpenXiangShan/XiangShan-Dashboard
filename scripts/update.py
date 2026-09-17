@@ -18,6 +18,7 @@ DATA_PATH = Path(__file__).parent.parent / "data"
 Repo = Literal["xs", "gem5"]
 RegressionTarget = Literal["nightly", "weekly"]
 RegressionCompiler = Literal["gcc", "xscc"]
+RegressionSpecVersion = Literal["spec06", "spec17"]
 
 REPO = {
     "xs": "XiangShan",
@@ -38,16 +39,26 @@ WORKFLOW_NAMES = {
 SCORE_ARTIFACT_NAMES = {
     "xs": {
         "nightly": {
-            "gcc": "score",
+            "gcc": {
+                "spec06": "score",
+            }
         },
         "weekly": {
-            "gcc": "score",
-            "xscc": "score-xscc",
+            "gcc": {
+                "spec06": "score",
+                "spec17": "score-spec17",
+            },
+            "xscc": {
+                "spec06": "score-xscc",
+            },
         },
     },
     "gem5": {
         "weekly": {
-            "gcc": "score-spec06-rva23-novec-gcc16-1.0c",
+            "gcc": {
+                "spec06": "score-spec06-rva23-novec-gcc16-1.0c",
+                "spec17": "score-spec17-1.0c",
+            },
         },
     },
 }
@@ -286,12 +297,13 @@ def update_regression_gh(
     repo: Repo,
     target: RegressionTarget,
     compiler: RegressionCompiler,
+    spec: RegressionSpecVersion,
 ) -> None:
     """Update data for the Regression workflow"""
     workflow = WORKFLOW_NAMES[repo][target]
     branch = BRANCH_NAMES[repo][args.branch]
-    data_path = DATA_PATH / target / args.branch / f"{repo}-{compiler}"
-    score_artifact_name = SCORE_ARTIFACT_NAMES[repo][target][compiler]
+    data_path = DATA_PATH / target / args.branch / f"{repo}-{compiler}-{spec}"
+    score_artifact_name = SCORE_ARTIFACT_NAMES[repo][target][compiler][spec]
 
     data = DataJson.from_json(data_path / "data.json")
 
@@ -403,6 +415,7 @@ def update_regression_local(
     repo: Repo,
     target: RegressionTarget,
     compiler: RegressionCompiler,
+    spec: RegressionSpecVersion,
 ) -> None:
     """Update data for the Regression workflow from local files"""
     if not args.local.is_file():
@@ -414,7 +427,7 @@ def update_regression_local(
         )
 
     workflow = WORKFLOW_NAMES[repo][target]
-    data_path = DATA_PATH / target / args.branch / f"{repo}-{compiler}"
+    data_path = DATA_PATH / target / args.branch / f"{repo}-{compiler}-{spec}"
 
     data = DataJson.from_json(data_path / "data.json")
 
@@ -480,12 +493,13 @@ def update_regression(
     repo: Repo,
     target: RegressionTarget,
     compiler: RegressionCompiler = "gcc",
+    spec: RegressionSpecVersion = "spec06",
 ) -> None:
     """Update data for the Regression workflow"""
     if args.local:
-        update_regression_local(gh, args, repo, target, compiler)
+        update_regression_local(gh, args, repo, target, compiler, spec)
     else:
-        update_regression_gh(gh, args, repo, target, compiler)
+        update_regression_gh(gh, args, repo, target, compiler, spec)
 
 
 def main():
@@ -523,6 +537,13 @@ def main():
         nargs="+",
         choices=["gcc", "xscc"],
         default=["gcc", "xscc"],
+    )
+    parser.add_argument(
+        "--spec",
+        help="Weekly regression SPEC version [spec06/spec17], ignored for test and nightly regression",
+        nargs="+",
+        choices=["spec06", "spec17"],
+        default=["spec06", "spec17"],
     )
     parser.add_argument(
         "--target",
@@ -571,18 +592,17 @@ def main():
             update_regression(gh, args, repo, "nightly")
 
     if "weekly" in args.target:
-        for repo, compiler in product(args.repo, args.compiler):
-            if repo == "gem5" and compiler != "gcc":
-                logging.warning(
-                    "Skipping %s Weekly Regression workflow for compiler %s, only gcc is supported",
-                    repo,
-                    compiler,
-                )
-                continue
+        for repo, compiler, spec in product(args.repo, args.compiler, args.spec):
             logging.info(
-                "Updating %s Weekly Regression workflow for compiler %s", repo, compiler
+                "Updating %s Weekly Regression workflow for compiler %s and spec %s",
+                repo,
+                compiler,
+                spec,
             )
-            update_regression(gh, args, repo, "weekly", compiler)
+            try:
+                update_regression(gh, args, repo, "weekly", compiler, spec)
+            except KeyError:
+                logging.warning("Skipping, no configuration found")
 
 
 if __name__ == "__main__":
