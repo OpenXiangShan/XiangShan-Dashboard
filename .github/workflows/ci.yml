@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: all-in-one-ci
+  group: all-in-one-ci-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
