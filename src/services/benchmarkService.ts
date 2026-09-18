@@ -23,6 +23,16 @@ function matchBenchmark(name: string, canonical: string): number {
   const withoutPrefix = normalizedCanonical.replace(/^\d+\./, "");
   if (normalizedName === withoutPrefix) return 2;
 
+  // SPEC rate reports may omit both the numeric ID and the conventional `_r`
+  // suffix (for example, `perlbench` for `500.perlbench_r`).
+  if (
+    !/^\d+\./.test(name) &&
+    withoutPrefix.endsWith("_r") &&
+    normalizedName === withoutPrefix.slice(0, -2)
+  ) {
+    return 2;
+  }
+
   // Some rate reports retain the numeric prefix but omit `_r`.
   if (
     /^\d+\./.test(name) &&

@@ -85,7 +85,12 @@ export async function loadReport(
     signal,
   );
   const payload = assertReportPayload(payloadRaw);
-  return tab.metricKey === "score" ? normalizeReportPayload(payload) : payload;
+  return tab.metricKey === "score"
+    ? normalizeReportPayload(
+        payload,
+        subset ? specVersionFromSubset(subset) : undefined,
+      )
+    : payload;
 }
 
 export function formatDate(value: Date | number): string {
