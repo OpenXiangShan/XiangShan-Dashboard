@@ -1,5 +1,25 @@
 {
   "data": {
+    "35574626759": {
+      "hash": "e4566c29e251c60159c6796db60a2569dd7700f2",
+      "title": "fix(lsq): preserve StoreQueue credits across CBO lanes",
+      "date": 1789976842
+    },
+    "35572407375": {
+      "hash": "3fc114d09f6032dc22e9e8276c35e605351af5d0",
+      "title": "misc(docker): use xs-env:stable as base image (#6577)",
+      "date": 1789975154
+    },
+    "35571061079": {
+      "hash": "158bf78383df43c5ef1eae1047409af593d40272",
+      "title": "ci: better ckpt_select.py & add nightly fuzz (#6604)",
+      "date": 1789974138
+    },
+    "35553530228": {
+      "hash": "8563790a011121a3aa14fa1d80c761ed63d43b74",
+      "title": "fix(LoadUnit): retire prefetch.i instead of killing it at S1 (#6230)",
+      "date": 1789956876
+    },
     "35509488363": {
       "hash": "45347aa4725a1b864c925ff3bceb8ae91078b97a",
       "title": "fix(backend): source difftest VL from rename state",
