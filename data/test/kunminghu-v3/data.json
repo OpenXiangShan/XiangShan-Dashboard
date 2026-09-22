@@ -1,5 +1,15 @@
 {
   "data": {
+    "35712268432": {
+      "hash": "20fd0d6097e6be19b0fe49fed31763484af4e20f",
+      "title": "fix(decode): add missing zicbop inst to uopTable (#6586)",
+      "date": 1790070378
+    },
+    "35697351335": {
+      "hash": "ce3ea790741b3cbf9bb015ca33dd31b34f34524f",
+      "title": "chore(backend): put the connection of vecRegion togather",
+      "date": 1790060349
+    },
     "35574626759": {
       "hash": "e4566c29e251c60159c6796db60a2569dd7700f2",
       "title": "fix(lsq): preserve StoreQueue credits across CBO lanes",

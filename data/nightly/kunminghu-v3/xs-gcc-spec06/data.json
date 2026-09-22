@@ -1,5 +1,11 @@
 {
   "data": {
+    "35620412595": {
+      "hash": "e4566c29e251c60159c6796db60a2569dd7700f2",
+      "title": "fix(lsq): preserve StoreQueue credits across CBO lanes",
+      "date": 1789976842,
+      "note": "4 out of 145 checkpoints failed, score may be inaccurate"
+    },
     "35520213559": {
       "hash": "45347aa4725a1b864c925ff3bceb8ae91078b97a",
       "title": "fix(backend): source difftest VL from rename state",
