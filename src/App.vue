@@ -201,7 +201,7 @@ import type {
 const dayMs = 24 * 60 * 60 * 1000;
 const buildTimestamp = __BUILD_TIMESTAMP__;
 const commitHash = __COMMIT_HASH__;
-const defaultQuickRangePreset: QuickRangePreset = "lastWeek";
+const defaultQuickRangePreset: QuickRangePreset = "allRuns";
 const tabs = DASHBOARD_TABS;
 const regressionTabs = tabs.filter(
   (tab): tab is ChartConfig =>
@@ -311,7 +311,9 @@ const comparisonCoverages = computed<ComparisonCoverage[]>(() =>
   })),
 );
 const selectedComparisonCoverageId = ref(
-  comparisonCoverages.value[0]?.id || "",
+  regressionTabs.find((tab) => tab.id === "score-weekly")?.id ||
+    comparisonCoverages.value[0]?.id ||
+    "",
 );
 const selectedComparisonCoverage = computed(
   () =>
@@ -420,8 +422,11 @@ async function loadComparisonSource(source: ComparisonSource) {
   if (!source.dataset) return;
   const { tab, branch, subset } = source.dataset;
   source.runs = await loadRunIndex(tab, branch, subset);
-  if (!source.runs.some((run) => run.runId === source.runId))
-    source.runId = source.runs[source.runs.length - 1]?.runId || "";
+  if (!source.runs.some((run) => run.runId === source.runId)) {
+    const latestIndex = source.runs.length - 1;
+    const defaultIndex = source.id === "a" ? latestIndex - 1 : latestIndex;
+    source.runId = source.runs[Math.max(defaultIndex, 0)]?.runId || "";
+  }
   const run = source.runs.find((item) => item.runId === source.runId);
   source.payload = run
     ? await loadReport(tab, branch, run.hash, subset)
@@ -1018,7 +1023,12 @@ async function loadCurrentTabData() {
       quickRangePreset.value = "lastMonth";
     }
     if (!quickRangePreset.value && (!startDateStr.value || !endDateStr.value)) {
-      setQuickPreset(defaultQuickRangePreset, false);
+      setQuickPreset(
+        request.tab.id === "score-weekly"
+          ? defaultQuickRangePreset
+          : "lastWeek",
+        false,
+      );
     } else {
       setQuickPreset(quickRangePreset.value || defaultQuickRangePreset, false);
     }

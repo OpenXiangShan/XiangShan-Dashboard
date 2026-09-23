@@ -24,7 +24,7 @@ function createDefaultSettings(): DashboardSettings {
     endDateStr: "",
     quickRangePreset: null,
     selectedBenchmarks: [],
-    selectedTabId: "ipc-commit",
+    selectedTabId: "score-weekly",
     selectedSubset: "",
   };
 }
