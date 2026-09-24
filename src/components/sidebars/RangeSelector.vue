@@ -25,7 +25,7 @@
         "
       >
         <option v-for="subset in subsets" :key="subset" :value="subset">
-          {{ formatPathLabel(subset) }}
+          {{ formatSubsetLabel(subset, false) }}
         </option>
       </select>
     </div>
@@ -110,7 +110,7 @@
 </template>
 
 <script setup lang="ts">
-import { formatPathLabel } from "../../services/dataService";
+import { formatPathLabel, formatSubsetLabel } from "../../services/dataService";
 import type { QuickRangePreset } from "../../composables/useDashboardSettings";
 import { ChartConfig } from "../../config/tabs";
 

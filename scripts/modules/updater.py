@@ -26,7 +26,7 @@ def workflow_runs_for_commit(
         result = gh.actions.list_workflow_runs(
             config.owner,
             config.repo_name,
-            branch=config.upstream_branch,
+            branch=config.branch,
             event=config.event,
             status="completed",
             head_sha=sha,
@@ -171,7 +171,7 @@ class GithubUpdater:
             commits = self.gh.commits.list_commits(
                 self.config.owner,
                 self.config.repo_name,
-                sha=self.config.upstream_branch,
+                sha=self.config.branch,
                 page=page,
                 per_page=10,
             )
@@ -225,7 +225,7 @@ class GithubUpdater:
             runs = self.gh.actions.list_workflow_runs(
                 self.config.owner,
                 self.config.repo_name,
-                branch=self.config.upstream_branch,
+                branch=self.config.branch,
                 event=self.config.event,
                 status="completed",
                 page=page,

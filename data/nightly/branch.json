@@ -2,8 +2,6 @@
   "default": "xs/kunminghu-v3",
   "branches": [
     "xs/kunminghu-v3",
-    "gem5/kunminghu-v3",
-    "gem5/kunminghu-v3-ideal",
-    "gem5/kunminghu-v3-smt"
+    "gem5/xs-dev"
   ]
 }

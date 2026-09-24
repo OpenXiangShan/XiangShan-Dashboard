@@ -1,4 +1,4 @@
-"""Migrate legacy dataset indexes into branch metadata and subset lists."""
+"""Migrate dashboard data indexes and directory layouts."""
 
 import argparse
 from collections import defaultdict
@@ -11,6 +11,10 @@ from modules.json import MetadataJson, RunListJson
 
 
 DATA_PATH = Path(__file__).parent.parent / "data"
+GEM5_VARIANTS = ("ideal", "smt", "smt-base")
+VARIANT_NAMES = {"default", *GEM5_VARIANTS}
+GEM5_BRANCH = "xs-dev"
+LEGACY_GEM5_BRANCH = "kunminghu-v3"
 
 
 def read_json(path: Path) -> dict:
@@ -255,12 +259,179 @@ def migrate_test_layout(root: Path) -> None:
     print("Removed redundant repository directory from test branches")
 
 
+def _gem5_branch_variant(branch: str) -> tuple[str, str]:
+    name = branch.removeprefix("gem5/")
+    for variant in sorted(GEM5_VARIANTS, key=len, reverse=True):
+        suffix = f"-{variant}"
+        if name.endswith(suffix):
+            return name[: -len(suffix)], variant
+    return name, "default"
+
+
+def _variant_subset(variant: str, subset: str) -> str:
+    first = subset.split("/", 1)[0]
+    if first in VARIANT_NAMES:
+        return subset
+    return f"{variant}/{subset}"
+
+
+def _merge_run_list(destination: Path, source: Path) -> None:
+    merged = RunListJson.from_json(destination)
+    incoming = RunListJson.from_json(source)
+    for run_id in incoming.runs:
+        note = incoming.notes.get(run_id)
+        existing_note = merged.notes.get(run_id)
+        if existing_note is not None and note is not None and existing_note != note:
+            raise ValueError(f"Conflicting note for run {run_id}: {destination}")
+        merged.add(run_id, note if note is not None else existing_note)
+    merged.to_json(destination)
+
+
+def migrate_variant_layout(root: Path) -> None:
+    """Store regression subsets as variant/spec/compiler paths."""
+    for target in ("nightly", "weekly"):
+        target_path = root / target
+        index_path = target_path / "branch.json"
+        if not index_path.exists():
+            continue
+        current = read_json(index_path)
+        regression_branches = [branch for branch in current["branches"] if "/" in branch]
+        if not regression_branches:
+            continue
+
+        branch_groups: dict[Path, list[tuple[Path, str]]] = defaultdict(list)
+        branch_names: dict[str, str] = {}
+        for branch in regression_branches:
+            repo, branch_name = branch.split("/", 1)
+            if repo == "gem5":
+                base_branch, variant = _gem5_branch_variant(branch)
+            else:
+                base_branch, variant = branch_name, "default"
+            source = target_path / repo / branch_name
+            destination = target_path / repo / base_branch
+            if not source.is_dir():
+                raise ValueError(f"Missing regression branch: {source}")
+            branch_groups[destination].append((source, variant))
+            branch_names[branch] = f"{repo}/{base_branch}"
+
+        new_branches = list(dict.fromkeys(
+            branch_names.get(branch, branch) for branch in current["branches"]
+        ))
+
+        for destination, sources in branch_groups.items():
+            metadata = MetadataJson.from_json(destination / "metadata.json")
+            subset_names: list[str] = []
+            default_subset: str | None = None
+            for source, variant in sources:
+                source_index = read_json(source / "subset.json")
+                source_metadata = MetadataJson.from_json(source / "metadata.json")
+                for run_id, entry in source_metadata.data.items():
+                    metadata.add(run_id, entry.hash, entry.title, entry.date)
+
+                for old_subset in source_index["subsets"]:
+                    new_subset = _variant_subset(variant, old_subset)
+                    if new_subset not in subset_names:
+                        subset_names.append(new_subset)
+                    if old_subset == source_index["default"] and default_subset is None:
+                        default_subset = new_subset
+                    old_subset_path = source / old_subset
+                    destination_subset = destination / new_subset
+                    for report in old_subset_path.glob("*.json"):
+                        destination_report = destination_subset / report.name
+                        if destination_report.exists():
+                            if digest(destination_report) != digest(report):
+                                raise ValueError(
+                                    f"Conflicting report: {destination_report}"
+                                )
+                        else:
+                            destination_report.parent.mkdir(parents=True, exist_ok=True)
+                            shutil.copy2(report, destination_report)
+                    _merge_run_list(
+                        destination_subset / "list.json", old_subset_path / "list.json"
+                    )
+
+                for old_subset in source_index["subsets"]:
+                    old_subset_path = source / old_subset
+                    if old_subset_path != destination / _variant_subset(
+                        variant, old_subset
+                    ):
+                        shutil.rmtree(old_subset_path)
+
+            if default_subset is None:
+                raise ValueError(f"Missing default subset for {destination}")
+            destination.mkdir(parents=True, exist_ok=True)
+            metadata.to_json(destination / "metadata.json")
+            write_json(
+                destination / "subset.json",
+                {"default": default_subset, "subsets": subset_names},
+            )
+
+            for source, _ in sources:
+                if source != destination:
+                    shutil.rmtree(source)
+
+            for legacy_spec in destination.glob("spec*"):
+                if not legacy_spec.is_dir():
+                    continue
+                for report in legacy_spec.rglob("*.json"):
+                    migrated_report = destination / "default" / report.relative_to(destination)
+                    if not migrated_report.is_file() or digest(report) != digest(
+                        migrated_report
+                    ):
+                        raise ValueError(f"Unmigrated regression report: {report}")
+                shutil.rmtree(legacy_spec)
+
+        write_json(
+            index_path,
+            {
+                "default": branch_names.get(current["default"], current["default"]),
+                "branches": new_branches,
+            },
+        )
+    print("Migrated regression variants into subset paths")
+
+
+def migrate_gem5_branch(root: Path) -> None:
+    """Use the GEM5 upstream branch as its dashboard branch directory."""
+    for target in ("nightly", "weekly"):
+        target_path = root / target
+        index_path = target_path / "branch.json"
+        if not index_path.exists():
+            continue
+        current = read_json(index_path)
+        legacy_name = f"gem5/{LEGACY_GEM5_BRANCH}"
+        branch_name = f"gem5/{GEM5_BRANCH}"
+        if legacy_name not in current["branches"]:
+            continue
+
+        source = target_path / "gem5" / LEGACY_GEM5_BRANCH
+        destination = target_path / "gem5" / GEM5_BRANCH
+        if source.exists() and destination.exists():
+            raise ValueError(f"Both legacy and current GEM5 branches exist: {source}")
+        if source.exists():
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            source.rename(destination)
+        elif not destination.exists():
+            raise ValueError(f"Missing GEM5 branch directory: {source}")
+
+        current["branches"] = [
+            branch_name if branch == legacy_name else branch
+            for branch in current["branches"]
+        ]
+        if current["default"] == legacy_name:
+            current["default"] = branch_name
+        write_json(index_path, current)
+    print("Migrated GEM5 branch directories to xs-dev")
+
+
 def migrate(root: Path) -> None:
     branch = read_json(root / "test" / "branch.json")["default"]
     if (root / "test" / branch / "data.json").exists():
         migrate_legacy(root)
     migrate_layout(root)
     migrate_test_layout(root)
+    migrate_variant_layout(root)
+    migrate_gem5_branch(root)
 
 
 def main() -> None:

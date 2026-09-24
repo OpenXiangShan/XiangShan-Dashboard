@@ -188,6 +188,7 @@ import {
 import {
   formatDate,
   formatPathLabel,
+  formatSubsetLabel,
   getDateRange,
   loadBranchList,
   loadReport,
@@ -406,7 +407,7 @@ async function loadComparisonDatasets() {
       withDefaultFirst(subsetConfig.subsets, subsetConfig.default).map(
         (subset) => ({
           id: comparisonDatasetId(tab, branch, subset),
-          label: `${formatPathLabel(branch)} · ${formatPathLabel(subset)}`,
+          label: `${formatPathLabel(branch)} · ${formatSubsetLabel(subset, false)}`,
           tab,
           branch,
           subset,

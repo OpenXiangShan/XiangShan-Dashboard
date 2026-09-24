@@ -107,6 +107,14 @@ export function formatPathLabel(value: string): string {
   return value.replace(/\//g, " · ");
 }
 
+export function formatSubsetLabel(value: string, drop_spec: boolean): string {
+  const parts = value.split("/");
+  const specIndex = parts.findIndex((part) => /^spec(?:06|17|26)$/i.test(part));
+  if (drop_spec && specIndex >= 0) parts.splice(specIndex, 1);
+  if (parts[0] === "default") parts.shift();
+  return formatPathLabel(parts.join("/"));
+}
+
 export function getDateRange(
   startDate: string,
   endDate: string,

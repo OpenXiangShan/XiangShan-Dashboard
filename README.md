@@ -27,7 +27,9 @@ npm run build
 
 Install the Python dependencies from `requirements.txt`, then run `python scripts/update.py --token "$GH_TOKEN"` to update all configured datasets. Use `--config weekly-xs-gcc-spec17` to update one dataset, or supply multiple config IDs. Run `python scripts/update.py --help` to see the available IDs. Increase `--page-limit` to backfill older runs or commits.
 
-Update definitions live in `scripts/modules/config.py`. Each config specifies its data type (`test`, `nightly`, or `weekly`), how to discover runs (`commits` or `runs`), and the workflow event (`push` or `schedule`) independently. In particular, GEM5 0.3c push regressions are stored under `nightly`, with aligned and ideal results on separate branches. For a local import, select exactly one configuration and pass `--local` with a directory of `ipc-*` files for `test-xs`, or a score text file for an xs regression. Local imports still require `--token` to fetch commit and workflow metadata. Successful imports register new branches and subsets in the dashboard indexes automatically.
+Update definitions live in `scripts/modules/config.py`. Each config specifies its data type (`test`, `nightly`, or `weekly`), repository branch, how to discover runs (`commits` or `runs`), and the workflow event (`push` or `schedule`) independently. XiangShan updates use `kunminghu-v3`; GEM5 updates use `xs-dev`, both for GitHub scanning and for the corresponding data directory. GEM5 0.3c push regressions are stored under `nightly`; aligned, ideal, and SMT results share the same branch metadata but use distinct variants. For a local import, select exactly one configuration and pass `--local` with a directory of `ipc-*` files for `test-xs`, or a score text file for an xs regression. Local imports still require `--token` to fetch commit and workflow metadata. Successful imports register new branches and subsets in the dashboard indexes automatically.
+
+Run `python scripts/migrate_data.py --data-root data` to migrate existing regression branches and their reports to the variant layout, including renaming the legacy GEM5 `kunminghu-v3` directory to `xs-dev`. The migration merges GEM5 metadata by run ID, checks for conflicts, and can be rerun safely.
 
 GitHub updates batch configs sharing the same upstream repository, branch, event, and discovery method. Each batch scans commits or workflow runs once, while each subset still stops independently when it reaches existing data; `--page-limit` applies to the shared scan.
 
@@ -47,18 +49,18 @@ data/
 				<hash>.json
 	nightly/ # 0.3c regression scores (scheduled or push)
 		branch.json
-		<repo>/<branch>/
+		<repo>/<branch>/ # xs/kunminghu-v3 or gem5/xs-dev
 			metadata.json
 			subset.json
-			<spec>/<compiler>/
+			<variant>/<spec>/<compiler>/
 				list.json
 				<hash>.json
 	weekly/ # Weekly Regression workflow
 		branch.json
-		<repo>/<branch>/
+		<repo>/<branch>/ # xs/kunminghu-v3 or gem5/xs-dev
 			metadata.json
 			subset.json
-			<spec>/<compiler>/
+			<variant>/<spec>/<compiler>/
 				list.json
 				<hash>.json
 ```
@@ -66,7 +68,7 @@ data/
 Schema constraints:
 
 - `branch.json`: `{ "default": branch, "branches": [branch] }`; regression uses `repo/branch`, test uses the branch name directly.
-- `subset.json`: `{ "default": "spec_version/compiler", "subsets": ["spec_version/compiler"] }`; test uses `ipc`.
+- `subset.json`: `{ "default": "variant/spec_version/compiler", "subsets": ["variant/spec_version/compiler"] }`; test uses `ipc`. Ordinary regression subsets use the `default` variant. GEM5 variants such as `ideal`, `smt`, and `smt-base` live in this path instead of separate branches.
 - `metadata.json`: `{ run_id: { "hash", "title", "date" } }`, shared by all subsets in one branch.
 - `list.json`: `{ "runs": [run_id], "notes": { run_id: note } }`, with descending run IDs and subset-specific notes.
 - `<hash>.json`: `{ benchmark: { metric } }`.

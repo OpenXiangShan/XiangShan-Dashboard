@@ -244,7 +244,7 @@ def import_subset(
 ) -> None:
     """Import records into one weekly regression subset."""
     branch_path = data_path / "weekly" / "xs" / branch
-    subset_path = branch_path / subset
+    subset_path = branch_path / "default" / subset
     run_list = RunListJson.from_json(subset_path / "list.json")
 
     for record in records:

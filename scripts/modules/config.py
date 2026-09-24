@@ -4,7 +4,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal
 
-DEFAULT_BRANCH = "kunminghu-v3"
+XS_BRANCH = "kunminghu-v3"
+GEM5_BRANCH = "xs-dev"
 
 
 @dataclass(frozen=True)
@@ -18,8 +19,8 @@ class UpdateConfig:
     artifact_name: str
     discovery: Literal["commits", "runs"] = "runs"
     event: Literal["push", "schedule"] = "schedule"
-    branch: str = DEFAULT_BRANCH
-    upstream_branch: str = DEFAULT_BRANCH
+    branch: str = XS_BRANCH
+    variant: str = "default"
     owner: str = "OpenXiangShan"
     compiler: str | None = None
     spec: str | None = None
@@ -31,6 +32,10 @@ class UpdateConfig:
             raise ValueError(f"Unsupported discovery: {self.discovery}")
         if self.event not in ("push", "schedule"):
             raise ValueError(f"Unsupported workflow event: {self.event}")
+        if self.variant in ("", ".", "..") or "/" in self.variant:
+            raise ValueError("Variant must be a non-empty path component")
+        if self.type_ == "test" and self.variant != "default":
+            raise ValueError("Test updates do not have variants")
         if self.type_ == "test" and (
             self.compiler is not None or self.spec is not None
         ):
@@ -45,8 +50,10 @@ class UpdateConfig:
             parts.append(self.compiler)
         if self.spec is not None:
             parts.append(self.spec)
-        if self.branch != DEFAULT_BRANCH:
+        if self.branch != XS_BRANCH:
             parts.append(self.branch)
+        if self.variant != "default":
+            parts.append(self.variant)
         return "-".join(parts)
 
     @property
@@ -54,7 +61,7 @@ class UpdateConfig:
         return (
             self.owner,
             self.repo_name,
-            self.upstream_branch,
+            self.branch,
             self.event,
             self.discovery,
         )
@@ -63,7 +70,7 @@ class UpdateConfig:
         if self.type_ == "test":
             return self.branch_path(root) / "ipc"
         assert self.spec is not None and self.compiler is not None
-        return self.branch_path(root) / self.spec / self.compiler
+        return self.branch_path(root) / self.variant / self.spec / self.compiler
 
     def branch_path(self, root: Path) -> Path:
         if self.type_ == "test":
@@ -98,7 +105,7 @@ CONFIGS = (
         "score-spec06-rva23-novec-gcc16-0.3c",
         discovery="commits",
         event="push",
-        upstream_branch="xs-dev",
+        branch=GEM5_BRANCH,
         compiler="gcc",
         spec="spec06",
     ),
@@ -110,8 +117,8 @@ CONFIGS = (
         "score-ideal-spec06-rva23-novec-gcc16-0.3c",
         discovery="commits",
         event="push",
-        branch=f"{DEFAULT_BRANCH}-ideal",
-        upstream_branch="xs-dev",
+        variant="ideal",
+        branch=GEM5_BRANCH,
         compiler="gcc",
         spec="spec06",
     ),
@@ -123,8 +130,8 @@ CONFIGS = (
         "score-smt-ideal-gcc12-spec06-smt-0.3c",
         discovery="commits",
         event="push",
-        branch=f"{DEFAULT_BRANCH}-smt",
-        upstream_branch="xs-dev",
+        variant="smt",
+        branch=GEM5_BRANCH,
         compiler="gcc",
         spec="spec06",
     ),
@@ -161,7 +168,7 @@ CONFIGS = (
         "GEM5",
         "gem5 Ideal BTB Weekly Performance Test",
         "score-spec06-rva23-novec-gcc16-1.0c",
-        upstream_branch="xs-dev",
+        branch=GEM5_BRANCH,
         compiler="gcc",
         spec="spec06",
     ),
@@ -171,7 +178,7 @@ CONFIGS = (
         "GEM5",
         "gem5 Ideal BTB Weekly Performance Test",
         "score-spec17-1.0c",
-        upstream_branch="xs-dev",
+        branch=GEM5_BRANCH,
         compiler="gcc",
         spec="spec17",
     ),
@@ -181,7 +188,7 @@ CONFIGS = (
         "GEM5",
         "gem5 Ideal BTB Weekly Performance Test",
         "score-gcc15-spec26-1.0c",
-        upstream_branch="xs-dev",
+        branch=GEM5_BRANCH,
         compiler="gcc",
         spec="spec26",
     ),
@@ -191,8 +198,8 @@ CONFIGS = (
         "GEM5",
         "gem5 Ideal BTB Weekly Performance Test",
         "score-ideal-spec06-rva23-novec-gcc16-1.0c",
-        branch=f"{DEFAULT_BRANCH}-ideal",
-        upstream_branch="xs-dev",
+        variant="ideal",
+        branch=GEM5_BRANCH,
         compiler="gcc",
         spec="spec06",
     ),
@@ -202,8 +209,8 @@ CONFIGS = (
         "GEM5",
         "gem5 Ideal BTB Weekly Performance Test",
         "score-ideal-spec17-1.0c",
-        branch=f"{DEFAULT_BRANCH}-ideal",
-        upstream_branch="xs-dev",
+        variant="ideal",
+        branch=GEM5_BRANCH,
         compiler="gcc",
         spec="spec17",
     ),
@@ -213,8 +220,8 @@ CONFIGS = (
         "GEM5",
         "gem5 Ideal BTB Weekly Performance Test",
         "score-ideal-gcc15-spec26-1.0c",
-        branch=f"{DEFAULT_BRANCH}-ideal",
-        upstream_branch="xs-dev",
+        variant="ideal",
+        branch=GEM5_BRANCH,
         compiler="gcc",
         spec="spec26",
     ),
@@ -224,8 +231,8 @@ CONFIGS = (
         "GEM5",
         "gem5 Ideal BTB Weekly Performance Test",
         "score-smt-ideal-gcc12-spec06-smt-1.0c",
-        branch=f"{DEFAULT_BRANCH}-smt",
-        upstream_branch="xs-dev",
+        variant="smt",
+        branch=GEM5_BRANCH,
         compiler="gcc",
         spec="spec06",
     ),
@@ -235,8 +242,8 @@ CONFIGS = (
         "GEM5",
         "gem5 Ideal BTB Weekly Performance Test",
         "score-ideal-gcc12-spec06-1.0c",
-        branch=f"{DEFAULT_BRANCH}-smt-base",
-        upstream_branch="xs-dev",
+        variant="smt-base",
+        branch=GEM5_BRANCH,
         compiler="gcc",
         spec="spec06",
     ),

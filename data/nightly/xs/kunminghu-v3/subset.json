@@ -1,6 +1,6 @@
 {
-  "default": "spec06/gcc",
+  "default": "default/spec06/gcc",
   "subsets": [
-    "spec06/gcc"
+    "default/spec06/gcc"
   ]
 }

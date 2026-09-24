@@ -61,7 +61,11 @@ import { computed, ref } from "vue";
 import { toPng } from "html-to-image";
 import { SPEC_BENCHMARK_GROUPS } from "../../config/spec";
 import type { SpecCategory, SpecVersion } from "../../config/spec";
-import { formatDate, formatPathLabel } from "../../services/dataService";
+import {
+  formatDate,
+  formatPathLabel,
+  formatSubsetLabel,
+} from "../../services/dataService";
 import type { ReportPayload } from "../../types/data";
 import type { ComparisonSource } from "../../types/comparison";
 import {
@@ -217,7 +221,7 @@ function sourceName(source?: ComparisonSource) {
   }
   const run = source.runs.find((item) => item.runId === source.runId);
   return run && source.dataset
-    ? `${formatPathLabel(source.dataset.branch)} · ${source.dataset.subset.split("/")[1]} · ${formatDate(run.dateMs)} · ${run.hash.slice(0, 8)} · ${run.runId}`
+    ? `${formatPathLabel(source.dataset.branch)} · ${formatSubsetLabel(source.dataset.subset, true)} · ${formatDate(run.dateMs)} · ${run.hash.slice(0, 8)} · ${run.runId}`
     : source.label;
 }
 
