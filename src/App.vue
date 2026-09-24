@@ -82,12 +82,10 @@
             :t="t"
             :benchmarks="availableBenchmarks"
             :selected="selectedBenchmarks"
+            :active-quick-preset="quickBenchmarkPreset"
             :show-spec-buttons="activeChartTab.supportsSpecButtons"
-            @select-default="onSelectDefault"
-            @select-all="onSelectAll"
+            @select-preset="onSelectBenchmarkPreset"
             @clear-selection="onClearSelection"
-            @select-spec="onSelectSpec"
-            @select-geomean="onSelectGeomean"
             @toggle-benchmark="onToggleBenchmark"
           />
           <Exporter
@@ -165,7 +163,10 @@ import ComparisonPanel from "./components/panels/ComparisonPanel.vue";
 import { DASHBOARD_TABS, type ChartConfig } from "./config/tabs";
 import { useLocale } from "./composables/useLocale";
 import { useDashboardSettings } from "./composables/useDashboardSettings";
-import type { QuickRangePreset } from "./composables/useDashboardSettings";
+import type {
+  QuickBenchmarkPreset,
+  QuickRangePreset,
+} from "./composables/useDashboardSettings";
 import {
   isSpecBenchmark,
   selectDefault,
@@ -276,6 +277,9 @@ const runDataByHash = ref<Record<string, ReportPayload>>({});
 
 const availableBenchmarks = ref<string[]>([]);
 const selectedBenchmarks = ref<string[]>([]);
+const quickBenchmarkPreset = ref<QuickBenchmarkPreset | null>(
+  settings.quickBenchmarkPreset,
+);
 const errorText = ref("");
 const isHydrating = ref(true);
 const isLoading = ref(false);
@@ -816,11 +820,28 @@ function persist() {
   settings.startDateStr = startDateStr.value;
   settings.endDateStr = endDateStr.value;
   settings.quickRangePreset = quickRangePreset.value;
+  settings.quickBenchmarkPreset = quickBenchmarkPreset.value;
   settings.selectedBenchmarks = selectedBenchmarks.value;
   saveSettings();
 }
 
+function selectBenchmarksForPreset(preset: QuickBenchmarkPreset): string[] {
+  const available = availableBenchmarks.value;
+  if (preset === "default") return selectDefault(available);
+  if (preset === "all") return [...available];
+  if (preset === "geomean") {
+    return available.filter((name) => name.startsWith("GEOMEAN"));
+  }
+  return selectSpecCategory(available, activeSpecVersion.value, preset);
+}
+
 function syncSelection() {
+  if (quickBenchmarkPreset.value) {
+    selectedBenchmarks.value = selectBenchmarksForPreset(
+      quickBenchmarkPreset.value,
+    );
+    return;
+  }
   const selectedSet = new Set(selectedBenchmarks.value);
   const valid = availableBenchmarks.value.filter((tc) => selectedSet.has(tc));
   if (valid.length) {
@@ -1053,38 +1074,20 @@ async function loadCurrentTabData() {
   }
 }
 
-function onSelectDefault() {
-  selectedBenchmarks.value = selectDefault(availableBenchmarks.value);
-  persist();
-}
-
-function onSelectAll() {
-  selectedBenchmarks.value = [...availableBenchmarks.value];
+function onSelectBenchmarkPreset(preset: QuickBenchmarkPreset) {
+  quickBenchmarkPreset.value = preset;
+  selectedBenchmarks.value = selectBenchmarksForPreset(preset);
   persist();
 }
 
 function onClearSelection() {
+  quickBenchmarkPreset.value = null;
   selectedBenchmarks.value = [];
   persist();
 }
 
-function onSelectSpec(category: SpecCategory) {
-  selectedBenchmarks.value = selectSpecCategory(
-    availableBenchmarks.value,
-    activeSpecVersion.value,
-    category,
-  );
-  persist();
-}
-
-function onSelectGeomean() {
-  selectedBenchmarks.value = availableBenchmarks.value.filter((name) =>
-    name.startsWith("GEOMEAN"),
-  );
-  persist();
-}
-
 function onToggleBenchmark(name: string) {
+  quickBenchmarkPreset.value = null;
   selectedBenchmarks.value = toggleSelection(
     availableBenchmarks.value,
     selectedBenchmarks.value,
@@ -1179,6 +1182,7 @@ onMounted(async () => {
     startDateStr.value = settings.startDateStr;
     endDateStr.value = settings.endDateStr;
     quickRangePreset.value = settings.quickRangePreset;
+    quickBenchmarkPreset.value = settings.quickBenchmarkPreset;
     selectedBenchmarks.value = settings.selectedBenchmarks;
     if (activeTab.value.kind === "comparison") {
       await loadComparisonSources();

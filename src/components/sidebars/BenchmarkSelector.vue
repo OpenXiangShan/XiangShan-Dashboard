@@ -2,10 +2,20 @@
   <div class="panel-card benchmark-card">
     <div class="section-title">{{ t("testcasesTitle") }}</div>
     <div class="actions">
-      <button class="sidebar-btn" type="button" @click="$emit('selectDefault')">
+      <button
+        class="sidebar-btn"
+        :class="{ active: activeQuickPreset === 'default' }"
+        type="button"
+        @click="$emit('selectPreset', 'default')"
+      >
         {{ t("default") }}
       </button>
-      <button class="sidebar-btn" type="button" @click="$emit('selectAll')">
+      <button
+        class="sidebar-btn"
+        :class="{ active: activeQuickPreset === 'all' }"
+        type="button"
+        @click="$emit('selectPreset', 'all')"
+      >
         {{ t("selectAll") }}
       </button>
       <button
@@ -15,22 +25,29 @@
       >
         {{ t("clear") }}
       </button>
-      <button class="sidebar-btn" type="button" @click="$emit('selectGeomean')">
+      <button
+        class="sidebar-btn"
+        :class="{ active: activeQuickPreset === 'geomean' }"
+        type="button"
+        @click="$emit('selectPreset', 'geomean')"
+      >
         {{ t("geomean") }}
       </button>
       <button
         v-if="showSpecButtons"
         class="sidebar-btn"
+        :class="{ active: activeQuickPreset === 'int' }"
         type="button"
-        @click="$emit('selectSpec', 'int')"
+        @click="$emit('selectPreset', 'int')"
       >
         {{ t("specInt") }}
       </button>
       <button
         v-if="showSpecButtons"
         class="sidebar-btn"
+        :class="{ active: activeQuickPreset === 'fp' }"
         type="button"
-        @click="$emit('selectSpec', 'fp')"
+        @click="$emit('selectPreset', 'fp')"
       >
         {{ t("specFp") }}
       </button>
@@ -55,21 +72,19 @@
 </template>
 
 <script setup lang="ts">
-import type { SpecCategory } from "../../config/spec";
+import type { QuickBenchmarkPreset } from "../../composables/useDashboardSettings";
 
 defineProps<{
   t: (key: string) => string;
   benchmarks: string[];
   selected: string[];
+  activeQuickPreset: QuickBenchmarkPreset | null;
   showSpecButtons: boolean;
 }>();
 
 defineEmits<{
-  (e: "selectDefault"): void;
-  (e: "selectAll"): void;
+  (e: "selectPreset", preset: QuickBenchmarkPreset): void;
   (e: "clearSelection"): void;
-  (e: "selectSpec", value: SpecCategory): void;
-  (e: "selectGeomean"): void;
   (e: "toggleBenchmark", name: string): void;
 }>();
 </script>
@@ -114,5 +129,13 @@ defineEmits<{
 
 .item.selected {
   background: #e6efff;
+}
+
+.item:not(.selected):hover {
+  background: #f1f6ff;
+}
+
+.item.selected:hover {
+  background: #d8e8ff;
 }
 </style>

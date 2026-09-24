@@ -3,12 +3,14 @@ import { version as appVersion } from "../../package.json";
 
 export type QuickRangePreset =
   "lastWeek" | "lastMonth" | "last3Months" | "lastTenRuns" | "allRuns";
+export type QuickBenchmarkPreset = "default" | "all" | "geomean" | "int" | "fp";
 
 export interface DashboardSettings {
   selectedBranch: string;
   startDateStr: string;
   endDateStr: string;
   quickRangePreset: QuickRangePreset | null;
+  quickBenchmarkPreset: QuickBenchmarkPreset | null;
   selectedBenchmarks: string[];
   selectedTabId: string;
   selectedSubset: string;
@@ -23,6 +25,7 @@ function createDefaultSettings(): DashboardSettings {
     startDateStr: "",
     endDateStr: "",
     quickRangePreset: null,
+    quickBenchmarkPreset: null,
     selectedBenchmarks: [],
     selectedTabId: "score-weekly",
     selectedSubset: "",

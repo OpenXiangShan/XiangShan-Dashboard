@@ -66,22 +66,6 @@ defineEmits<{
   flex-wrap: wrap;
 }
 
-.tab-btn {
-  border: 1px solid #dce5f6;
-  border-radius: var(--radius-control);
-  padding: 8px 12px;
-  background: #f7f9ff;
-  color: #31435f;
-  cursor: pointer;
-  font-weight: 700;
-}
-
-.tab-btn.active {
-  background: #3a7ff6;
-  color: #ffffff;
-  border-color: #3a7ff6;
-}
-
 .badges {
   display: flex;
   gap: 10px;

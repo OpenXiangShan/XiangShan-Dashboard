@@ -114,6 +114,10 @@ h1 {
   height: 100%;
 }
 
+.comparison-workspace {
+  grid-template-columns: minmax(0, min(370px, 45vw)) minmax(0, 1fr);
+}
+
 .panel-sidebar {
   display: flex;
   flex-direction: column;
@@ -224,16 +228,27 @@ h1 {
   color: var(--text);
 }
 
+.sidebar-btn,
+.tab-btn {
+  border-radius: var(--radius-control);
+  font-weight: 700;
+  cursor: pointer;
+}
+
 .sidebar-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border: 1px solid var(--border);
-  border-radius: var(--radius-control);
   background: #f2f6ff;
   color: var(--accent);
-  font-weight: 700;
-  cursor: pointer;
+}
+
+.tab-btn {
+  border: 1px solid #dce5f6;
+  padding: 8px 12px;
+  background: #f7f9ff;
+  color: #31435f;
 }
 
 .benchmark-card .sidebar-btn {
@@ -244,10 +259,23 @@ h1 {
   padding: 10px 12px;
 }
 
-.sidebar-btn.active {
+.sidebar-btn.active,
+.tab-btn.active {
   background: var(--accent);
   border-color: var(--accent);
   color: #ffffff;
+}
+
+.sidebar-btn:not(.active):hover,
+.tab-btn:not(.active):hover {
+  background: #e2edff;
+  border-color: #b8cdfb;
+}
+
+.sidebar-btn.active:hover,
+.tab-btn.active:hover {
+  background: #2469e0;
+  border-color: #2469e0;
 }
 
 .panel-sidebar .paste-row {
@@ -257,14 +285,24 @@ h1 {
   margin-top: 10px;
 }
 
-.panel-sidebar .paste-btn {
+.panel-sidebar .paste-btn,
+.comparison-swap-btn {
   border: 1px solid #b8cdfb;
   border-radius: var(--radius-compact);
   background: #eef4ff;
   color: var(--accent);
-  padding: 9px 10px;
   cursor: pointer;
   font-weight: 800;
+}
+
+.panel-sidebar .paste-btn {
+  padding: 9px 10px;
+}
+
+.panel-sidebar .paste-btn:not(:disabled):hover,
+.comparison-swap-btn:not(:disabled):hover {
+  background: #e2edff;
+  border-color: #91b4fb;
 }
 
 .panel-sidebar .list {
@@ -293,16 +331,6 @@ h1 {
   width: 100%;
   margin-top: 10px;
   padding: 10px 12px;
-  border: 1px solid #b8cdfb;
-  border-radius: var(--radius-compact);
-  background: #eef4ff;
-  color: var(--accent);
-  cursor: pointer;
-  font-weight: 800;
-}
-
-.comparison-swap-btn:hover {
-  background: #e2edff;
 }
 
 .muted {
@@ -360,25 +388,6 @@ h1 {
     padding: 16px 20px;
   }
 
-  .tab-workspace,
-  .comparison-workspace {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto auto;
-    height: auto;
-    flex: none;
-  }
-
-  .tab-workspace > .panel-sidebar,
-  .comparison-workspace > .panel-sidebar {
-    height: auto;
-    max-height: none;
-  }
-
-  .tab-workspace > .panel-shell,
-  .comparison-workspace > .comparison-layout {
-    height: auto;
-  }
-
   html,
   body,
   #app {
@@ -411,9 +420,11 @@ h1 {
 
   .tab-workspace,
   .comparison-workspace {
+    grid-template-columns: 1fr;
     grid-template-rows: auto auto;
     height: auto;
     min-height: 0;
+    flex: none;
   }
 
   .tab-workspace > .panel-sidebar,
