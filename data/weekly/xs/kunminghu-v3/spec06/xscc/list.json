@@ -1,0 +1,43 @@
+{
+  "runs": [
+    "35332560307",
+    "34812949629",
+    "34587152666",
+    "33942508983",
+    "32471083293",
+    "31791760711",
+    "imported-48",
+    "imported-47",
+    "imported-46",
+    "imported-45",
+    "imported-44",
+    "imported-43",
+    "imported-42",
+    "imported-41",
+    "imported-40",
+    "imported-39",
+    "imported-38",
+    "imported-37",
+    "imported-36",
+    "imported-35",
+    "imported-34",
+    "imported-33",
+    "imported-32",
+    "imported-31",
+    "imported-30",
+    "imported-29",
+    "imported-28",
+    "imported-27",
+    "imported-26",
+    "imported-25",
+    "imported-24",
+    "imported-23",
+    "imported-22"
+  ],
+  "notes": {
+    "35332560307": "4 out of 1104 checkpoints failed, score may be inaccurate",
+    "34812949629": "Switched to new spec06_xscc_rva23_novec_260911 checkpoints, which may cause some performance differences. Do not compare with previous runs.",
+    "34587152666": "65 out of 1153 checkpoints failed, score may be inaccurate",
+    "33942508983": "67 out of 1153 checkpoints failed, score may be inaccurate"
+  }
+}

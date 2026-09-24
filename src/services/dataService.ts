@@ -4,7 +4,8 @@ import { normalizeReportPayload } from "./benchmarkService";
 import {
   assertBranchList,
   assertReportPayload,
-  assertRunIndex,
+  assertBranchMetadata,
+  assertRunList,
   assertSubsetList,
   compareRunIds,
   type NormalizedRun,
@@ -53,23 +54,27 @@ export async function loadRunIndex(
   subset?: string,
   signal?: AbortSignal,
 ): Promise<NormalizedRun[]> {
-  const indexRaw = await fetchJson(
-    `${getDatasetPath(tab, branch, subset)}/data.json`,
-    signal,
-  );
-  const index = assertRunIndex(indexRaw);
-  return Object.entries(index.data)
-    .map(([runId, entry]) => ({
-      runId,
-      hash: entry.hash,
-      title: entry.title,
-      dateMs: entry.date > 1e12 ? entry.date : entry.date * 1000,
-      note: entry.note,
-      coverage: tab.coverage,
-      specVersion: subset
-        ? specVersionFromSubset(subset)
-        : tab.defaultSpecVersion,
-    }))
+  if (!subset) throw new Error("subset is required to load runs");
+  const [metadataRaw, listRaw] = await Promise.all([
+    fetchJson(`${tab.datasetRoot}/${branch}/metadata.json`, signal),
+    fetchJson(`${getDatasetPath(tab, branch, subset)}/list.json`, signal),
+  ]);
+  const metadata = assertBranchMetadata(metadataRaw);
+  const list = assertRunList(listRaw);
+  return list.runs
+    .map((runId) => {
+      const entry = metadata[runId];
+      if (!entry) throw new Error(`missing metadata for run ${runId}`);
+      return {
+        runId,
+        hash: entry.hash,
+        title: entry.title,
+        dateMs: entry.date > 1e12 ? entry.date : entry.date * 1000,
+        note: list.notes[runId],
+        coverage: tab.coverage,
+        specVersion: specVersionFromSubset(subset),
+      };
+    })
     .sort((a, b) => compareRunIds(a.runId, b.runId));
 }
 
@@ -96,6 +101,10 @@ export async function loadReport(
 export function formatDate(value: Date | number): string {
   const date = value instanceof Date ? value : new Date(value);
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+}
+
+export function formatPathLabel(value: string): string {
+  return value.replace(/\//g, " · ");
 }
 
 export function getDateRange(

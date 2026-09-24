@@ -11,7 +11,7 @@
         "
       >
         <option v-for="branch in branches" :key="branch" :value="branch">
-          {{ branch }}
+          {{ formatPathLabel(branch) }}
         </option>
       </select>
     </div>
@@ -25,7 +25,7 @@
         "
       >
         <option v-for="subset in subsets" :key="subset" :value="subset">
-          {{ subset }}
+          {{ formatPathLabel(subset) }}
         </option>
       </select>
     </div>
@@ -110,6 +110,7 @@
 </template>
 
 <script setup lang="ts">
+import { formatPathLabel } from "../../services/dataService";
 import type { QuickRangePreset } from "../../composables/useDashboardSettings";
 import { ChartConfig } from "../../config/tabs";
 

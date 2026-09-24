@@ -128,7 +128,7 @@ export const SPEC_BENCHMARK_GROUPS: Record<
 };
 
 export function specVersionFromSubset(subset?: string): SpecVersion {
-  const match = /(?:^|-)spec(17|26)(?:-|$)/i.exec(subset || "");
+  const match = /(?:^|[/-])spec(17|26)(?:[/-]|$)/i.exec(subset || "");
   return match?.[1] === "17" || match?.[1] === "26" ? match[1] : "06";
 }
 

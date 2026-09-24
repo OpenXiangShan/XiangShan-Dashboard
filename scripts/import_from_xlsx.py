@@ -12,14 +12,14 @@ from typing import Any, Literal
 from openpyxl import load_workbook
 
 from modules.github import GitHub
-from modules.json import DataJson, ReportRegressionJson
+from modules.json import MetadataJson, RunListJson, ReportRegressionJson
 
 OWNER = "OpenXiangShan"
 REPO = "XiangShan"
 WORKSHEET = "kmh-v3 spec06"
 DATA_PATH = Path(__file__).parent.parent / "data"
 
-Subset = Literal["xs-gcc", "xs-xscc"]
+Subset = Literal["spec06/gcc", "spec06/xscc"]
 
 # The rows containing the benchmark names follow each of these markers.  The
 # parser still discovers the end of a block from the next marker, so changes
@@ -183,22 +183,22 @@ def read_records(path: Path) -> tuple[list[XlsxRecord], list[XlsxRecord]]:
 
 
 def _commit_timestamp(commit: dict) -> int:
-    """Convert GitHub's commit timestamp to the data.json timestamp format."""
+    """Convert GitHub's commit timestamp to the metadata timestamp format."""
     date = commit["commit"]["committer"]["date"]
     return int(calendar.timegm(time.strptime(date, "%Y-%m-%dT%H:%M:%SZ")))
 
 
-def _next_run_id(data: DataJson) -> str:
+def _next_run_id(metadata: MetadataJson) -> str:
     """Return the first unused imported run ID."""
     run_id = 1
-    while f"imported-{run_id}" in data.data:
+    while f"imported-{run_id}" in metadata.data:
         run_id += 1
     return f"imported-{run_id}"
 
 
-def _hash_for_record(data: DataJson, commit: str) -> str:
+def _hash_for_record(metadata: MetadataJson, run_list: RunListJson, commit: str) -> str:
     """Choose a report hash, preserving duplicate records for one commit."""
-    used = {entry.hash for entry in data.data.values()}
+    used = {metadata.data[run_id].hash for run_id in run_list.runs}
     if commit not in used:
         return commit
     suffix = 1
@@ -240,21 +240,23 @@ def import_subset(
     branch: str,
     dry_run: bool,
     commit_cache: dict[str, CommitInfo | None],
+    metadata: MetadataJson,
 ) -> None:
     """Import records into one weekly regression subset."""
-    subset_path = data_path / "weekly" / branch / subset
-    data = DataJson.from_json(subset_path / "data.json")
+    branch_path = data_path / "weekly" / "xs" / branch
+    subset_path = branch_path / subset
+    run_list = RunListJson.from_json(subset_path / "list.json")
 
     for record in records:
         info = get_commit_info(gh, record.commit, commit_cache)
         if info is None:
             continue
-        if data.exists(info.sha):
+        if run_list.exists(metadata, info.sha):
             logging.info("Skipping existing commit %s", info.sha)
             continue
 
-        run_id = _next_run_id(data)
-        hash_name = _hash_for_record(data, info.sha)
+        run_id = _next_run_id(metadata)
+        hash_name = _hash_for_record(metadata, run_list, info.sha)
         logging.info(
             "Importing %s column %s (%s) into %s as run %s",
             info.sha,
@@ -263,28 +265,17 @@ def import_subset(
             subset,
             run_id,
         )
-        if dry_run:
-            data.append(
-                run_id,
-                hash_name,
-                info.title,
-                info.date,
-            )
-            continue
-
-        report = ReportRegressionJson()
-        for benchmark, score in record.scores.items():
-            report.append(benchmark, score)
-        report.to_json(subset_path / f"{hash_name}.json")
-        data.append(
-            run_id,
-            hash_name,
-            info.title,
-            info.date,
-        )
+        metadata.add(run_id, hash_name, info.title, info.date)
+        run_list.add(run_id)
+        if not dry_run:
+            report = ReportRegressionJson()
+            for benchmark, score in record.scores.items():
+                report.append(benchmark, score)
+            report.to_json(subset_path / f"{hash_name}.json")
 
     if not dry_run:
-        data.to_json(subset_path / "data.json")
+        metadata.to_json(branch_path / "metadata.json")
+        run_list.to_json(subset_path / "list.json")
 
 
 def main() -> None:
@@ -327,23 +318,28 @@ def main() -> None:
 
     gh = GitHub(args.token)
     commit_cache: dict[str, CommitInfo | None] = {}
+    metadata = MetadataJson.from_json(
+        DATA_PATH / "weekly" / "xs" / args.branch / "metadata.json"
+    )
     import_subset(
         gh,
         gcc_records,
-        "xs-gcc",
+        "spec06/gcc",
         DATA_PATH,
         args.branch,
         args.dry_run,
         commit_cache,
+        metadata,
     )
     import_subset(
         gh,
         xscc_records,
-        "xs-xscc",
+        "spec06/xscc",
         DATA_PATH,
         args.branch,
         args.dry_run,
         commit_cache,
+        metadata,
     )
 
 

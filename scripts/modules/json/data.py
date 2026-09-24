@@ -1,91 +1,84 @@
-"""Describe data.json structure"""
+"""Branch metadata and subset run lists."""
 
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass, field
 import json
 from pathlib import Path
 
 
-@dataclass
-class DataJsonEntry:
-    """Describe a single entry in data.json"""
+def run_id_sort_key(run_id: str) -> tuple[int, str]:
+    return int(run_id.removeprefix("imported-")), run_id
 
+
+@dataclass(frozen=True)
+class MetadataEntry:
     hash: str
-    title: str = ""
-    date: int = 0
-    note: str | None = None
-
-
-CURRENT_VERSION = 1
+    title: str
+    date: int
 
 
 @dataclass
-class DataJson:
-    """Describe the entire data.json structure"""
+class MetadataJson:
+    data: dict[str, MetadataEntry] = field(default_factory=dict)
 
-    data: dict[str, DataJsonEntry]
-    version: int = CURRENT_VERSION
-
-    @staticmethod
-    def from_json(path: Path) -> "DataJson":
-        """Load data from a JSON file"""
+    @classmethod
+    def from_json(cls, path: Path) -> "MetadataJson":
         if not path.exists():
-            return DataJson(data={}, version=CURRENT_VERSION)
-
-        with open(path, "r", encoding="utf-8") as f:
-            raw_data = json.load(f)
-        version = raw_data["version"]
-
-        match version:
-            case 1:
-                return DataJson(
-                    version=version,
-                    data={
-                        str(k): DataJsonEntry(**v) for k, v in raw_data["data"].items()
-                    },
-                )
-            case _:
-                raise ValueError(f"Unsupported data version: {version}")
+            return cls()
+        with path.open("r", encoding="utf-8") as source:
+            entries = json.load(source)
+        return cls(
+            {str(run_id): MetadataEntry(**entry) for run_id, entry in entries.items()}
+        )
 
     def to_json(self, path: Path) -> None:
-        """Save data to a JSON file"""
-        self.sort()
         path.parent.mkdir(parents=True, exist_ok=True)
-        with open(path, "w", encoding="utf-8") as f:
+        ordered = sorted(
+            self.data.items(), key=lambda item: run_id_sort_key(item[0]), reverse=True
+        )
+        with path.open("w", encoding="utf-8") as output:
             json.dump(
-                asdict(
-                    self, dict_factory=lambda x: {k: v for k, v in x if v is not None}
-                ),
-                f,
-                indent=2,
-                separators=(",", ": "),
+                {run_id: asdict(entry) for run_id, entry in ordered}, output,
+                indent=2, separators=(",", ": "),
             )
 
-    def exists(self, commit: str) -> bool:
-        """Check if a commit hash exists in the dataset"""
-        return commit in map(lambda entry: entry.hash, self.data.values())
+    def add(self, run_id: str | int, commit: str, title: str, date: int) -> None:
+        key = str(run_id)
+        entry = MetadataEntry(commit, title, date)
+        if key in self.data and self.data[key] != entry:
+            raise ValueError(f"Conflicting metadata for run {key}")
+        self.data[key] = entry
 
-    def append(
-        self,
-        run_id: str | int,
-        commit: str,
-        title: str,
-        date: int,
-        note: str | None = None,
-    ) -> None:
-        """Append a single workflow run to dataset"""
-        self.data[str(run_id)] = DataJsonEntry(
-            hash=commit, title=title, date=date, note=note
-        )
 
-    def sort(self) -> None:
-        """Sort data by run_id descending"""
+@dataclass
+class RunListJson:
+    runs: list[str] = field(default_factory=list)
+    notes: dict[str, str] = field(default_factory=dict)
 
-        def sort_key(item: tuple[str, DataJsonEntry]) -> tuple[int, str]:
-            run_id = item[0]
-            if run_id.startswith("imported-"):
-                run_id = run_id[len("imported-") :]
-            return (int(run_id), item[0])
+    @classmethod
+    def from_json(cls, path: Path) -> "RunListJson":
+        if not path.exists():
+            return cls()
+        with path.open("r", encoding="utf-8") as source:
+            raw = json.load(source)
+        return cls([str(run_id) for run_id in raw["runs"]], raw.get("notes", {}))
 
-        self.data = dict(
-            sorted(self.data.items(), key=sort_key, reverse=True)
-        )
+    def to_json(self, path: Path) -> None:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        self.runs.sort(key=run_id_sort_key, reverse=True)
+        with path.open("w", encoding="utf-8") as output:
+            json.dump(
+                {"runs": self.runs, "notes": self.notes}, output,
+                indent=2, separators=(",", ": "),
+            )
+
+    def exists(self, metadata: MetadataJson, commit: str) -> bool:
+        return any(metadata.data[run_id].hash == commit for run_id in self.runs)
+
+    def add(self, run_id: str | int, note: str | None = None) -> None:
+        key = str(run_id)
+        if key not in self.runs:
+            self.runs.append(key)
+        if note is None:
+            self.notes.pop(key, None)
+        else:
+            self.notes[key] = note

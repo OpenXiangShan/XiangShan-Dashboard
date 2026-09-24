@@ -45,10 +45,15 @@ class UpdateConfig:
         return "-".join(parts)
 
     def data_path(self, root: Path) -> Path:
-        path = root / self.type_ / self.branch
-        if self.type_ != "test":
-            path /= f"{self.repo}-{self.compiler}-{self.spec}"
-        return path
+        if self.type_ == "test":
+            return self.branch_path(root) / "ipc"
+        assert self.spec is not None and self.compiler is not None
+        return self.branch_path(root) / self.spec / self.compiler
+
+    def branch_path(self, root: Path) -> Path:
+        if self.type_ == "test":
+            return root / self.type_ / self.branch
+        return root / self.type_ / self.repo / self.branch
 
 
 CONFIGS = (

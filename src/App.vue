@@ -186,6 +186,7 @@ import {
 } from "./services/benchmarkService";
 import {
   formatDate,
+  formatPathLabel,
   getDateRange,
   loadBranchList,
   loadReport,
@@ -225,10 +226,6 @@ const activeChartTab = computed(() =>
   activeTab.value.kind === "chart" ? activeTab.value : defaultChartTab,
 );
 
-function chartTabHasSubsets(tab: ChartConfig): boolean {
-  return tab.metricKey === "score";
-}
-
 const branches = ref<string[]>([]);
 const chartSubsets = ref<string[]>([]);
 const selectedBranch = ref(settings.selectedBranch);
@@ -247,9 +244,9 @@ const quickRangePreset = ref<QuickRangePreset | null>(
 );
 
 const chartSummary = computed(() => {
-  const parts = [selectedBranch.value || t("branch")];
+  const parts = [formatPathLabel(selectedBranch.value || t("branch"))];
   if (chartSubsets.value.length && activeChartSubset.value) {
-    parts.push(activeChartSubset.value);
+    parts.push(formatPathLabel(activeChartSubset.value));
   }
 
   const first = filteredRuns.value[0];
@@ -404,7 +401,7 @@ async function loadComparisonDatasets() {
       withDefaultFirst(subsetConfig.subsets, subsetConfig.default).map(
         (subset) => ({
           id: comparisonDatasetId(tab, branch, subset),
-          label: `${branch} · ${subset}`,
+          label: `${formatPathLabel(branch)} · ${formatPathLabel(subset)}`,
           tab,
           branch,
           subset,
@@ -855,7 +852,7 @@ async function refreshRuns(context: ChartLoadContext) {
   for (const run of needed) {
     setChartLoading(
       context,
-      `${context.tab.datasetRoot}/${context.branch}/${context.subset ? `${context.subset}/` : ""}${run.hash}.json`,
+      `${context.tab.datasetRoot}/${context.branch}/${context.subset}/${run.hash}.json`,
     );
     const payload = await loadReport(
       context.tab,
@@ -978,15 +975,15 @@ async function loadCurrentTabData() {
       : branchConfig.default || branches.value[0] || "";
     selectedBranch.value = branch;
 
-    if (chartTabHasSubsets(request.tab)) {
-      setChartLoading(
-        request,
-        `${request.tab.datasetRoot}/${branch}/subset.json`,
-      );
-    }
-    const subsetConfig = chartTabHasSubsets(request.tab)
-      ? await loadSubsetList(request.tab, branch, request.controller.signal)
-      : { default: "", subsets: [] };
+    setChartLoading(
+      request,
+      `${request.tab.datasetRoot}/${branch}/subset.json`,
+    );
+    const subsetConfig = await loadSubsetList(
+      request.tab,
+      branch,
+      request.controller.signal,
+    );
     if (!isCurrentChartLoad(request)) return;
     chartSubsets.value = subsetConfig.subsets;
     const subset = chartSubsets.value.includes(selectedSubset.value)
@@ -996,7 +993,7 @@ async function loadCurrentTabData() {
 
     setChartLoading(
       request,
-      `${request.tab.datasetRoot}/${branch}/${subset ? `${subset}/` : ""}data.json`,
+      `${request.tab.datasetRoot}/${branch}/${subset}/list.json`,
     );
     const runs = await loadRunIndex(
       request.tab,

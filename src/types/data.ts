@@ -2,15 +2,17 @@ import type { SpecVersion } from "../config/spec";
 
 export type MetricKey = "ipc" | "score";
 
-export interface RunIndexEntry {
+export interface MetadataEntry {
   hash: string;
   title: string;
   date: number;
-  note: string | undefined;
 }
 
-export interface RunIndex {
-  data: Record<string, RunIndexEntry>;
+export type BranchMetadata = Record<string, MetadataEntry>;
+
+export interface RunList {
+  runs: string[];
+  notes: Record<string, string>;
 }
 
 const RUN_ID_PATTERN = /^(?:imported-)?\d+$/;
@@ -18,7 +20,7 @@ const RUN_ID_PATTERN = /^(?:imported-)?\d+$/;
 export function compareRunIds(a: string, b: string): number {
   const normalizedA = a.startsWith("imported-") ? a.slice(9) : a;
   const normalizedB = b.startsWith("imported-") ? b.slice(9) : b;
-  return Number(normalizedA) - Number(normalizedB);
+  return Number(normalizedA) - Number(normalizedB) || a.localeCompare(b);
 }
 
 export interface BranchList {
@@ -84,17 +86,11 @@ export function assertSubsetList(value: unknown): SubsetList {
   return { default: obj.default, subsets: obj.subsets as string[] };
 }
 
-export function assertRunIndex(value: unknown): RunIndex {
-  if (!value || typeof value !== "object") {
-    throw new Error("data.json must be an object");
+export function assertBranchMetadata(value: unknown): BranchMetadata {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new Error("metadata.json must map run IDs to metadata");
   }
-  const obj = value as Record<string, unknown>;
-  if (!obj.data || typeof obj.data !== "object") {
-    throw new Error("data.json must include { data: { ... } }");
-  }
-
-  const entries = obj.data as Record<string, unknown>;
-  for (const [runId, raw] of Object.entries(entries)) {
+  for (const [runId, raw] of Object.entries(value)) {
     if (!RUN_ID_PATTERN.test(runId)) {
       throw new Error(
         `run_id must be numeric or imported-numeric string, got: ${runId}`,
@@ -115,7 +111,33 @@ export function assertRunIndex(value: unknown): RunIndex {
     }
   }
 
-  return value as RunIndex;
+  return value as BranchMetadata;
+}
+
+export function assertRunList(value: unknown): RunList {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new Error("list.json must be an object");
+  }
+  const obj = value as Record<string, unknown>;
+  if (
+    !Array.isArray(obj.runs) ||
+    obj.runs.some(
+      (runId) => typeof runId !== "string" || !RUN_ID_PATTERN.test(runId),
+    ) ||
+    new Set(obj.runs).size !== obj.runs.length ||
+    !obj.notes ||
+    typeof obj.notes !== "object" ||
+    Array.isArray(obj.notes)
+  ) {
+    throw new Error("list.json must contain unique run IDs and a notes object");
+  }
+  const runs = obj.runs as string[];
+  for (const [runId, note] of Object.entries(obj.notes)) {
+    if (!runs.includes(runId) || typeof note !== "string") {
+      throw new Error(`invalid note for run ${runId}`);
+    }
+  }
+  return value as RunList;
 }
 
 export function assertReportPayload(value: unknown): ReportPayload {

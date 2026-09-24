@@ -1,6 +1,7 @@
 {
-  "default": "kunminghu-v3",
+  "default": "xs/kunminghu-v3",
   "branches": [
-    "kunminghu-v3"
+    "xs/kunminghu-v3",
+    "gem5/kunminghu-v3"
   ]
 }

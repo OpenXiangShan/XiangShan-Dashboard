@@ -1,0 +1,382 @@
+{
+  "35332560307": {
+    "hash": "c8d7b3a5c1abf3f42c954e61abba20dd27e02a21",
+    "title": "fix(vfmac): drop the mask writeback of the fp compares",
+    "date": 1789577760
+  },
+  "34812949629": {
+    "hash": "0eea07ed92075d8c5fb968c5e1023fb2fdcf035f-1",
+    "title": "fix(ICache): support 2fetch replacer touch (#6416)",
+    "date": 1789113466
+  },
+  "34587152666": {
+    "hash": "0eea07ed92075d8c5fb968c5e1023fb2fdcf035f",
+    "title": "fix(ICache): support 2fetch replacer touch (#6416)",
+    "date": 1789113466
+  },
+  "33942508983": {
+    "hash": "3d03eac509eb9c79c171fed7e5ee1c9243486ed4",
+    "title": "fix(GPAMem): correct GPA offset for non-RVC instructions (#6476)",
+    "date": 1788515636
+  },
+  "33241720317": {
+    "hash": "be6693043b6090276d2a4016ea8bde0a339f2aa0",
+    "title": "fix(MMU): align CSR-change TLB flush latency (#6421)",
+    "date": 1787822066
+  },
+  "32559003217": {
+    "hash": "53a9576674bd8f99e2d17491d7b8e6f9241b7b09-1",
+    "title": "perf(ubtb): use resolve+fast train (#6237)",
+    "date": 1787297494
+  },
+  "32471083293": {
+    "hash": "53a9576674bd8f99e2d17491d7b8e6f9241b7b09",
+    "title": "perf(ubtb): use resolve+fast train (#6237)",
+    "date": 1787297494
+  },
+  "31791760711": {
+    "hash": "ff4720da42bf8a3a6eef996b0a712cf029523578",
+    "title": "fix(csr): fix first fetch fault after satp flush (#6014)",
+    "date": 1786690953
+  },
+  "31148270969": {
+    "hash": "c7b373bdbe9a9417b4c22ede4ddd0d970eb48b73",
+    "title": "timing(Ftq,ICache): fix meta read port timing (#6281)",
+    "date": 1786006066
+  },
+  "30606307371": {
+    "hash": "a975701442ba4602bd81969f6d291a6ddadcb4e0",
+    "title": "chore: bump chisel and submodules (#6297)",
+    "date": 1785375240
+  },
+  "30068645473": {
+    "hash": "0454478c247c7137301276b85173ed5a99f786bf",
+    "title": "refactor(Frontend): replace takenCfiOffset with endPosition (#6253)",
+    "date": 1784862007
+  },
+  "29556572977": {
+    "hash": "538ef487c903e14ff8d2f1b139e95724629ec08b",
+    "title": "ci(perf): upload score.txt in template (#6245)",
+    "date": 1784182599
+  },
+  "29071339329": {
+    "hash": "0e5469ce17236e21d61e60795c3dd2dbf381067e",
+    "title": "feat(Ftq): add rolling counter (#6193)",
+    "date": 1783594302
+  },
+  "28640316592": {
+    "hash": "59ef4ea7d45c712d0f67f83ee4a2fbd3fa202b55",
+    "title": "timing(loadQueueRAW): use age matrix for RAW oldest select (#6120)",
+    "date": 1783048987
+  },
+  "28219406785": {
+    "hash": "96c3f568f943a096ffd3d712dc6f462ac4b1ba33",
+    "title": "perf(Sbuffer): set in.req.ready to true if req can be merged (#6117)",
+    "date": 1782185101
+  },
+  "27808232814": {
+    "hash": "8c4daa743fbea8da85747e51ebb053f0e5de5953",
+    "title": "timing(ibuffer): optimize ibuffer bypass logic to improve timing (#6047)",
+    "date": 1781774138
+  },
+  "27397173296": {
+    "hash": "be3c06aa4750dcd9681c85ee8b42748734d93960",
+    "title": "perf(LSQ): enlarge default LSQ capacity (#6089)",
+    "date": 1781232864
+  },
+  "26997736256": {
+    "hash": "9443d04bd410311c485f22688e0bc219f4610747",
+    "title": "submodule(ready-to-run): bump ready-to-run to support tdata3",
+    "date": 1780628635
+  },
+  "26620174316": {
+    "hash": "b30d9d321f06274ff88cf3db27c6b6b9f5eef40a",
+    "title": "ci(emu): better log archive (#6033)",
+    "date": 1779936839
+  },
+  "26270266898": {
+    "hash": "dcc1d26893afe367b73ec69e5e30faef2be7d505",
+    "title": "chore: add pfLateHitType and Berti monitor (#5964)",
+    "date": 1779372875
+  },
+  "25901955295": {
+    "hash": "5123974942833f8d63672f0c132ec9787e8a650a",
+    "title": "fix(backend, ctrlblock): export empty state to ftq when backend drains (#5787)",
+    "date": 1778810127
+  },
+  "25537970943": {
+    "hash": "f65a4e6c3f211406fb3509252dcaee30dac86dbd",
+    "title": "timing(bpu): hoist MBTB attribute checks to S2 for timing (#5842)",
+    "date": 1778147140
+  },
+  "25203552668": {
+    "hash": "4bfb226bfaaaf2114a97a1cd3e439c660296f52b",
+    "title": "area(tage): use SRAM to store usefulCtr (#5852)",
+    "date": 1777536343
+  },
+  "24873331705": {
+    "hash": "82d2669b231178175f34a56923f33743771d0787",
+    "title": "chore: update issue template (#5853)",
+    "date": 1776942343
+  },
+  "24548740155": {
+    "hash": "903b531f0a09b5b20159b79f3fd90c02c0a5cfd4",
+    "title": "feat(DCache, CoupledL2): add PC field for L2 NextLine prefetcher (#5793)",
+    "date": 1776333023
+  },
+  "24227383328": {
+    "hash": "1f4b947e319a42f040b73db60c18dc1e01fdbb29",
+    "title": "fix(LoadUnit): fix unalignedHead replay stuck (#5783)",
+    "date": 1775789422
+  },
+  "23934363238": {
+    "hash": "33995fbb9fe12cd13450bd8c58ef586311ae8b99",
+    "title": "fix(utils): fix one hot check condition (#5726)",
+    "date": 1775125876
+  },
+  "23631797661": {
+    "hash": "87d03b2cc066980ce7133f4ccbe3030bdf0e6236",
+    "title": "misc(CODEOWNERS): modify CODEOWNERS for frontend (#5717)",
+    "date": 1774360212
+  },
+  "imported-48": {
+    "hash": "96c3f568f943a096ffd3d712dc6f462ac4b1ba33",
+    "title": "perf(Sbuffer): set in.req.ready to true if req can be merged (#6117)",
+    "date": 1782185101
+  },
+  "imported-47": {
+    "hash": "8c4daa743fbea8da85747e51ebb053f0e5de5953",
+    "title": "timing(ibuffer): optimize ibuffer bypass logic to improve timing (#6047)",
+    "date": 1781774138
+  },
+  "imported-46": {
+    "hash": "be3c06aa4750dcd9681c85ee8b42748734d93960",
+    "title": "perf(LSQ): enlarge default LSQ capacity (#6089)",
+    "date": 1781232864
+  },
+  "imported-45": {
+    "hash": "9443d04bd410311c485f22688e0bc219f4610747",
+    "title": "submodule(ready-to-run): bump ready-to-run to support tdata3",
+    "date": 1780628635
+  },
+  "imported-44": {
+    "hash": "b30d9d321f06274ff88cf3db27c6b6b9f5eef40a",
+    "title": "ci(emu): better log archive (#6033)",
+    "date": 1779936839
+  },
+  "imported-43": {
+    "hash": "dcc1d26893afe367b73ec69e5e30faef2be7d505",
+    "title": "chore: add pfLateHitType and Berti monitor (#5964)",
+    "date": 1779372875
+  },
+  "imported-42": {
+    "hash": "5123974942833f8d63672f0c132ec9787e8a650a",
+    "title": "fix(backend, ctrlblock): export empty state to ftq when backend drains (#5787)",
+    "date": 1778810127
+  },
+  "imported-41": {
+    "hash": "f65a4e6c3f211406fb3509252dcaee30dac86dbd",
+    "title": "timing(bpu): hoist MBTB attribute checks to S2 for timing (#5842)",
+    "date": 1778147140
+  },
+  "imported-40": {
+    "hash": "4bfb226bfaaaf2114a97a1cd3e439c660296f52b",
+    "title": "area(tage): use SRAM to store usefulCtr (#5852)",
+    "date": 1777536343
+  },
+  "imported-39": {
+    "hash": "82d2669b231178175f34a56923f33743771d0787",
+    "title": "chore: update issue template (#5853)",
+    "date": 1776942343
+  },
+  "imported-38": {
+    "hash": "903b531f0a09b5b20159b79f3fd90c02c0a5cfd4",
+    "title": "feat(DCache, CoupledL2): add PC field for L2 NextLine prefetcher (#5793)",
+    "date": 1776333023
+  },
+  "imported-37": {
+    "hash": "5623d8c5195c738c0f8a09dbca59db8b192e8eb2",
+    "title": "timing(bpu): use sram.resetDone instead of r.req.ready (#5735)",
+    "date": 1775804908
+  },
+  "imported-36": {
+    "hash": "fb0b7e3ea72c1882af20956686346f33374d81cd",
+    "title": "Bump ready-to-run ref in Xiangshan",
+    "date": 1775207135
+  },
+  "imported-35": {
+    "hash": "87d03b2cc066980ce7133f4ccbe3030bdf0e6236",
+    "title": "misc(CODEOWNERS): modify CODEOWNERS for frontend (#5717)",
+    "date": 1774360212
+  },
+  "imported-34": {
+    "hash": "bc2fbff8620b848ff14240c66daccb267586e443",
+    "title": "timing(IQ): move generation of regfile readEn to IQ entry",
+    "date": 1773914632
+  },
+  "imported-33": {
+    "hash": "afe3818985468e17f9a6ccb9a73093c5bd720818",
+    "title": "feat: schedule gsim to node servers while verilator to open servers (#5683)",
+    "date": 1773375149
+  },
+  "imported-32": {
+    "hash": "ab5c6ce36326ff5a915808865f1fc52b5730cc94",
+    "title": "feat(backend): only need intRegion's og0cancel",
+    "date": 1772699261
+  },
+  "imported-31": {
+    "hash": "98d61d42a9219bae7e4cc91de13d0bc054cd300c",
+    "title": "misc: add bug-report.sh and update issue template (#5622)",
+    "date": 1772160122
+  },
+  "imported-30": {
+    "hash": "316946d28732dafe50a66d35785dc221d0d7a15d",
+    "title": "feat(resp): pending 1 uop at s0 when ldu isn't ready (#5604)",
+    "date": 1770805349
+  },
+  "imported-29": {
+    "hash": "a20df0c360ff7abf1831c3ba8f0593ce96e26690",
+    "title": "ci(IOPMP): Add a ci test flow in KMH v2 Config",
+    "date": 1770294369
+  },
+  "imported-28": {
+    "hash": "4e78369f4551c1081bdda85a6c602b70d7d0d252",
+    "title": "chore(Rob):Replace verbose getOrElse with .get where safe",
+    "date": 1769685019
+  },
+  "imported-27": {
+    "hash": "c7b373bdbe9a9417b4c22ede4ddd0d970eb48b73",
+    "title": "timing(Ftq,ICache): fix meta read port timing (#6281)",
+    "date": 1786006066
+  },
+  "imported-26": {
+    "hash": "a975701442ba4602bd81969f6d291a6ddadcb4e0",
+    "title": "chore: bump chisel and submodules (#6297)",
+    "date": 1785375240
+  },
+  "imported-25": {
+    "hash": "0454478c247c7137301276b85173ed5a99f786bf",
+    "title": "refactor(Frontend): replace takenCfiOffset with endPosition (#6253)",
+    "date": 1784862007
+  },
+  "imported-24": {
+    "hash": "538ef487c903e14ff8d2f1b139e95724629ec08b",
+    "title": "ci(perf): upload score.txt in template (#6245)",
+    "date": 1784182599
+  },
+  "imported-23": {
+    "hash": "0e5469ce17236e21d61e60795c3dd2dbf381067e",
+    "title": "feat(Ftq): add rolling counter (#6193)",
+    "date": 1783594302
+  },
+  "imported-22": {
+    "hash": "59ef4ea7d45c712d0f67f83ee4a2fbd3fa202b55",
+    "title": "timing(loadQueueRAW): use age matrix for RAW oldest select (#6120)",
+    "date": 1783048987
+  },
+  "imported-21": {
+    "hash": "bc2fbff8620b848ff14240c66daccb267586e443",
+    "title": "timing(IQ): move generation of regfile readEn to IQ entry",
+    "date": 1773914632
+  },
+  "imported-20": {
+    "hash": "afe3818985468e17f9a6ccb9a73093c5bd720818",
+    "title": "feat: schedule gsim to node servers while verilator to open servers (#5683)",
+    "date": 1773375149
+  },
+  "imported-19": {
+    "hash": "ab5c6ce36326ff5a915808865f1fc52b5730cc94",
+    "title": "feat(backend): only need intRegion's og0cancel",
+    "date": 1772699261
+  },
+  "imported-18": {
+    "hash": "98d61d42a9219bae7e4cc91de13d0bc054cd300c",
+    "title": "misc: add bug-report.sh and update issue template (#5622)",
+    "date": 1772160122
+  },
+  "imported-17": {
+    "hash": "316946d28732dafe50a66d35785dc221d0d7a15d",
+    "title": "feat(resp): pending 1 uop at s0 when ldu isn't ready (#5604)",
+    "date": 1770805349
+  },
+  "imported-16": {
+    "hash": "a20df0c360ff7abf1831c3ba8f0593ce96e26690",
+    "title": "ci(IOPMP): Add a ci test flow in KMH v2 Config",
+    "date": 1770294369
+  },
+  "imported-15": {
+    "hash": "4e78369f4551c1081bdda85a6c602b70d7d0d252",
+    "title": "chore(Rob):Replace verbose getOrElse with .get where safe",
+    "date": 1769685019
+  },
+  "imported-14": {
+    "hash": "fd1e37f953a4af4aa45a199d104e3713f87535f5",
+    "title": "submodule(yunsuan): bump yunsuan to refactor Mul",
+    "date": 1768527358
+  },
+  "imported-13": {
+    "hash": "1b171972156c9f25c75b5f81dc964718307ee7d2",
+    "title": "fix(FuConfig): Mem FUs no longer write back `flushPipe` and `replayInst` (#5491)",
+    "date": 1767929037
+  },
+  "imported-12": {
+    "hash": "1a9a2f52c88cf07663910e5d09abc3984374cfca",
+    "title": "feat(utage): add enable signal and MicroTAGE perf counters (#5289)",
+    "date": 1767173072
+  },
+  "imported-11": {
+    "hash": "a9a429a1eedfa87fa3e7b17d1dcae636bd72069d",
+    "title": "feat(ittage): devide IttageTable into 2 banks (#5430)",
+    "date": 1766720058
+  },
+  "imported-10": {
+    "hash": "64e7bff7f8a7c85948d8cc26a02e2cb7d6716e83",
+    "title": "fix(tage): align prediction selection to gem5 (#5377)",
+    "date": 1766137315
+  },
+  "imported-9": {
+    "hash": "1ae81203420ecbb68154edca6e1112887eae4536",
+    "title": "feat(perf): add perfQueue and collect perf statistics when commit (#5347)",
+    "date": 1765506428
+  },
+  "imported-8": {
+    "hash": "558cc5d0176c0576ee68f606884f5c9443230dd8",
+    "title": "feat(tage): use AddrFields & allow different NumWay for tables (#5306)",
+    "date": 1764913624
+  },
+  "imported-7": {
+    "hash": "3c12bd1d1b377d9760a7e51f7f12ad6c085cfb84",
+    "title": "perf(stream): sent prefetch request only once to l1 dcache (#5224)",
+    "date": 1764299812
+  },
+  "imported-6": {
+    "hash": "3cc2817090a086769da6a675b0ef969f8fa7f484",
+    "title": "fix(ICache): do not update reg(0) if !doubleline",
+    "date": 1763091170
+  },
+  "imported-5": {
+    "hash": "4183b01665a6ce977b65a0041c56bb10ec0b9c78",
+    "title": "fix(mbtb): fix the error of multi-hit flush more than 1 (#5181)",
+    "date": 1762503067
+  },
+  "imported-4": {
+    "hash": "40f1bc8c2cf781adf54bcd6bffe1d1f0d4f338e8",
+    "title": "feat(top): adapt difftest top interfaces (#5125)",
+    "date": 1760680226
+  },
+  "imported-3": {
+    "hash": "6b4ab11c1ea64e784ee82084f065ef7d76a3a49e",
+    "title": "fix(resolve): flush entries that have been redirected by backend (#5085)",
+    "date": 1759201955
+  },
+  "imported-2": {
+    "hash": "c8f6f6b7e6d2cca856945a2ed5e5b1e4a0694730",
+    "title": "misc(ci): increase swap & decrease JVM_XMX to avoid oom (#5038)",
+    "date": 1758252662
+  },
+  "imported-1": {
+    "hash": "bf76413df0b94d3a406608441e6cd703c44d3074",
+    "title": "fix(ubtb): alloc new entry for taken branches only (#5004)",
+    "date": 1756989797
+  }
+}

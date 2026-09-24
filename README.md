@@ -38,30 +38,36 @@ data/
 	test/ # Performance Test workflow
 		branch.json
 		<branch>/
-			data.json
-			<commit>.json
+			metadata.json
+			subset.json
+			ipc/
+				list.json
+				<hash>.json
 	nightly/ # Nightly Regression workflow
 		branch.json
-		<branch>/
+		<repo>/<branch>/
+			metadata.json
 			subset.json
-			<subset>/
-				data.json
-				<commit>.json
+			<spec>/<compiler>/
+				list.json
+				<hash>.json
 	weekly/ # Weekly Regression workflow
 		branch.json
-		<branch>/
+		<repo>/<branch>/
+			metadata.json
 			subset.json
-			<subset>/
-				data.json
-				<commit>.json
+			<spec>/<compiler>/
+				list.json
+				<hash>.json
 ```
 
 Schema constraints:
 
-- `branch.json`: `{ "default": branch, "branches": [branch] }`.
-- `subset.json`: `{ "default": subset, "subsets": [subset] }`.
-- `data.json`: `{ "data": { run_id: { "hash", "title", "date", "note (optional)" } } }`.
-- `<commit>.json` / `<date>.json`: `{ benchmark: { metric } }`.
+- `branch.json`: `{ "default": branch, "branches": [branch] }`; regression uses `repo/branch`, test uses the branch name directly.
+- `subset.json`: `{ "default": "spec_version/compiler", "subsets": ["spec_version/compiler"] }`; test uses `ipc`.
+- `metadata.json`: `{ run_id: { "hash", "title", "date" } }`, shared by all subsets in one branch.
+- `list.json`: `{ "runs": [run_id], "notes": { run_id: note } }`, with descending run IDs and subset-specific notes.
+- `<hash>.json`: `{ benchmark: { metric } }`.
 - `run_id`: a numeric string or `imported-` followed by a numeric string.
 - `metric` key: `ipc` or `score`.
 - `metric` value: float number.

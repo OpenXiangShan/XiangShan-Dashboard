@@ -10,7 +10,7 @@ from zipfile import ZipFile
 
 from modules.config import UpdateConfig
 from modules.github import GitHub
-from modules.json import DataJson, ReportRegressionJson, ReportTestJson
+from modules.json import MetadataJson, RunListJson, ReportRegressionJson, ReportTestJson
 
 
 DATA_PATH = Path(__file__).parent.parent.parent / "data"
@@ -28,13 +28,14 @@ def workflow_runs_for_commit(gh: GitHub, config: UpdateConfig, sha: str) -> list
 
 
 def append_commit(
-    data: DataJson,
+    metadata: MetadataJson,
+    run_list: RunListJson,
     run_id: int,
     sha: str,
     commit: dict,
     note: str | None = None,
 ) -> None:
-    data.append(
+    metadata.add(
         run_id,
         sha,
         commit["commit"]["message"].splitlines()[0],
@@ -45,8 +46,8 @@ def append_commit(
                 )
             )
         ),
-        note,
     )
+    run_list.add(run_id, note)
 
 
 class GithubUpdater:
@@ -63,14 +64,17 @@ class GithubUpdater:
         self.config = config
         self.page_limit = page_limit
         self.data_path = config.data_path(data_root)
+        self.branch_path = config.branch_path(data_root)
 
     def run(self) -> None:
-        data = DataJson.from_json(self.data_path / "data.json")
+        metadata = MetadataJson.from_json(self.branch_path / "metadata.json")
+        run_list = RunListJson.from_json(self.data_path / "list.json")
         if self.config.type_ == "test":
-            self._update_test(data)
+            self._update_test(metadata, run_list)
         else:
-            self._update_regression(data)
-        data.to_json(self.data_path / "data.json")
+            self._update_regression(metadata, run_list)
+        metadata.to_json(self.branch_path / "metadata.json")
+        run_list.to_json(self.data_path / "list.json")
 
     def _get_artifacts(
         self, run_id: int, matches: Callable[[dict], bool]
@@ -88,7 +92,7 @@ class GithubUpdater:
             artifacts.extend(artifact for artifact in result if matches(artifact))
         return artifacts
 
-    def _update_test(self, data: DataJson) -> None:
+    def _update_test(self, metadata: MetadataJson, run_list: RunListJson) -> None:
         found_existing = False
         for page in count(1):
             commits = self.gh.commits.list_commits(
@@ -104,8 +108,8 @@ class GithubUpdater:
             for commit in commits:
                 sha = commit["sha"]
                 logging.info("Checking commit %s", sha)
-                if data.exists(sha):
-                    logging.info("  -> Already exists in dataset, finish")
+                if run_list.exists(metadata, sha):
+                    logging.info("  -> Already exists in subset, finish")
                     found_existing = True
                     break
 
@@ -158,13 +162,13 @@ class GithubUpdater:
                     else:
                         logging.warning("    -> unknown file type, ignore")
 
+                append_commit(metadata, run_list, run["id"], sha, commit)
                 report.to_json(self.data_path / f"{sha}.json")
-                append_commit(data, run["id"], sha, commit)
 
             if found_existing or page >= self.page_limit:
                 break
 
-    def _update_regression(self, data: DataJson) -> None:
+    def _update_regression(self, metadata: MetadataJson, run_list: RunListJson) -> None:
         found_existing = False
         for page in count(1):
             runs = self.gh.actions.list_workflow_runs(
@@ -188,8 +192,8 @@ class GithubUpdater:
                     logging.warning("  -> Workflow run failed, skip")
                     continue
                 sha = run["head_sha"]
-                if data.exists(sha):
-                    logging.info("  -> Already exists in dataset, finish")
+                if run_list.exists(metadata, sha):
+                    logging.info("  -> Already exists in subset, finish")
                     found_existing = True
                     break
 
@@ -230,8 +234,8 @@ class GithubUpdater:
                     else:
                         logging.warning("    -> unknown file type, ignore")
 
+                append_commit(metadata, run_list, run["id"], sha, commit, note)
                 report.to_json(self.data_path / f"{sha}.json")
-                append_commit(data, run["id"], sha, commit, note)
 
             if found_existing or page >= self.page_limit:
                 break
@@ -251,6 +255,7 @@ class LocalUpdater:
         self.config = config
         self.local_path = local_path
         self.data_path = config.data_path(data_root)
+        self.branch_path = config.branch_path(data_root)
 
     def run(self) -> None:
         if self.config.type_ == "test":
@@ -264,7 +269,8 @@ class LocalUpdater:
                     "Local update for gem5 regression is not implemented yet"
                 )
 
-        data = DataJson.from_json(self.data_path / "data.json")
+        metadata = MetadataJson.from_json(self.branch_path / "metadata.json")
+        run_list = RunListJson.from_json(self.data_path / "list.json")
         sha = input("Please input the commit hash for this data: ")
         commit = self.gh.commits.get_commit(
             self.config.owner, self.config.repo_name, sha
@@ -300,6 +306,7 @@ class LocalUpdater:
             with self.local_path.open("r", encoding="utf-8") as result:
                 note = report.append_score_txt(result.read().strip())
 
+        append_commit(metadata, run_list, run_id, sha, commit, note)
         report.to_json(self.data_path / f"{sha}.json")
-        append_commit(data, run_id, sha, commit, note)
-        data.to_json(self.data_path / "data.json")
+        metadata.to_json(self.branch_path / "metadata.json")
+        run_list.to_json(self.data_path / "list.json")
