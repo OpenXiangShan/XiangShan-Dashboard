@@ -97,7 +97,6 @@
         {{ t("lastTenRuns") }}
       </button>
       <button
-        v-if="tab.id === 'score-weekly'"
         class="sidebar-btn"
         :class="{ active: activeQuickPreset === 'allRuns' }"
         type="button"
