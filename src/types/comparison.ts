@@ -28,5 +28,6 @@ export interface ComparisonSource {
   customDate?: string;
   customCoverage?: string;
   customSpecVersion?: SpecVersion;
+  customNote?: string;
   clipboardError?: string;
 }

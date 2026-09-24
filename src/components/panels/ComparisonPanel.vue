@@ -149,12 +149,13 @@ const warnings = computed(() => {
     [aRun, a],
     [bRun, b],
   ] as const) {
-    if (run?.note) {
+    const note = source.runId === "custom" ? source.customNote : run?.note;
+    if (note) {
       result.push(
         props
           .t("comparisonNote")
           .replace("{0}", source.id.toUpperCase())
-          .replace("{1}", run.note),
+          .replace("{1}", note),
       );
     }
   }

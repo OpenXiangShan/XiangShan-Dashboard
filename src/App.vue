@@ -458,6 +458,7 @@ function resetComparisonSource(source: ComparisonSource) {
   source.customDate = undefined;
   source.customCoverage = undefined;
   source.customSpecVersion = undefined;
+  source.customNote = undefined;
   source.clipboardError = undefined;
 }
 
@@ -489,6 +490,7 @@ async function onComparisonDatasetChange(id: "a" | "b", datasetId: string) {
   source.customDate = undefined;
   source.customCoverage = undefined;
   source.customSpecVersion = undefined;
+  source.customNote = undefined;
   source.clipboardError = undefined;
   source.dataset = dataset;
   source.runs = [];
@@ -507,6 +509,7 @@ async function onComparisonRunChange(id: "a" | "b", runId: string) {
   source.customDate = undefined;
   source.customCoverage = undefined;
   source.customSpecVersion = undefined;
+  source.customNote = undefined;
   source.clipboardError = undefined;
   source.runId = runId;
   if (!source.dataset) return;
@@ -595,6 +598,30 @@ function extractClipboardMetadata(text: string): {
   return metadata;
 }
 
+function extractCheckpointNote(text: string): string | undefined {
+  let note: string | undefined;
+  for (const line of text.split(/\r?\n/)) {
+    const match =
+      /^[ \t]*Checkpoints Number[ \t]*:[ \t]*(\d+)[ \t]*\/[ \t]*(\d+)[ \t]*$/.exec(
+        line,
+      );
+    if (!match) continue;
+    const success = Number(match[1]);
+    const total = Number(match[2]);
+    if (
+      !Number.isSafeInteger(success) ||
+      !Number.isSafeInteger(total) ||
+      success > total
+    )
+      continue;
+    const failed = total - success;
+    note = failed
+      ? `${failed} out of ${total} checkpoints failed, score may be inaccurate`
+      : undefined;
+  }
+  return note;
+}
+
 async function pasteComparisonSource(id: "a" | "b") {
   if (!navigator.clipboard?.readText)
     throw new Error(t("comparisonClipboardDenied"));
@@ -613,6 +640,7 @@ async function pasteComparisonSource(id: "a" | "b") {
     source.customCoverage = metadata.coverage;
     source.customSpecVersion =
       specVersion || detectSpecVersion(Object.keys(payload));
+    source.customNote = extractCheckpointNote(text);
     source.clipboardError = undefined;
   }
 }
@@ -702,6 +730,7 @@ function swapComparisonSources() {
     customDate: sourceA.customDate,
     customCoverage: sourceA.customCoverage,
     customSpecVersion: sourceA.customSpecVersion,
+    customNote: sourceA.customNote,
     clipboardError: sourceA.clipboardError,
   };
   const stateB = {
@@ -713,6 +742,7 @@ function swapComparisonSources() {
     customDate: sourceB.customDate,
     customCoverage: sourceB.customCoverage,
     customSpecVersion: sourceB.customSpecVersion,
+    customNote: sourceB.customNote,
     clipboardError: sourceB.clipboardError,
   };
 
