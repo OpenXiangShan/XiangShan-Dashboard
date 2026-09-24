@@ -25,9 +25,9 @@ npm run build
 
 ## Updating Data
 
-Install the Python dependencies from `requirements.txt`, then run `python scripts/update.py --token "$GH_TOKEN"` to update all configured datasets. Use `--config weekly-xs-gcc-spec17` to update one dataset, or supply multiple config IDs. Run `python scripts/update.py --help` to see the available IDs.
+Install the Python dependencies from `requirements.txt`, then run `python scripts/update.py --token "$GH_TOKEN"` to update all configured datasets. Use `--config weekly-xs-gcc-spec17` to update one dataset, or supply multiple config IDs. Run `python scripts/update.py --help` to see the available IDs. Increase `--page-limit` to backfill older runs or commits.
 
-Update definitions live in `scripts/modules/config.py`. For a local import, select exactly one configuration and pass `--local` with a directory of `ipc-*` files for `test-xs`, or a score text file for an xs regression. Local imports still require `--token` to fetch commit and workflow metadata.
+Update definitions live in `scripts/modules/config.py`. Each config specifies its data type (`test`, `nightly`, or `weekly`), how to discover runs (`commits` or `runs`), and the workflow event (`push` or `schedule`) independently. In particular, GEM5 0.3c push regressions are stored under `nightly`, with aligned and ideal results on separate branches. For a local import, select exactly one configuration and pass `--local` with a directory of `ipc-*` files for `test-xs`, or a score text file for an xs regression. Local imports still require `--token` to fetch commit and workflow metadata. Successful imports register new branches and subsets in the dashboard indexes automatically.
 
 ## Data Layout
 
@@ -43,7 +43,7 @@ data/
 			ipc/
 				list.json
 				<hash>.json
-	nightly/ # Nightly Regression workflow
+	nightly/ # 0.3c regression scores (scheduled or push)
 		branch.json
 		<repo>/<branch>/
 			metadata.json

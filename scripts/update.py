@@ -18,7 +18,7 @@ def main() -> None:
     parser.add_argument("--token", help="GitHub personal access token", required=True)
     parser.add_argument("--logging-level", help="Logging level", default="INFO")
     parser.add_argument(
-        "--page-limit", help="Search commit page limit", type=int, default=3
+        "--page-limit", help="Search page limit", type=int, default=3
     )
     parser.add_argument(
         "--config",

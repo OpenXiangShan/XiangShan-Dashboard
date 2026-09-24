@@ -4,7 +4,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal
 
-
 DEFAULT_BRANCH = "kunminghu-v3"
 
 
@@ -17,6 +16,8 @@ class UpdateConfig:
     repo_name: str
     workflow: str
     artifact_name: str
+    discovery: Literal["commits", "runs"] = "runs"
+    event: Literal["push", "schedule"] = "schedule"
     branch: str = DEFAULT_BRANCH
     upstream_branch: str = DEFAULT_BRANCH
     owner: str = "OpenXiangShan"
@@ -26,6 +27,10 @@ class UpdateConfig:
     def __post_init__(self) -> None:
         if self.type_ not in ("test", "nightly", "weekly"):
             raise ValueError(f"Unsupported update type: {self.type_}")
+        if self.discovery not in ("commits", "runs"):
+            raise ValueError(f"Unsupported discovery: {self.discovery}")
+        if self.event not in ("push", "schedule"):
+            raise ValueError(f"Unsupported workflow event: {self.event}")
         if self.type_ == "test" and (
             self.compiler is not None or self.spec is not None
         ):
@@ -57,13 +62,46 @@ class UpdateConfig:
 
 
 CONFIGS = (
-    UpdateConfig("test", "xs", "XiangShan", "EMU Performance Test", "ipc-"),
+    UpdateConfig(
+        "test",
+        "xs",
+        "XiangShan",
+        "EMU Performance Test",
+        "ipc-",
+        discovery="commits",
+        event="push",
+    ),
     UpdateConfig(
         "nightly",
         "xs",
         "XiangShan",
         "Nightly Regression",
         "score",
+        compiler="gcc",
+        spec="spec06",
+    ),
+    UpdateConfig(
+        "nightly",
+        "gem5",
+        "GEM5",
+        "gem5 Align BTB Performance Test(0.3c)",
+        "score-spec06-rva23-novec-gcc16-0.3c",
+        discovery="commits",
+        event="push",
+        upstream_branch="xs-dev",
+        compiler="gcc",
+        spec="spec06",
+    ),
+    UpdateConfig(
+        "nightly",
+        "gem5",
+        "GEM5",
+        "gem5 Ideal BTB Performance Test",
+        "score-spec06-rva23-novec-gcc16-0.3c",
+        discovery="commits",
+        event="push",
+        branch=f"{DEFAULT_BRANCH}-ideal",
+        upstream_branch="xs-dev",
         compiler="gcc",
         spec="spec06",
     ),
@@ -113,6 +151,71 @@ CONFIGS = (
         upstream_branch="xs-dev",
         compiler="gcc",
         spec="spec17",
+    ),
+    UpdateConfig(
+        "weekly",
+        "gem5",
+        "GEM5",
+        "gem5 Ideal BTB Weekly Performance Test",
+        "score-gcc15-spec26-1.0c",
+        upstream_branch="xs-dev",
+        compiler="gcc",
+        spec="spec26",
+    ),
+    UpdateConfig(
+        "weekly",
+        "gem5",
+        "GEM5",
+        "gem5 Ideal BTB Weekly Performance Test",
+        "score-ideal-spec06-rva23-novec-gcc16-1.0c",
+        branch=f"{DEFAULT_BRANCH}-ideal",
+        upstream_branch="xs-dev",
+        compiler="gcc",
+        spec="spec06",
+    ),
+    UpdateConfig(
+        "weekly",
+        "gem5",
+        "GEM5",
+        "gem5 Ideal BTB Weekly Performance Test",
+        "score-ideal-spec17-1.0c",
+        branch=f"{DEFAULT_BRANCH}-ideal",
+        upstream_branch="xs-dev",
+        compiler="gcc",
+        spec="spec17",
+    ),
+    UpdateConfig(
+        "weekly",
+        "gem5",
+        "GEM5",
+        "gem5 Ideal BTB Weekly Performance Test",
+        "score-ideal-gcc15-spec26-1.0c",
+        branch=f"{DEFAULT_BRANCH}-ideal",
+        upstream_branch="xs-dev",
+        compiler="gcc",
+        spec="spec26",
+    ),
+    UpdateConfig(
+        "weekly",
+        "gem5",
+        "GEM5",
+        "gem5 Ideal BTB Weekly Performance Test",
+        "score-smt-ideal-gcc12-spec06-smt-1.0c",
+        branch=f"{DEFAULT_BRANCH}-smt",
+        upstream_branch="xs-dev",
+        compiler="gcc",
+        spec="spec06",
+    ),
+    UpdateConfig(
+        "weekly",
+        "gem5",
+        "GEM5",
+        "gem5 Ideal BTB Weekly Performance Test",
+        "score-ideal-gcc12-spec06-1.0c",
+        branch=f"{DEFAULT_BRANCH}-smt-base",
+        upstream_branch="xs-dev",
+        compiler="gcc",
+        spec="spec06",
     ),
 )
 

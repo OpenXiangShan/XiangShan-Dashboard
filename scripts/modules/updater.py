@@ -1,10 +1,11 @@
 """Update dashboard data from GitHub artifacts or local results."""
 
 import calendar
-from itertools import count
+import json
 import logging
-from pathlib import Path
 import time
+from itertools import count
+from pathlib import Path
 from typing import Callable
 from zipfile import ZipFile
 
@@ -20,7 +21,8 @@ def workflow_runs_for_commit(gh: GitHub, config: UpdateConfig, sha: str) -> list
     runs = gh.actions.list_workflow_runs(
         config.owner,
         config.repo_name,
-        event="push" if config.type_ == "test" else "schedule",
+        branch=config.upstream_branch,
+        event=config.event,
         status="completed",
         head_sha=sha,
     )["workflow_runs"]
@@ -50,6 +52,28 @@ def append_commit(
     run_list.add(run_id, note)
 
 
+def add_to_index(path: Path, key: str, value: str) -> None:
+    if path.exists():
+        with path.open("r", encoding="utf-8") as source:
+            index = json.load(source)
+    else:
+        index = {"default": value, key: []}
+    if value in index[key]:
+        return
+    index[key].append(value)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8") as output:
+        json.dump(index, output, indent=2, separators=(",", ": "))
+
+
+def register_dataset(config: UpdateConfig, root: Path) -> None:
+    branch_path = config.branch_path(root)
+    branch = branch_path.relative_to(root / config.type_).as_posix()
+    subset = config.data_path(root).relative_to(branch_path).as_posix()
+    add_to_index(root / config.type_ / "branch.json", "branches", branch)
+    add_to_index(branch_path / "subset.json", "subsets", subset)
+
+
 class GithubUpdater:
     """Fetch and store results from completed GitHub workflow runs."""
 
@@ -63,18 +87,22 @@ class GithubUpdater:
         self.gh = gh
         self.config = config
         self.page_limit = page_limit
+        self.data_root = data_root
         self.data_path = config.data_path(data_root)
         self.branch_path = config.branch_path(data_root)
 
     def run(self) -> None:
         metadata = MetadataJson.from_json(self.branch_path / "metadata.json")
         run_list = RunListJson.from_json(self.data_path / "list.json")
-        if self.config.type_ == "test":
-            self._update_test(metadata, run_list)
+        if self.config.discovery == "commits":
+            self._update_by_commits(metadata, run_list)
         else:
-            self._update_regression(metadata, run_list)
+            self._update_by_runs(metadata, run_list)
+        if not run_list.runs:
+            return
         metadata.to_json(self.branch_path / "metadata.json")
         run_list.to_json(self.data_path / "list.json")
+        register_dataset(self.config, self.data_root)
 
     def _get_artifacts(
         self, run_id: int, matches: Callable[[dict], bool]
@@ -92,7 +120,9 @@ class GithubUpdater:
             artifacts.extend(artifact for artifact in result if matches(artifact))
         return artifacts
 
-    def _update_test(self, metadata: MetadataJson, run_list: RunListJson) -> None:
+    def _update_by_commits(
+        self, metadata: MetadataJson, run_list: RunListJson
+    ) -> None:
         found_existing = False
         for page in count(1):
             commits = self.gh.commits.list_commits(
@@ -125,57 +155,19 @@ class GithubUpdater:
                 if run["conclusion"] != "success":
                     logging.warning("  -> Workflow run failed, skip")
                     continue
-
-                artifacts = self._get_artifacts(
-                    run["id"],
-                    lambda artifact: artifact["name"].startswith(
-                        self.config.artifact_name
-                    ),
-                )
-                if not artifacts:
-                    logging.info("  -> No artifact, skip")
-                    continue
-                logging.info("  -> Found %d artifacts", len(artifacts))
-
-                report = ReportTestJson()
-                for artifact in artifacts:
-                    logging.info("  -> Download %s ...", artifact["name"])
-                    body = self.gh.actions.download_artifact(
-                        self.config.owner, self.config.repo_name, artifact["id"]
-                    )
-                    if isinstance(body, bytes):
-                        testcase = artifact["name"][len(self.config.artifact_name) :]
-                        report.append(testcase, float(body.decode("utf-8").strip()))
-                    elif isinstance(body, ZipFile):
-                        extra = [
-                            name
-                            for name in body.namelist()
-                            if not name.startswith(self.config.artifact_name)
-                        ]
-                        if extra:
-                            logging.warning(
-                                "  -> Artifact %s contains non-ipc files: %s, ignore",
-                                artifact["name"],
-                                extra,
-                            )
-                        report.append_artifact_zip(body)
-                    else:
-                        logging.warning("    -> unknown file type, ignore")
-
-                append_commit(metadata, run_list, run["id"], sha, commit)
-                report.to_json(self.data_path / f"{sha}.json")
+                self._store_run(run, sha, commit, metadata, run_list)
 
             if found_existing or page >= self.page_limit:
                 break
 
-    def _update_regression(self, metadata: MetadataJson, run_list: RunListJson) -> None:
+    def _update_by_runs(self, metadata: MetadataJson, run_list: RunListJson) -> None:
         found_existing = False
         for page in count(1):
             runs = self.gh.actions.list_workflow_runs(
                 self.config.owner,
                 self.config.repo_name,
                 branch=self.config.upstream_branch,
-                event="schedule",
+                event=self.config.event,
                 status="completed",
                 page=page,
                 per_page=10,
@@ -200,45 +192,88 @@ class GithubUpdater:
                 commit = self.gh.commits.get_commit(
                     self.config.owner, self.config.repo_name, sha
                 )
-                artifacts = self._get_artifacts(
-                    run["id"],
-                    lambda artifact: artifact["name"] == self.config.artifact_name,
-                )
-                if not artifacts:
-                    logging.info("  -> No artifact, skip")
-                    continue
-                logging.info("  -> Found %d artifacts", len(artifacts))
-
-                report = ReportRegressionJson()
-                note = None
-                for artifact in artifacts:
-                    logging.info("  -> Download %s ...", artifact["name"])
-                    body = self.gh.actions.download_artifact(
-                        self.config.owner, self.config.repo_name, artifact["id"]
-                    )
-                    if isinstance(body, bytes):
-                        note = report.append_score_txt(body.decode("utf-8").strip())
-                    elif isinstance(body, ZipFile):
-                        extra = [
-                            name
-                            for name in body.namelist()
-                            if not (name.startswith("score") and name.endswith(".txt"))
-                        ]
-                        if extra:
-                            logging.warning(
-                                "  -> Artifact %s contains score files: %s, ignore",
-                                artifact["name"],
-                                extra,
-                            )
-                        note = report.append_artifact_zip(body)
-                    else:
-                        logging.warning("    -> unknown file type, ignore")
-
-                append_commit(metadata, run_list, run["id"], sha, commit, note)
-                report.to_json(self.data_path / f"{sha}.json")
+                self._store_run(run, sha, commit, metadata, run_list)
 
             if found_existing or page >= self.page_limit:
                 break
+
+    def _store_run(
+        self,
+        run: dict,
+        sha: str,
+        commit: dict,
+        metadata: MetadataJson,
+        run_list: RunListJson,
+    ) -> None:
+        if self.config.type_ == "test":
+            artifacts = self._get_artifacts(
+                run["id"],
+                lambda artifact: artifact["name"].startswith(self.config.artifact_name),
+            )
+        else:
+            artifacts = self._get_artifacts(
+                run["id"],
+                lambda artifact: artifact["name"] == self.config.artifact_name,
+            )
+        if not artifacts:
+            logging.info("  -> No artifact, skip")
+            return
+        logging.info("  -> Found %d artifacts", len(artifacts))
+
+        if self.config.type_ == "test":
+            report = ReportTestJson()
+            for artifact in artifacts:
+                logging.info("  -> Download %s ...", artifact["name"])
+                body = self.gh.actions.download_artifact(
+                    self.config.owner, self.config.repo_name, artifact["id"]
+                )
+                if isinstance(body, bytes):
+                    testcase = artifact["name"][len(self.config.artifact_name) :]
+                    report.append(testcase, float(body.decode("utf-8").strip()))
+                elif isinstance(body, ZipFile):
+                    extra = [
+                        name
+                        for name in body.namelist()
+                        if not name.startswith(self.config.artifact_name)
+                    ]
+                    if extra:
+                        logging.warning(
+                            "  -> Artifact %s contains non-ipc files: %s, ignore",
+                            artifact["name"],
+                            extra,
+                        )
+                    report.append_artifact_zip(body)
+                else:
+                    logging.warning("    -> unknown file type, ignore")
+            note = None
+        else:
+            report = ReportRegressionJson()
+            note = None
+            for artifact in artifacts:
+                logging.info("  -> Download %s ...", artifact["name"])
+                body = self.gh.actions.download_artifact(
+                    self.config.owner, self.config.repo_name, artifact["id"]
+                )
+                if isinstance(body, bytes):
+                    note = report.append_score_txt(body.decode("utf-8").strip())
+                elif isinstance(body, ZipFile):
+                    extra = [
+                        name
+                        for name in body.namelist()
+                        if not (name.startswith("score") and name.endswith(".txt"))
+                    ]
+                    if extra:
+                        logging.warning(
+                            "  -> Artifact %s contains score files: %s, ignore",
+                            artifact["name"],
+                            extra,
+                        )
+                    note = report.append_artifact_zip(body)
+                else:
+                    logging.warning("    -> unknown file type, ignore")
+
+        append_commit(metadata, run_list, run["id"], sha, commit, note)
+        report.to_json(self.data_path / f"{sha}.json")
 
 
 class LocalUpdater:
@@ -254,6 +289,7 @@ class LocalUpdater:
         self.gh = gh
         self.config = config
         self.local_path = local_path
+        self.data_root = data_root
         self.data_path = config.data_path(data_root)
         self.branch_path = config.branch_path(data_root)
 
@@ -310,3 +346,4 @@ class LocalUpdater:
         report.to_json(self.data_path / f"{sha}.json")
         metadata.to_json(self.branch_path / "metadata.json")
         run_list.to_json(self.data_path / "list.json")
+        register_dataset(self.config, self.data_root)
