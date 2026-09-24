@@ -4,9 +4,10 @@ import calendar
 import json
 import logging
 import time
+from collections.abc import Sequence
+from dataclasses import dataclass
 from itertools import count
 from pathlib import Path
-from typing import Callable
 from zipfile import ZipFile
 
 from modules.config import UpdateConfig
@@ -17,16 +18,29 @@ from modules.json import MetadataJson, RunListJson, ReportRegressionJson, Report
 DATA_PATH = Path(__file__).parent.parent.parent / "data"
 
 
-def workflow_runs_for_commit(gh: GitHub, config: UpdateConfig, sha: str) -> list[dict]:
-    runs = gh.actions.list_workflow_runs(
-        config.owner,
-        config.repo_name,
-        branch=config.upstream_branch,
-        event=config.event,
-        status="completed",
-        head_sha=sha,
-    )["workflow_runs"]
-    return [run for run in runs if run["name"] == config.workflow]
+def workflow_runs_for_commit(
+    gh: GitHub, config: UpdateConfig, sha: str, *, all_workflows: bool = False
+) -> list[dict]:
+    runs = []
+    for page in count(1):
+        result = gh.actions.list_workflow_runs(
+            config.owner,
+            config.repo_name,
+            branch=config.upstream_branch,
+            event=config.event,
+            status="completed",
+            head_sha=sha,
+            per_page=100,
+            page=page,
+        )["workflow_runs"]
+        runs.extend(result)
+        if len(result) < 100:
+            break
+    return (
+        runs
+        if all_workflows
+        else [run for run in runs if run["name"] == config.workflow]
+    )
 
 
 def append_commit(
@@ -74,39 +88,70 @@ def register_dataset(config: UpdateConfig, root: Path) -> None:
     add_to_index(branch_path / "subset.json", "subsets", subset)
 
 
+@dataclass
+class UpdateTarget:
+    config: UpdateConfig
+    metadata: MetadataJson
+    run_list: RunListJson
+
+
 class GithubUpdater:
     """Fetch and store results from completed GitHub workflow runs."""
 
     def __init__(
         self,
         gh: GitHub,
-        config: UpdateConfig,
+        config: UpdateConfig | Sequence[UpdateConfig],
         page_limit: int = 3,
         data_root: Path = DATA_PATH,
     ) -> None:
         self.gh = gh
-        self.config = config
+        self.configs = (config,) if isinstance(config, UpdateConfig) else tuple(config)
+        if not self.configs:
+            raise ValueError("At least one update config is required")
+        self.config = self.configs[0]
+        if any(config.batch_key != self.config.batch_key for config in self.configs):
+            raise ValueError(
+                "Batch configs must share repository, branch, event, and discovery"
+            )
         self.page_limit = page_limit
         self.data_root = data_root
-        self.data_path = config.data_path(data_root)
-        self.branch_path = config.branch_path(data_root)
 
     def run(self) -> None:
-        metadata = MetadataJson.from_json(self.branch_path / "metadata.json")
-        run_list = RunListJson.from_json(self.data_path / "list.json")
+        metadata_by_path: dict[Path, MetadataJson] = {}
+        targets: list[UpdateTarget] = []
+        for config in self.configs:
+            metadata_path = config.branch_path(self.data_root) / "metadata.json"
+            if metadata_path not in metadata_by_path:
+                metadata_by_path[metadata_path] = MetadataJson.from_json(metadata_path)
+            targets.append(
+                UpdateTarget(
+                    config,
+                    metadata_by_path[metadata_path],
+                    RunListJson.from_json(
+                        config.data_path(self.data_root) / "list.json"
+                    ),
+                )
+            )
         if self.config.discovery == "commits":
-            self._update_by_commits(metadata, run_list)
+            self._update_by_commits(targets)
         else:
-            self._update_by_runs(metadata, run_list)
-        if not run_list.runs:
-            return
-        metadata.to_json(self.branch_path / "metadata.json")
-        run_list.to_json(self.data_path / "list.json")
-        register_dataset(self.config, self.data_root)
+            self._update_by_runs(targets)
+        saved_metadata: set[Path] = set()
+        for target in targets:
+            if not target.run_list.runs:
+                continue
+            config = target.config
+            metadata_path = config.branch_path(self.data_root) / "metadata.json"
+            if metadata_path not in saved_metadata:
+                target.metadata.to_json(metadata_path)
+                saved_metadata.add(metadata_path)
+            target.run_list.to_json(
+                config.data_path(self.data_root) / "list.json"
+            )
+            register_dataset(config, self.data_root)
 
-    def _get_artifacts(
-        self, run_id: int, matches: Callable[[dict], bool]
-    ) -> list[dict]:
+    def _get_artifacts(self, run_id: int) -> list[dict]:
         artifacts = []
         for page in count(1):
             result = self.gh.actions.list_workflow_run_artifacts(
@@ -117,13 +162,11 @@ class GithubUpdater:
             )["artifacts"]
             if not result:
                 break
-            artifacts.extend(artifact for artifact in result if matches(artifact))
+            artifacts.extend(result)
         return artifacts
 
-    def _update_by_commits(
-        self, metadata: MetadataJson, run_list: RunListJson
-    ) -> None:
-        found_existing = False
+    def _update_by_commits(self, targets: list[UpdateTarget]) -> None:
+        pending = targets.copy()
         for page in count(1):
             commits = self.gh.commits.list_commits(
                 self.config.owner,
@@ -138,30 +181,46 @@ class GithubUpdater:
             for commit in commits:
                 sha = commit["sha"]
                 logging.info("Checking commit %s", sha)
-                if run_list.exists(metadata, sha):
-                    logging.info("  -> Already exists in subset, finish")
-                    found_existing = True
+                pending = [
+                    target
+                    for target in pending
+                    if not target.run_list.exists(target.metadata, sha)
+                ]
+                if not pending:
                     break
 
-                runs = workflow_runs_for_commit(self.gh, self.config, sha)
+                runs = workflow_runs_for_commit(
+                    self.gh, self.config, sha, all_workflows=True
+                )
                 if not runs:
                     logging.info("  -> No workflow related, skip")
                     continue
-                if len(runs) > 1:
-                    logging.warning(
-                        "  -> Multiple workflow runs found, using the first one"
-                    )
-                run = runs[0]
-                if run["conclusion"] != "success":
-                    logging.warning("  -> Workflow run failed, skip")
-                    continue
-                self._store_run(run, sha, commit, metadata, run_list)
+                artifacts_by_run: dict[int, list[dict]] = {}
+                for target in pending:
+                    matching = [
+                        run for run in runs if run["name"] == target.config.workflow
+                    ]
+                    if not matching:
+                        continue
+                    if len(matching) > 1:
+                        logging.warning(
+                            "  -> Multiple workflow runs found, using the first one"
+                        )
+                    run = matching[0]
+                    if run["conclusion"] != "success":
+                        logging.warning("  -> Workflow run failed, skip")
+                        continue
+                    if run["id"] not in artifacts_by_run:
+                        artifacts_by_run[run["id"]] = self._get_artifacts(run["id"])
+                    artifacts = artifacts_by_run[run["id"]]
+                    self._store_run(target, run, sha, commit, artifacts)
 
-            if found_existing or page >= self.page_limit:
+            if not pending or len(commits) < 10 or page >= self.page_limit:
                 break
 
-    def _update_by_runs(self, metadata: MetadataJson, run_list: RunListJson) -> None:
-        found_existing = False
+    def _update_by_runs(self, targets: list[UpdateTarget]) -> None:
+        pending = targets.copy()
+        commits_by_sha: dict[str, dict] = {}
         for page in count(1):
             runs = self.gh.actions.list_workflow_runs(
                 self.config.owner,
@@ -177,64 +236,79 @@ class GithubUpdater:
 
             for run in runs:
                 logging.info("Checking workflow run %s", run["id"])
-                if run["name"] != self.config.workflow:
-                    logging.info("  -> Workflow name mismatch, skip")
+                matching = [
+                    target for target in pending if target.config.workflow == run["name"]
+                ]
+                if not matching:
                     continue
                 if run["conclusion"] != "success":
                     logging.warning("  -> Workflow run failed, skip")
                     continue
                 sha = run["head_sha"]
-                if run_list.exists(metadata, sha):
-                    logging.info("  -> Already exists in subset, finish")
-                    found_existing = True
+                pending = [
+                    target
+                    for target in pending
+                    if target not in matching
+                    or not target.run_list.exists(target.metadata, sha)
+                ]
+                matching = [target for target in matching if target in pending]
+                if not pending:
                     break
+                if not matching:
+                    continue
 
-                commit = self.gh.commits.get_commit(
-                    self.config.owner, self.config.repo_name, sha
-                )
-                self._store_run(run, sha, commit, metadata, run_list)
+                if sha not in commits_by_sha:
+                    commits_by_sha[sha] = self.gh.commits.get_commit(
+                        self.config.owner, self.config.repo_name, sha
+                    )
+                artifacts = self._get_artifacts(run["id"])
+                for target in matching:
+                    self._store_run(target, run, sha, commits_by_sha[sha], artifacts)
 
-            if found_existing or page >= self.page_limit:
+            if not pending or len(runs) < 10 or page >= self.page_limit:
                 break
 
     def _store_run(
         self,
+        target: UpdateTarget,
         run: dict,
         sha: str,
         commit: dict,
-        metadata: MetadataJson,
-        run_list: RunListJson,
+        available_artifacts: list[dict],
     ) -> None:
-        if self.config.type_ == "test":
-            artifacts = self._get_artifacts(
-                run["id"],
-                lambda artifact: artifact["name"].startswith(self.config.artifact_name),
-            )
+        config = target.config
+        if config.type_ == "test":
+            artifacts = [
+                artifact
+                for artifact in available_artifacts
+                if artifact["name"].startswith(config.artifact_name)
+            ]
         else:
-            artifacts = self._get_artifacts(
-                run["id"],
-                lambda artifact: artifact["name"] == self.config.artifact_name,
-            )
+            artifacts = [
+                artifact
+                for artifact in available_artifacts
+                if artifact["name"] == config.artifact_name
+            ]
         if not artifacts:
             logging.info("  -> No artifact, skip")
             return
         logging.info("  -> Found %d artifacts", len(artifacts))
 
-        if self.config.type_ == "test":
+        if config.type_ == "test":
             report = ReportTestJson()
             for artifact in artifacts:
                 logging.info("  -> Download %s ...", artifact["name"])
                 body = self.gh.actions.download_artifact(
-                    self.config.owner, self.config.repo_name, artifact["id"]
+                    config.owner, config.repo_name, artifact["id"]
                 )
                 if isinstance(body, bytes):
-                    testcase = artifact["name"][len(self.config.artifact_name) :]
+                    testcase = artifact["name"][len(config.artifact_name) :]
                     report.append(testcase, float(body.decode("utf-8").strip()))
                 elif isinstance(body, ZipFile):
                     extra = [
                         name
                         for name in body.namelist()
-                        if not name.startswith(self.config.artifact_name)
+                        if not name.startswith(config.artifact_name)
                     ]
                     if extra:
                         logging.warning(
@@ -252,7 +326,7 @@ class GithubUpdater:
             for artifact in artifacts:
                 logging.info("  -> Download %s ...", artifact["name"])
                 body = self.gh.actions.download_artifact(
-                    self.config.owner, self.config.repo_name, artifact["id"]
+                    config.owner, config.repo_name, artifact["id"]
                 )
                 if isinstance(body, bytes):
                     note = report.append_score_txt(body.decode("utf-8").strip())
@@ -272,8 +346,8 @@ class GithubUpdater:
                 else:
                     logging.warning("    -> unknown file type, ignore")
 
-        append_commit(metadata, run_list, run["id"], sha, commit, note)
-        report.to_json(self.data_path / f"{sha}.json")
+        append_commit(target.metadata, target.run_list, run["id"], sha, commit, note)
+        report.to_json(config.data_path(self.data_root) / f"{sha}.json")
 
 
 class LocalUpdater:

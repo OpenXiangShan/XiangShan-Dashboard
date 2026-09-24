@@ -49,6 +49,16 @@ class UpdateConfig:
             parts.append(self.branch)
         return "-".join(parts)
 
+    @property
+    def batch_key(self) -> tuple[str, ...]:
+        return (
+            self.owner,
+            self.repo_name,
+            self.upstream_branch,
+            self.event,
+            self.discovery,
+        )
+
     def data_path(self, root: Path) -> Path:
         if self.type_ == "test":
             return self.branch_path(root) / "ipc"
@@ -97,10 +107,23 @@ CONFIGS = (
         "gem5",
         "GEM5",
         "gem5 Ideal BTB Performance Test",
-        "score-spec06-rva23-novec-gcc16-0.3c",
+        "score-ideal-spec06-rva23-novec-gcc16-0.3c",
         discovery="commits",
         event="push",
         branch=f"{DEFAULT_BRANCH}-ideal",
+        upstream_branch="xs-dev",
+        compiler="gcc",
+        spec="spec06",
+    ),
+    UpdateConfig(
+        "nightly",
+        "gem5",
+        "GEM5",
+        "gem5 SMT SPEC2006 Performance Test(0.3c)",
+        "score-smt-ideal-gcc12-spec06-smt-0.3c",
+        discovery="commits",
+        event="push",
+        branch=f"{DEFAULT_BRANCH}-smt",
         upstream_branch="xs-dev",
         compiler="gcc",
         spec="spec06",

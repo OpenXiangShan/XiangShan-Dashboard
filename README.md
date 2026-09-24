@@ -29,6 +29,8 @@ Install the Python dependencies from `requirements.txt`, then run `python script
 
 Update definitions live in `scripts/modules/config.py`. Each config specifies its data type (`test`, `nightly`, or `weekly`), how to discover runs (`commits` or `runs`), and the workflow event (`push` or `schedule`) independently. In particular, GEM5 0.3c push regressions are stored under `nightly`, with aligned and ideal results on separate branches. For a local import, select exactly one configuration and pass `--local` with a directory of `ipc-*` files for `test-xs`, or a score text file for an xs regression. Local imports still require `--token` to fetch commit and workflow metadata. Successful imports register new branches and subsets in the dashboard indexes automatically.
 
+GitHub updates batch configs sharing the same upstream repository, branch, event, and discovery method. Each batch scans commits or workflow runs once, while each subset still stops independently when it reaches existing data; `--page-limit` applies to the shared scan.
+
 ## Data Layout
 
 Data is separated by domain under `data`:
