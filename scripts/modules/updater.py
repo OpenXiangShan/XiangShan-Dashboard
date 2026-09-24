@@ -1,0 +1,305 @@
+"""Update dashboard data from GitHub artifacts or local results."""
+
+import calendar
+from itertools import count
+import logging
+from pathlib import Path
+import time
+from typing import Callable
+from zipfile import ZipFile
+
+from modules.config import UpdateConfig
+from modules.github import GitHub
+from modules.json import DataJson, ReportRegressionJson, ReportTestJson
+
+
+DATA_PATH = Path(__file__).parent.parent.parent / "data"
+
+
+def workflow_runs_for_commit(gh: GitHub, config: UpdateConfig, sha: str) -> list[dict]:
+    runs = gh.actions.list_workflow_runs(
+        config.owner,
+        config.repo_name,
+        event="push" if config.type_ == "test" else "schedule",
+        status="completed",
+        head_sha=sha,
+    )["workflow_runs"]
+    return [run for run in runs if run["name"] == config.workflow]
+
+
+def append_commit(
+    data: DataJson,
+    run_id: int,
+    sha: str,
+    commit: dict,
+    note: str | None = None,
+) -> None:
+    data.append(
+        run_id,
+        sha,
+        commit["commit"]["message"].splitlines()[0],
+        int(
+            calendar.timegm(
+                time.strptime(
+                    commit["commit"]["committer"]["date"], "%Y-%m-%dT%H:%M:%SZ"
+                )
+            )
+        ),
+        note,
+    )
+
+
+class GithubUpdater:
+    """Fetch and store results from completed GitHub workflow runs."""
+
+    def __init__(
+        self,
+        gh: GitHub,
+        config: UpdateConfig,
+        page_limit: int = 3,
+        data_root: Path = DATA_PATH,
+    ) -> None:
+        self.gh = gh
+        self.config = config
+        self.page_limit = page_limit
+        self.data_path = config.data_path(data_root)
+
+    def run(self) -> None:
+        data = DataJson.from_json(self.data_path / "data.json")
+        if self.config.type_ == "test":
+            self._update_test(data)
+        else:
+            self._update_regression(data)
+        data.to_json(self.data_path / "data.json")
+
+    def _get_artifacts(
+        self, run_id: int, matches: Callable[[dict], bool]
+    ) -> list[dict]:
+        artifacts = []
+        for page in count(1):
+            result = self.gh.actions.list_workflow_run_artifacts(
+                self.config.owner,
+                self.config.repo_name,
+                run_id,
+                page=page,
+            )["artifacts"]
+            if not result:
+                break
+            artifacts.extend(artifact for artifact in result if matches(artifact))
+        return artifacts
+
+    def _update_test(self, data: DataJson) -> None:
+        found_existing = False
+        for page in count(1):
+            commits = self.gh.commits.list_commits(
+                self.config.owner,
+                self.config.repo_name,
+                sha=self.config.upstream_branch,
+                page=page,
+                per_page=10,
+            )
+            if not commits:
+                break
+
+            for commit in commits:
+                sha = commit["sha"]
+                logging.info("Checking commit %s", sha)
+                if data.exists(sha):
+                    logging.info("  -> Already exists in dataset, finish")
+                    found_existing = True
+                    break
+
+                runs = workflow_runs_for_commit(self.gh, self.config, sha)
+                if not runs:
+                    logging.info("  -> No workflow related, skip")
+                    continue
+                if len(runs) > 1:
+                    logging.warning(
+                        "  -> Multiple workflow runs found, using the first one"
+                    )
+                run = runs[0]
+                if run["conclusion"] != "success":
+                    logging.warning("  -> Workflow run failed, skip")
+                    continue
+
+                artifacts = self._get_artifacts(
+                    run["id"],
+                    lambda artifact: artifact["name"].startswith(
+                        self.config.artifact_name
+                    ),
+                )
+                if not artifacts:
+                    logging.info("  -> No artifact, skip")
+                    continue
+                logging.info("  -> Found %d artifacts", len(artifacts))
+
+                report = ReportTestJson()
+                for artifact in artifacts:
+                    logging.info("  -> Download %s ...", artifact["name"])
+                    body = self.gh.actions.download_artifact(
+                        self.config.owner, self.config.repo_name, artifact["id"]
+                    )
+                    if isinstance(body, bytes):
+                        testcase = artifact["name"][len(self.config.artifact_name) :]
+                        report.append(testcase, float(body.decode("utf-8").strip()))
+                    elif isinstance(body, ZipFile):
+                        extra = [
+                            name
+                            for name in body.namelist()
+                            if not name.startswith(self.config.artifact_name)
+                        ]
+                        if extra:
+                            logging.warning(
+                                "  -> Artifact %s contains non-ipc files: %s, ignore",
+                                artifact["name"],
+                                extra,
+                            )
+                        report.append_artifact_zip(body)
+                    else:
+                        logging.warning("    -> unknown file type, ignore")
+
+                report.to_json(self.data_path / f"{sha}.json")
+                append_commit(data, run["id"], sha, commit)
+
+            if found_existing or page >= self.page_limit:
+                break
+
+    def _update_regression(self, data: DataJson) -> None:
+        found_existing = False
+        for page in count(1):
+            runs = self.gh.actions.list_workflow_runs(
+                self.config.owner,
+                self.config.repo_name,
+                branch=self.config.upstream_branch,
+                event="schedule",
+                status="completed",
+                page=page,
+                per_page=10,
+            )["workflow_runs"]
+            if not runs:
+                break
+
+            for run in runs:
+                logging.info("Checking workflow run %s", run["id"])
+                if run["name"] != self.config.workflow:
+                    logging.info("  -> Workflow name mismatch, skip")
+                    continue
+                if run["conclusion"] != "success":
+                    logging.warning("  -> Workflow run failed, skip")
+                    continue
+                sha = run["head_sha"]
+                if data.exists(sha):
+                    logging.info("  -> Already exists in dataset, finish")
+                    found_existing = True
+                    break
+
+                commit = self.gh.commits.get_commit(
+                    self.config.owner, self.config.repo_name, sha
+                )
+                artifacts = self._get_artifacts(
+                    run["id"],
+                    lambda artifact: artifact["name"] == self.config.artifact_name,
+                )
+                if not artifacts:
+                    logging.info("  -> No artifact, skip")
+                    continue
+                logging.info("  -> Found %d artifacts", len(artifacts))
+
+                report = ReportRegressionJson()
+                note = None
+                for artifact in artifacts:
+                    logging.info("  -> Download %s ...", artifact["name"])
+                    body = self.gh.actions.download_artifact(
+                        self.config.owner, self.config.repo_name, artifact["id"]
+                    )
+                    if isinstance(body, bytes):
+                        note = report.append_score_txt(body.decode("utf-8").strip())
+                    elif isinstance(body, ZipFile):
+                        extra = [
+                            name
+                            for name in body.namelist()
+                            if not (name.startswith("score") and name.endswith(".txt"))
+                        ]
+                        if extra:
+                            logging.warning(
+                                "  -> Artifact %s contains score files: %s, ignore",
+                                artifact["name"],
+                                extra,
+                            )
+                        note = report.append_artifact_zip(body)
+                    else:
+                        logging.warning("    -> unknown file type, ignore")
+
+                report.to_json(self.data_path / f"{sha}.json")
+                append_commit(data, run["id"], sha, commit, note)
+
+            if found_existing or page >= self.page_limit:
+                break
+
+
+class LocalUpdater:
+    """Import local results and fetch their metadata from GitHub."""
+
+    def __init__(
+        self,
+        gh: GitHub,
+        config: UpdateConfig,
+        local_path: Path,
+        data_root: Path = DATA_PATH,
+    ) -> None:
+        self.gh = gh
+        self.config = config
+        self.local_path = local_path
+        self.data_path = config.data_path(data_root)
+
+    def run(self) -> None:
+        if self.config.type_ == "test":
+            if not self.local_path.is_dir():
+                raise ValueError(f"Invalid local data dir: {self.local_path}")
+        else:
+            if not self.local_path.is_file():
+                raise ValueError(f"Invalid local data file: {self.local_path}")
+            if self.config.repo == "gem5":
+                raise NotImplementedError(
+                    "Local update for gem5 regression is not implemented yet"
+                )
+
+        data = DataJson.from_json(self.data_path / "data.json")
+        sha = input("Please input the commit hash for this data: ")
+        commit = self.gh.commits.get_commit(
+            self.config.owner, self.config.repo_name, sha
+        )
+        runs = workflow_runs_for_commit(self.gh, self.config, sha)
+        if not runs:
+            logging.info(
+                "No workflow run found for this commit; enter the run id manually"
+            )
+            run_id_text = input(
+                "Please input the workflow run id for this data, enter to abort: "
+            )
+            if not run_id_text:
+                logging.info("No workflow run id provided, abort")
+                return
+            run_id = int(run_id_text)
+        else:
+            if len(runs) > 1:
+                logging.warning("Multiple workflow runs found, using the first one")
+            run_id = runs[0]["id"]
+
+        if self.config.type_ == "test":
+            report = ReportTestJson()
+            for file in self.local_path.iterdir():
+                if file.is_file() and file.name.startswith(self.config.artifact_name):
+                    logging.info("  -> Processing %s ...", file.name)
+                    testcase = file.name[len(self.config.artifact_name) :]
+                    with file.open("r", encoding="utf-8") as result:
+                        report.append(testcase, float(result.read().strip()))
+            note = None
+        else:
+            report = ReportRegressionJson()
+            with self.local_path.open("r", encoding="utf-8") as result:
+                note = report.append_score_txt(result.read().strip())
+
+        report.to_json(self.data_path / f"{sha}.json")
+        append_commit(data, run_id, sha, commit, note)
+        data.to_json(self.data_path / "data.json")

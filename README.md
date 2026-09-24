@@ -23,6 +23,12 @@ Build for production:
 npm run build
 ```
 
+## Updating Data
+
+Install the Python dependencies from `requirements.txt`, then run `python scripts/update.py --token "$GH_TOKEN"` to update all configured datasets. Use `--config weekly-xs-gcc-spec17` to update one dataset, or supply multiple config IDs. Run `python scripts/update.py --help` to see the available IDs.
+
+Update definitions live in `scripts/modules/config.py`. For a local import, select exactly one configuration and pass `--local` with a directory of `ipc-*` files for `test-xs`, or a score text file for an xs regression. Local imports still require `--token` to fetch commit and workflow metadata.
+
 ## Data Layout
 
 Data is separated by domain under `data`:
