@@ -17,6 +17,14 @@ export interface ComparisonDataset {
   subset: string;
 }
 
+export interface ClipboardMetadata {
+  commit?: string;
+  date?: string;
+  coverage?: string;
+  specVersion?: SpecVersion;
+  note?: string;
+}
+
 export interface ComparisonSource {
   id: ComparisonSourceId;
   label: string;
@@ -24,10 +32,6 @@ export interface ComparisonSource {
   runs: NormalizedRun[];
   runId: string;
   payload?: ReportPayload;
-  customCommit?: string;
-  customDate?: string;
-  customCoverage?: string;
-  customSpecVersion?: SpecVersion;
-  customNote?: string;
+  clipboard?: ClipboardMetadata;
   clipboardError?: string;
 }

@@ -195,6 +195,7 @@ import {
 } from "./services/dataService";
 import type { NormalizedRun, ReportPayload } from "./types/data";
 import type {
+  ClipboardMetadata,
   ComparisonCoverage,
   ComparisonDataset,
   ComparisonSource,
@@ -336,7 +337,7 @@ const comparisonSpecVersion = computed(() => {
   const sourceVersion = comparisonSources.value
     .map((source) =>
       source.runId === "custom"
-        ? source.customSpecVersion ||
+        ? source.clipboard?.specVersion ||
           detectSpecVersion(Object.keys(source.payload || {}))
         : source.runs.find((run) => run.runId === source.runId)?.specVersion,
     )
@@ -412,13 +413,21 @@ async function loadComparisonDatasets() {
 }
 
 async function loadComparisonSource(source: ComparisonSource) {
+  const previousDataset = source.dataset;
   source.dataset =
     activeComparisonDatasets.value.find(
-      (dataset) => dataset.id === source.dataset?.id,
-    ) || activeComparisonDatasets.value[0];
+      (dataset) => dataset.id === previousDataset?.id,
+    ) ||
+    activeComparisonDatasets.value.find(
+      (dataset) =>
+        dataset.branch === previousDataset?.branch &&
+        dataset.subset === previousDataset?.subset,
+    ) ||
+    activeComparisonDatasets.value[0];
   if (!source.dataset) return;
   const { tab, branch, subset } = source.dataset;
   source.runs = await loadRunIndex(tab, branch, subset);
+  if (source.runId === "custom") return;
   if (!source.runs.some((run) => run.runId === source.runId)) {
     const latestIndex = source.runs.length - 1;
     const defaultIndex = source.id === "a" ? latestIndex - 1 : latestIndex;
@@ -454,18 +463,16 @@ function resetComparisonSource(source: ComparisonSource) {
   source.runs = [];
   source.runId = "";
   source.payload = undefined;
-  source.customCommit = undefined;
-  source.customDate = undefined;
-  source.customCoverage = undefined;
-  source.customSpecVersion = undefined;
-  source.customNote = undefined;
+  source.clipboard = undefined;
   source.clipboardError = undefined;
 }
 
 async function onComparisonCoverageChange(coverageId: string) {
   if (coverageId === selectedComparisonCoverageId.value) return;
   selectedComparisonCoverageId.value = coverageId;
-  comparisonSources.value.forEach(resetComparisonSource);
+  comparisonSources.value.forEach((source) => {
+    if (source.runId !== "custom") resetComparisonSource(source);
+  });
   setLoading();
   try {
     await Promise.all(comparisonSources.value.map(loadComparisonSource));
@@ -486,11 +493,7 @@ async function onComparisonDatasetChange(id: "a" | "b", datasetId: string) {
   source.label = t(
     source.id === "a" ? "comparisonSourceA" : "comparisonSourceB",
   );
-  source.customCommit = undefined;
-  source.customDate = undefined;
-  source.customCoverage = undefined;
-  source.customSpecVersion = undefined;
-  source.customNote = undefined;
+  source.clipboard = undefined;
   source.clipboardError = undefined;
   source.dataset = dataset;
   source.runs = [];
@@ -502,14 +505,11 @@ async function onComparisonDatasetChange(id: "a" | "b", datasetId: string) {
 async function onComparisonRunChange(id: "a" | "b", runId: string) {
   const source = comparisonSources.value.find((item) => item.id === id);
   if (!source) return;
+  if (source.runId === runId) return;
   source.label = t(
     source.id === "a" ? "comparisonSourceA" : "comparisonSourceB",
   );
-  source.customCommit = undefined;
-  source.customDate = undefined;
-  source.customCoverage = undefined;
-  source.customSpecVersion = undefined;
-  source.customNote = undefined;
+  source.clipboard = undefined;
   source.clipboardError = undefined;
   source.runId = runId;
   if (!source.dataset) return;
@@ -564,21 +564,12 @@ function parseClipboardReport(text: string): ReportPayload {
   return parsed;
 }
 
-function extractClipboardMetadata(text: string): {
-  commit?: string;
-  date?: string;
-  coverage?: string;
-  specVersion?: SpecVersion;
-} {
+function extractClipboardMetadata(text: string): ClipboardMetadata {
   const match = /(?:^|[\\/\s])cr(\d{6})-([0-9a-f]{7,40})-/i.exec(text);
-  const metadata: {
-    commit?: string;
-    date?: string;
-    coverage?: string;
-    specVersion?: SpecVersion;
-  } = {
+  const metadata: ClipboardMetadata = {
     coverage: /(?:^|[-_/])(\d+(?:\.\d+)?c)(?=\.txt|[-_/\s]|$)/i.exec(text)?.[1],
     specVersion: specVersionFromText(text),
+    note: extractCheckpointNote(text),
   };
   if (!match) return metadata;
 
@@ -635,12 +626,10 @@ async function pasteComparisonSource(id: "a" | "b") {
   if (source) {
     source.payload = payload;
     source.runId = "custom";
-    source.customCommit = metadata.commit;
-    source.customDate = metadata.date;
-    source.customCoverage = metadata.coverage;
-    source.customSpecVersion =
-      specVersion || detectSpecVersion(Object.keys(payload));
-    source.customNote = extractCheckpointNote(text);
+    source.clipboard = {
+      ...metadata,
+      specVersion: specVersion || detectSpecVersion(Object.keys(payload)),
+    };
     source.clipboardError = undefined;
   }
 }
@@ -662,8 +651,8 @@ function comparisonFilePart(value: string): string {
 function comparisonSourceFileName(source?: ComparisonSource): string {
   if (!source) return "source";
   if (source.runId === "custom") {
-    return source.customCommit
-      ? `clipboard-${source.customCommit.slice(0, 12)}`
+    return source.clipboard?.commit
+      ? `clipboard-${source.clipboard.commit.slice(0, 12)}`
       : "clipboard";
   }
   const run = source.runs.find((item) => item.runId === source.runId);
@@ -726,11 +715,7 @@ function swapComparisonSources() {
     runs: sourceA.runs,
     runId: sourceA.runId,
     payload: sourceA.payload,
-    customCommit: sourceA.customCommit,
-    customDate: sourceA.customDate,
-    customCoverage: sourceA.customCoverage,
-    customSpecVersion: sourceA.customSpecVersion,
-    customNote: sourceA.customNote,
+    clipboard: sourceA.clipboard,
     clipboardError: sourceA.clipboardError,
   };
   const stateB = {
@@ -738,11 +723,6 @@ function swapComparisonSources() {
     runs: sourceB.runs,
     runId: sourceB.runId,
     payload: sourceB.payload,
-    customCommit: sourceB.customCommit,
-    customDate: sourceB.customDate,
-    customCoverage: sourceB.customCoverage,
-    customSpecVersion: sourceB.customSpecVersion,
-    customNote: sourceB.customNote,
     clipboardError: sourceB.clipboardError,
   };
 

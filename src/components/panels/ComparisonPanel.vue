@@ -115,7 +115,7 @@ const warnings = computed(() => {
   }
 
   for (const source of [a, b]) {
-    if (source?.runId === "custom" && !source.customCoverage) {
+    if (source?.runId === "custom" && !source.clipboard?.coverage) {
       result.push(
         props
           .t("comparisonCoverageMissing")
@@ -149,7 +149,7 @@ const warnings = computed(() => {
     [aRun, a],
     [bRun, b],
   ] as const) {
-    const note = source.runId === "custom" ? source.customNote : run?.note;
+    const note = source.runId === "custom" ? source.clipboard?.note : run?.note;
     if (note) {
       result.push(
         props
@@ -211,8 +211,8 @@ function metric(entry: ReportPayload[string] | undefined): number | null {
 function sourceName(source?: ComparisonSource) {
   if (!source) return "";
   if (source.runId === "custom") {
-    return source.customCommit && source.customDate
-      ? `${props.t("comparisonClipboard")} · ${source.customCommit} · ${source.customDate}`
+    return source.clipboard?.commit && source.clipboard.date
+      ? `${props.t("comparisonClipboard")} · ${source.clipboard.commit} · ${source.clipboard.date}`
       : props.t("comparisonClipboard");
   }
   const run = source.runs.find((item) => item.runId === source.runId);
@@ -223,7 +223,7 @@ function sourceName(source?: ComparisonSource) {
 
 function sourceCoverage(source?: ComparisonSource): string | undefined {
   if (!source) return undefined;
-  if (source.runId === "custom") return source.customCoverage;
+  if (source.runId === "custom") return source.clipboard?.coverage;
   return (
     source.runs.find((item) => item.runId === source.runId)?.coverage ||
     undefined
@@ -232,7 +232,7 @@ function sourceCoverage(source?: ComparisonSource): string | undefined {
 
 function sourceSpecVersion(source?: ComparisonSource): SpecVersion | undefined {
   if (!source) return undefined;
-  if (source.runId === "custom") return source.customSpecVersion;
+  if (source.runId === "custom") return source.clipboard?.specVersion;
   return source.runs.find((item) => item.runId === source.runId)?.specVersion;
 }
 

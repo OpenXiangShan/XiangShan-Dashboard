@@ -26,7 +26,13 @@
         :value="source.runId"
         @change="emit('runChange', ($event.target as HTMLSelectElement).value)"
       >
-        <option v-if="!source.runs.length" value="">
+        <option v-if="source.runId === 'custom'" value="custom">
+          {{ t("comparisonClipboard") }}
+        </option>
+        <option
+          v-if="!source.runs.length && source.runId !== 'custom'"
+          value=""
+        >
           {{ t("comparisonNoRuns") }}
         </option>
         <option v-for="run in sortedRuns" :key="run.hash" :value="run.runId">
