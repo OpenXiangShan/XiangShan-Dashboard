@@ -203,6 +203,7 @@ import type {
   ComparisonSource,
 } from "./types/comparison";
 const dayMs = 24 * 60 * 60 * 1000;
+const REPORT_LOAD_CONCURRENCY = 16;
 const buildTimestamp = __BUILD_TIMESTAMP__;
 const commitHash = __COMMIT_HASH__;
 const defaultQuickRangePreset: QuickRangePreset = "allRuns";
@@ -285,6 +286,7 @@ const errorText = ref("");
 const isHydrating = ref(true);
 const isLoading = ref(false);
 const loadingPath = ref("");
+const loadingProgress = ref<{ completed: number; total: number } | null>(null);
 
 const geomeanMissing = ref<Record<number, Record<string, string[]>>>({});
 
@@ -741,6 +743,9 @@ function swapComparisonSources() {
 
 const chartEmptyText = computed(() => {
   if (isLoading.value) {
+    if (loadingProgress.value) {
+      return `${t("loading")}: ${loadingProgress.value.completed}/${loadingProgress.value.total}`;
+    }
     return loadingPath.value
       ? `${t("loading")}: ${loadingPath.value}`
       : t("loading");
@@ -751,11 +756,13 @@ const chartEmptyText = computed(() => {
 function setLoading(path = "") {
   isLoading.value = true;
   loadingPath.value = path;
+  loadingProgress.value = null;
 }
 
 function finishLoading() {
   isLoading.value = false;
   loadingPath.value = "";
+  loadingProgress.value = null;
 }
 
 interface ChartLoadRequest {
@@ -796,6 +803,17 @@ function isCurrentChartLoad(request: ChartLoadRequest): boolean {
 
 function setChartLoading(request: ChartLoadRequest, path = "") {
   if (isCurrentChartLoad(request)) setLoading(path);
+}
+
+function setChartLoadingProgress(
+  request: ChartLoadRequest,
+  completed: number,
+  total: number,
+) {
+  if (!isCurrentChartLoad(request)) return;
+  isLoading.value = true;
+  loadingPath.value = "";
+  loadingProgress.value = { completed, total };
 }
 
 function finishChartLoad(request: ChartLoadRequest) {
@@ -881,22 +899,36 @@ async function refreshRuns(context: ChartLoadContext) {
 
   const dataByHash = { ...runDataByHash.value };
   const needed = filtered.filter((run) => !dataByHash[run.hash]);
-  for (const run of needed) {
-    setChartLoading(
-      context,
-      `${context.tab.datasetRoot}/${context.branch}/${context.subset}/${run.hash}.json`,
-    );
-    const payload = await loadReport(
-      context.tab,
-      context.branch,
-      run.hash,
-      context.subset,
-      context.controller.signal,
-    );
-    if (!isCurrentChartLoad(context)) return;
-    dataByHash[run.hash] = payload;
-    runDataByHash.value = { ...dataByHash };
+  if (needed.length) setChartLoadingProgress(context, 0, needed.length);
+  let completed = 0;
+  let nextIndex = 0;
+  async function loadReports() {
+    const loaded: Array<readonly [string, ReportPayload]> = [];
+    while (nextIndex < needed.length) {
+      const run = needed[nextIndex++];
+      const payload = await loadReport(
+        context.tab,
+        context.branch,
+        run.hash,
+        context.subset,
+        context.controller.signal,
+      );
+      setChartLoadingProgress(context, ++completed, needed.length);
+      loaded.push([run.hash, payload]);
+    }
+    return loaded;
   }
+  const loaded = (
+    await Promise.all(
+      Array.from(
+        { length: Math.min(REPORT_LOAD_CONCURRENCY, needed.length) },
+        loadReports,
+      ),
+    )
+  ).flat();
+  if (!isCurrentChartLoad(context)) return;
+  for (const [hash, payload] of loaded) dataByHash[hash] = payload;
+  runDataByHash.value = { ...dataByHash };
 
   const set = new Set<string>();
   for (const run of filtered) {
