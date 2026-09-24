@@ -8,6 +8,9 @@
     </div>
     <div class="chart-wrap" v-if="hasData">
       <canvas ref="canvasRef"></canvas>
+      <div v-if="loading" class="loading-overlay">
+        {{ noDataText }}
+      </div>
     </div>
     <div class="empty" v-else>
       {{ noDataText }}
@@ -41,6 +44,7 @@ const props = defineProps<{
   runs: NormalizedRun[];
   selectedBenchmarks: string[];
   runDataByHash: Record<string, ReportPayload>;
+  loading: boolean;
   noDataText: string;
   geomeanMissing: Record<number, Record<string, string[]>>;
   specVersion: SpecVersion;
@@ -170,6 +174,20 @@ defineExpose({ exportPng });
   width: 100%;
   flex: 1;
   min-height: 0;
+}
+
+.loading-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #5b6070;
+  font-weight: 600;
+  text-align: center;
+  word-break: break-all;
+  padding: 0 16px;
+  background: rgb(255 255 255 / 82%);
 }
 
 .empty {

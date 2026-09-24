@@ -104,6 +104,7 @@
           :runs="filteredRuns"
           :selected-benchmarks="selectedBenchmarks"
           :run-data-by-hash="runDataByHash"
+          :loading="isLoading"
           :no-data-text="chartEmptyText"
           :geomean-missing="geomeanMissing"
           :spec-version="activeSpecVersion"
