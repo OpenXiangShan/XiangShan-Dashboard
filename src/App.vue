@@ -601,7 +601,7 @@ function extractCheckpointNote(text: string): string | undefined {
   let note: string | undefined;
   for (const line of text.split(/\r?\n/)) {
     const match =
-      /^[ \t]*Checkpoints Number[ \t]*:[ \t]*(\d+)[ \t]*\/[ \t]*(\d+)[ \t]*$/.exec(
+      /^[ \t]*Checkpoints(?: Number)?[ \t]*:[ \t]*(\d+)[ \t]*\/[ \t]*(\d+)[ \t]*$/.exec(
         line,
       );
     if (!match) continue;

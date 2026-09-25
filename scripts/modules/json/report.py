@@ -105,8 +105,8 @@ class ReportRegressionJson(ReportJson):
                 testcase = m.group(1)
                 score = float(m.group(2))
                 self.append(testcase, score)
-            # match Checkpoints Number : 545/1094
-            m = re.match(r"^\s*Checkpoints Number\s*:\s*(\d+)/(\d+)", line)
+            # match Checkpoints : 545/1094
+            m = re.match(r"^\s*Checkpoints\s*:\s*(\d+)/(\d+)", line)
             if m:
                 success, total = int(m.group(1)), int(m.group(2))
                 failed = total - success
