@@ -1,4 +1,9 @@
 {
+  "36049956705": {
+    "hash": "577eed060f1d700550be79cce1c60274fbaa5dee",
+    "title": "mem-cache: Make L2 low-accuracy offload configurable (#1183)",
+    "date": 1790236680
+  },
   "35774847118": {
     "hash": "6d46877d989fdfe7eeb94f039678123c5cc120c7",
     "title": "gem5 SMT SPEC2006 Performance Test(0.3c)",
