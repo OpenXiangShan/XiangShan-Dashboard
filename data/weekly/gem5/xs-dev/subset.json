@@ -1,0 +1,14 @@
+{
+  "default": "default/spec06/gcc",
+  "subsets": [
+    "default/spec06/gcc",
+    "default/spec17/gcc",
+    "default/spec26/gcc",
+    "ideal/spec06/gcc",
+    "ideal/spec17/gcc",
+    "ideal/spec26/gcc",
+    "smt/spec06/gcc",
+    "smt-base/spec06/gcc",
+    "default/spec06/xscc"
+  ]
+}

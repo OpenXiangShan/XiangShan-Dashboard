@@ -1,0 +1,8 @@
+{
+  "default": "default/spec06/gcc",
+  "subsets": [
+    "default/spec06/gcc",
+    "default/spec17/gcc",
+    "default/spec06/xscc"
+  ]
+}
