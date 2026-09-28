@@ -1,4 +1,9 @@
 {
+  "36372249436": {
+    "hash": "cd13aa1b906e3ef5aba3a707478865a80f4b99e5",
+    "title": "chore: enable dependabot for kunminghu-v2 (#6611)",
+    "date": 1790564663
+  },
   "35964273135": {
     "hash": "aa6b52033add528a504bdb2c2b726100d89f070a",
     "title": "timing(ubtb): check hit in t1 (#6489)",
