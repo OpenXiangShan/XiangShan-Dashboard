@@ -1,4 +1,9 @@
 {
+  "36409619688": {
+    "hash": "a13efc8775abb093e23727772a562f0605380685",
+    "title": "ci: pass --seed to ckpt_select (#6637)",
+    "date": 1790591127
+  },
   "36372249436": {
     "hash": "cd13aa1b906e3ef5aba3a707478865a80f4b99e5",
     "title": "chore: enable dependabot for kunminghu-v2 (#6611)",
