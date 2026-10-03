@@ -1,5 +1,6 @@
 {
   "runs": [
+    "36993165275",
     "36121715805",
     "35332560307",
     "34812949629",
@@ -40,6 +41,7 @@
     "34812949629": "Switched to new spec06_xscc_rva23_novec_260911 checkpoints, which may cause some performance differences. Do not compare with previous runs.",
     "34587152666": "65 out of 1153 checkpoints failed, score may be inaccurate",
     "33942508983": "67 out of 1153 checkpoints failed, score may be inaccurate",
-    "36121715805": "3 out of 1104 checkpoints failed, score may be inaccurate"
+    "36121715805": "3 out of 1104 checkpoints failed, score may be inaccurate",
+    "36993165275": "16 out of 1104 checkpoints failed, score may be inaccurate"
   }
 }
