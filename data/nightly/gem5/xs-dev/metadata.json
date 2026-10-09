@@ -1,4 +1,19 @@
 {
+  "37888303099": {
+    "hash": "096f9e1ad5d05fec1e57c69ae9cad120f91d6a81",
+    "title": "dev,misc: Fix UARTLite fast builds and add Clang coverage (#1209)",
+    "date": 1791523370
+  },
+  "37888303076": {
+    "hash": "096f9e1ad5d05fec1e57c69ae9cad120f91d6a81",
+    "title": "dev,misc: Fix UARTLite fast builds and add Clang coverage (#1209)",
+    "date": 1791523370
+  },
+  "37888302998": {
+    "hash": "096f9e1ad5d05fec1e57c69ae9cad120f91d6a81",
+    "title": "dev,misc: Fix UARTLite fast builds and add Clang coverage (#1209)",
+    "date": 1791523370
+  },
   "36266064360": {
     "hash": "050efbd0b7d319308a60c0cb3458e1b2b3bfc3e8",
     "title": "cpu-o3,arch-riscv: Prevent vector register rename panic (#1185)",
