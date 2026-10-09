@@ -1,4 +1,19 @@
 {
+  "37941304357": {
+    "hash": "d136732cf9fabcd883d24454d4223ecf47d81c88",
+    "title": "fix(decode): aes64ks1i should trigger illegal instruction exception when rnum>10 (#6687)",
+    "date": 1791554583
+  },
+  "37909497131": {
+    "hash": "244af70c1a3c4f535575a1c90c5bc8a3d65c2b85",
+    "title": "note(intr): fix intr note (#6580)",
+    "date": 1791536989
+  },
+  "37908411576": {
+    "hash": "850fd609b78e572e35c8b322f80dbee3d00c9ff9",
+    "title": "feat(fma): add early wakeup from fma and load for fma's src2 (#6679)",
+    "date": 1791536377
+  },
   "37896090466": {
     "hash": "2a395f4a3afdf2c2d817e1bed1bea4a32c4e59fc",
     "title": "fix(MMU): fix EnableTlbDebug spelling",

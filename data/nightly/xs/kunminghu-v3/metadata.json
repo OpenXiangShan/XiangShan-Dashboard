@@ -1,4 +1,9 @@
 {
+  "37803432751": {
+    "hash": "a7b9dea601f2f08dcca7d97ac544221cf02b1fe9",
+    "title": "chore(backend): remove unused F2vCfg from FEX0 (#6651)",
+    "date": 1791466882
+  },
   "36592468999": {
     "hash": "09453ff8f44e9d2b526e6149c60e1dc3f08c7192",
     "title": "feat(sim): integrate bosc IOMMU with DMAC and IOPMP (#6560)",
