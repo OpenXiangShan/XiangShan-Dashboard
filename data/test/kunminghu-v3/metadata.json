@@ -1,4 +1,9 @@
 {
+  "38064233821": {
+    "hash": "df993b2527ddaa1c6291cdaf7dd44724a3ae669b",
+    "title": "fix(crob): fix the bit width of scommit and increase the number of entries in crob.",
+    "date": 1791646528
+  },
   "38019093338": {
     "hash": "1118e26b106b6b9e431f87a32af5c0dce15329f0",
     "title": "bump(yunsuan): select narrow shift bias by output format (#6689)",
