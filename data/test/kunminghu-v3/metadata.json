@@ -1,4 +1,14 @@
 {
+  "38019093338": {
+    "hash": "1118e26b106b6b9e431f87a32af5c0dce15329f0",
+    "title": "bump(yunsuan): select narrow shift bias by output format (#6689)",
+    "date": 1791601287
+  },
+  "38019072138": {
+    "hash": "03703400900a4c3449a5514fc1d15ab148e99fcc",
+    "title": "fix(MMU): ignore PTE G when V is clear (#6695)",
+    "date": 1791601267
+  },
   "37941304357": {
     "hash": "d136732cf9fabcd883d24454d4223ecf47d81c88",
     "title": "fix(decode): aes64ks1i should trigger illegal instruction exception when rnum>10 (#6687)",
