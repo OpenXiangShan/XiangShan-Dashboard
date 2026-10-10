@@ -19,6 +19,7 @@ class UpdateConfig:
     artifact_name: str
     discovery: Literal["commits", "runs"] = "runs"
     event: Literal["push", "schedule"] = "schedule"
+    extra_events: tuple[str, ...] = ()  # also scanned, e.g. "workflow_dispatch"
     branch: str = XS_BRANCH
     variant: str = "default"
     owner: str = "OpenXiangShan"
@@ -32,6 +33,8 @@ class UpdateConfig:
             raise ValueError(f"Unsupported discovery: {self.discovery}")
         if self.event not in ("push", "schedule"):
             raise ValueError(f"Unsupported workflow event: {self.event}")
+        if any(e not in ("schedule", "workflow_dispatch") for e in self.extra_events):
+            raise ValueError(f"Unsupported extra events: {self.extra_events}")
         if self.variant in ("", ".", "..") or "/" in self.variant:
             raise ValueError("Variant must be a non-empty path component")
         if self.type_ == "test" and self.variant != "default":
@@ -63,6 +66,7 @@ class UpdateConfig:
             self.repo_name,
             self.branch,
             self.event,
+            *self.extra_events,
             self.discovery,
         )
 
@@ -168,6 +172,7 @@ CONFIGS = (
         "GEM5",
         "gem5 Weekly Performance Test",
         "score-spec06-rva23-novec-gcc16-1.0c",
+        extra_events=("workflow_dispatch",),
         branch=GEM5_BRANCH,
         compiler="gcc",
         spec="spec06",
@@ -178,6 +183,7 @@ CONFIGS = (
         "GEM5",
         "gem5 Weekly Performance Test",
         "score-custom-spec06",
+        extra_events=("workflow_dispatch",),
         branch=GEM5_BRANCH,
         compiler="xscc",
         spec="spec06",
@@ -188,6 +194,7 @@ CONFIGS = (
         "GEM5",
         "gem5 Weekly Performance Test",
         "score-spec17-1.0c",
+        extra_events=("workflow_dispatch",),
         branch=GEM5_BRANCH,
         compiler="gcc",
         spec="spec17",
@@ -198,6 +205,7 @@ CONFIGS = (
         "GEM5",
         "gem5 Weekly Performance Test",
         "score-gcc15-spec26-1.0c",
+        extra_events=("workflow_dispatch",),
         branch=GEM5_BRANCH,
         compiler="gcc",
         spec="spec26",
@@ -208,6 +216,7 @@ CONFIGS = (
         "GEM5",
         "gem5 Weekly Performance Test",
         "score-ideal-spec06-rva23-novec-gcc16-1.0c",
+        extra_events=("workflow_dispatch",),
         variant="ideal",
         branch=GEM5_BRANCH,
         compiler="gcc",
@@ -219,6 +228,7 @@ CONFIGS = (
         "GEM5",
         "gem5 Weekly Performance Test",
         "score-ideal-spec17-1.0c",
+        extra_events=("workflow_dispatch",),
         variant="ideal",
         branch=GEM5_BRANCH,
         compiler="gcc",
@@ -230,6 +240,7 @@ CONFIGS = (
         "GEM5",
         "gem5 Weekly Performance Test",
         "score-ideal-gcc15-spec26-1.0c",
+        extra_events=("workflow_dispatch",),
         variant="ideal",
         branch=GEM5_BRANCH,
         compiler="gcc",
@@ -241,6 +252,7 @@ CONFIGS = (
         "GEM5",
         "gem5 Weekly Performance Test",
         "score-smt-ideal-gcc12-spec06-smt-1.0c",
+        extra_events=("workflow_dispatch",),
         variant="smt",
         branch=GEM5_BRANCH,
         compiler="gcc",
@@ -252,6 +264,7 @@ CONFIGS = (
         "GEM5",
         "gem5 Weekly Performance Test",
         "score-ideal-gcc12-spec06-1.0c",
+        extra_events=("workflow_dispatch",),
         variant="smt-base",
         branch=GEM5_BRANCH,
         compiler="gcc",

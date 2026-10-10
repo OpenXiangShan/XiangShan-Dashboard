@@ -218,19 +218,27 @@ class GithubUpdater:
             if not pending or len(commits) < 10 or page >= self.page_limit:
                 break
 
+    def _list_runs(self, page: int) -> list[dict]:
+        """List one page of completed runs per event, merged newest first."""
+        runs: dict[int, dict] = {}
+        for event in (self.config.event, *self.config.extra_events):
+            for run in self.gh.actions.list_workflow_runs(
+                self.config.owner,
+                self.config.repo_name,
+                branch=self.config.branch,
+                event=event,
+                status="completed",
+                page=page,
+                per_page=10,
+            )["workflow_runs"]:
+                runs[run["id"]] = run
+        return sorted(runs.values(), key=lambda run: run["id"], reverse=True)
+
     def _update_by_runs(self, targets: list[UpdateTarget]) -> None:
         pending = targets.copy()
         commits_by_sha: dict[str, dict] = {}
         for page in count(1):
-            runs = self.gh.actions.list_workflow_runs(
-                self.config.owner,
-                self.config.repo_name,
-                branch=self.config.branch,
-                event=self.config.event,
-                status="completed",
-                page=page,
-                per_page=10,
-            )["workflow_runs"]
+            runs = self._list_runs(page)
             if not runs:
                 break
 
