@@ -4,8 +4,13 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal
 
+WorkflowEvent = Literal["push", "schedule", "workflow_dispatch"]
+WORKFLOW_EVENTS = ("push", "schedule", "workflow_dispatch")
+
 XS_BRANCH = "kunminghu-v3"
 GEM5_BRANCH = "xs-dev"
+# Also accept manual reruns, e.g. after a failed scheduled weekly run.
+GEM5_WEEKLY_EVENTS: tuple[WorkflowEvent, ...] = ("schedule", "workflow_dispatch")
 
 
 @dataclass(frozen=True)
@@ -18,7 +23,7 @@ class UpdateConfig:
     workflow: str
     artifact_name: str
     discovery: Literal["commits", "runs"] = "runs"
-    event: Literal["push", "schedule"] = "schedule"
+    events: tuple[WorkflowEvent, ...] = ("schedule",)
     branch: str = XS_BRANCH
     variant: str = "default"
     owner: str = "OpenXiangShan"
@@ -30,8 +35,11 @@ class UpdateConfig:
             raise ValueError(f"Unsupported update type: {self.type_}")
         if self.discovery not in ("commits", "runs"):
             raise ValueError(f"Unsupported discovery: {self.discovery}")
-        if self.event not in ("push", "schedule"):
-            raise ValueError(f"Unsupported workflow event: {self.event}")
+        if not self.events or len(set(self.events)) != len(self.events):
+            raise ValueError("Workflow events must be non-empty and unique")
+        for event in self.events:
+            if event not in WORKFLOW_EVENTS:
+                raise ValueError(f"Unsupported workflow event: {event}")
         if self.variant in ("", ".", "..") or "/" in self.variant:
             raise ValueError("Variant must be a non-empty path component")
         if self.type_ == "test" and self.variant != "default":
@@ -62,7 +70,7 @@ class UpdateConfig:
             self.owner,
             self.repo_name,
             self.branch,
-            self.event,
+            ",".join(self.events),
             self.discovery,
         )
 
@@ -86,7 +94,7 @@ CONFIGS = (
         "EMU Performance Test",
         "ipc-",
         discovery="commits",
-        event="push",
+        events=("push",),
     ),
     UpdateConfig(
         "nightly",
@@ -104,7 +112,7 @@ CONFIGS = (
         "gem5 Align BTB Performance Test(0.3c)",
         "score-spec06-rva23-novec-gcc16-0.3c",
         discovery="commits",
-        event="push",
+        events=("push",),
         branch=GEM5_BRANCH,
         compiler="gcc",
         spec="spec06",
@@ -116,7 +124,7 @@ CONFIGS = (
         "gem5 Ideal BTB Performance Test",
         "score-ideal-spec06-rva23-novec-gcc16-0.3c",
         discovery="commits",
-        event="push",
+        events=("push",),
         variant="ideal",
         branch=GEM5_BRANCH,
         compiler="gcc",
@@ -129,7 +137,7 @@ CONFIGS = (
         "gem5 SMT SPEC2006 Performance Test(0.3c)",
         "score-smt-ideal-gcc12-spec06-smt-0.3c",
         discovery="commits",
-        event="push",
+        events=("push",),
         variant="smt",
         branch=GEM5_BRANCH,
         compiler="gcc",
@@ -168,6 +176,7 @@ CONFIGS = (
         "GEM5",
         "gem5 Weekly Performance Test",
         "score-spec06-rva23-novec-gcc16-1.0c",
+        events=GEM5_WEEKLY_EVENTS,
         branch=GEM5_BRANCH,
         compiler="gcc",
         spec="spec06",
@@ -178,6 +187,7 @@ CONFIGS = (
         "GEM5",
         "gem5 Weekly Performance Test",
         "score-custom-spec06",
+        events=GEM5_WEEKLY_EVENTS,
         branch=GEM5_BRANCH,
         compiler="xscc",
         spec="spec06",
@@ -188,6 +198,7 @@ CONFIGS = (
         "GEM5",
         "gem5 Weekly Performance Test",
         "score-spec17-1.0c",
+        events=GEM5_WEEKLY_EVENTS,
         branch=GEM5_BRANCH,
         compiler="gcc",
         spec="spec17",
@@ -198,6 +209,7 @@ CONFIGS = (
         "GEM5",
         "gem5 Weekly Performance Test",
         "score-gcc15-spec26-1.0c",
+        events=GEM5_WEEKLY_EVENTS,
         branch=GEM5_BRANCH,
         compiler="gcc",
         spec="spec26",
@@ -208,6 +220,7 @@ CONFIGS = (
         "GEM5",
         "gem5 Weekly Performance Test",
         "score-ideal-spec06-rva23-novec-gcc16-1.0c",
+        events=GEM5_WEEKLY_EVENTS,
         variant="ideal",
         branch=GEM5_BRANCH,
         compiler="gcc",
@@ -219,6 +232,7 @@ CONFIGS = (
         "GEM5",
         "gem5 Weekly Performance Test",
         "score-ideal-spec17-1.0c",
+        events=GEM5_WEEKLY_EVENTS,
         variant="ideal",
         branch=GEM5_BRANCH,
         compiler="gcc",
@@ -230,6 +244,7 @@ CONFIGS = (
         "GEM5",
         "gem5 Weekly Performance Test",
         "score-ideal-gcc15-spec26-1.0c",
+        events=GEM5_WEEKLY_EVENTS,
         variant="ideal",
         branch=GEM5_BRANCH,
         compiler="gcc",
@@ -241,6 +256,7 @@ CONFIGS = (
         "GEM5",
         "gem5 Weekly Performance Test",
         "score-smt-ideal-gcc12-spec06-smt-1.0c",
+        events=GEM5_WEEKLY_EVENTS,
         variant="smt",
         branch=GEM5_BRANCH,
         compiler="gcc",
@@ -252,6 +268,7 @@ CONFIGS = (
         "GEM5",
         "gem5 Weekly Performance Test",
         "score-ideal-gcc12-spec06-1.0c",
+        events=GEM5_WEEKLY_EVENTS,
         variant="smt-base",
         branch=GEM5_BRANCH,
         compiler="gcc",
