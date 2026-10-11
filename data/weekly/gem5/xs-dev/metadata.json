@@ -1,4 +1,9 @@
 {
+  "37893731138": {
+    "hash": "096f9e1ad5d05fec1e57c69ae9cad120f91d6a81",
+    "title": "dev,misc: Fix UARTLite fast builds and add Clang coverage (#1209)",
+    "date": 1791523370
+  },
   "36049956705": {
     "hash": "577eed060f1d700550be79cce1c60274fbaa5dee",
     "title": "mem-cache: Make L2 low-accuracy offload configurable (#1183)",

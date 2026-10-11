@@ -1,4 +1,9 @@
 {
+  "38064623601": {
+    "hash": "df993b2527ddaa1c6291cdaf7dd44724a3ae669b",
+    "title": "fix(crob): fix the bit width of scommit and increase the number of entries in crob.",
+    "date": 1791646528
+  },
   "37803432751": {
     "hash": "a7b9dea601f2f08dcca7d97ac544221cf02b1fe9",
     "title": "chore(backend): remove unused F2vCfg from FEX0 (#6651)",

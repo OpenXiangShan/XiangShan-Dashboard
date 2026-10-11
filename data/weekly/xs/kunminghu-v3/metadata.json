@@ -1,4 +1,9 @@
 {
+  "38037352123": {
+    "hash": "c4b6a03f29f90623759b49a845d673da9508398a",
+    "title": "ci(perf-template): fix summary condition (#6702)",
+    "date": 1791619752
+  },
   "36993165275": {
     "hash": "09453ff8f44e9d2b526e6149c60e1dc3f08c7192",
     "title": "feat(sim): integrate bosc IOMMU with DMAC and IOPMP (#6560)",
