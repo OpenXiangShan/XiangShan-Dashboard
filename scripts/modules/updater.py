@@ -1,10 +1,11 @@
 """Update dashboard data from GitHub artifacts or local results."""
 
 import calendar
+import heapq
 import json
 import logging
 import time
-from collections.abc import Sequence
+from collections.abc import Iterator, Sequence
 from dataclasses import dataclass
 from itertools import count
 from pathlib import Path
@@ -18,24 +19,41 @@ from modules.json import MetadataJson, RunListJson, ReportRegressionJson, Report
 DATA_PATH = Path(__file__).parent.parent.parent / "data"
 
 
+def workflow_events(config: UpdateConfig, include_manual: bool) -> tuple[str, ...]:
+    """Return the workflow events to query for a configuration."""
+    if not include_manual or config.event == "workflow_dispatch":
+        return (config.event,)
+    return (config.event, "workflow_dispatch")
+
+
 def workflow_runs_for_commit(
-    gh: GitHub, config: UpdateConfig, sha: str, *, all_workflows: bool = False
+    gh: GitHub,
+    config: UpdateConfig,
+    sha: str,
+    *,
+    all_workflows: bool = False,
+    include_manual: bool = False,
 ) -> list[dict]:
     runs = []
-    for page in count(1):
-        result = gh.actions.list_workflow_runs(
-            config.owner,
-            config.repo_name,
-            branch=config.branch,
-            event=config.event,
-            status="completed",
-            head_sha=sha,
-            per_page=100,
-            page=page,
-        )["workflow_runs"]
-        runs.extend(result)
-        if len(result) < 100:
-            break
+    for event in workflow_events(config, include_manual):
+        for page in count(1):
+            result = gh.actions.list_workflow_runs(
+                config.owner,
+                config.repo_name,
+                branch=config.branch,
+                event=event,
+                status="completed",
+                head_sha=sha,
+                per_page=100,
+                page=page,
+            )["workflow_runs"]
+            runs.extend(result)
+            if len(result) < 100:
+                break
+    if include_manual:
+        # GitHub returns each event stream newest first. Restore that ordering
+        # after combining streams so the selected run is deterministic.
+        runs.sort(key=lambda run: run["id"], reverse=True)
     return (
         runs
         if all_workflows
@@ -117,7 +135,7 @@ class GithubUpdater:
         self.page_limit = page_limit
         self.data_root = data_root
 
-    def run(self) -> None:
+    def run(self, include_failure: bool = False, include_manual: bool = False) -> None:
         metadata_by_path: dict[Path, MetadataJson] = {}
         targets: list[UpdateTarget] = []
         for config in self.configs:
@@ -134,9 +152,9 @@ class GithubUpdater:
                 )
             )
         if self.config.discovery == "commits":
-            self._update_by_commits(targets)
+            self._update_by_commits(targets, include_failure, include_manual)
         else:
-            self._update_by_runs(targets)
+            self._update_by_runs(targets, include_failure, include_manual)
         saved_metadata: set[Path] = set()
         for target in targets:
             if not target.run_list.runs:
@@ -165,7 +183,12 @@ class GithubUpdater:
             artifacts.extend(result)
         return artifacts
 
-    def _update_by_commits(self, targets: list[UpdateTarget]) -> None:
+    def _update_by_commits(
+        self,
+        targets: list[UpdateTarget],
+        include_failure: bool = False,
+        include_manual: bool = False,
+    ) -> None:
         pending = targets.copy()
         for page in count(1):
             commits = self.gh.commits.list_commits(
@@ -190,7 +213,11 @@ class GithubUpdater:
                     break
 
                 runs = workflow_runs_for_commit(
-                    self.gh, self.config, sha, all_workflows=True
+                    self.gh,
+                    self.config,
+                    sha,
+                    all_workflows=True,
+                    include_manual=include_manual,
                 )
                 if not runs:
                     logging.info("  -> No workflow related, skip")
@@ -207,7 +234,7 @@ class GithubUpdater:
                             "  -> Multiple workflow runs found, using the first one"
                         )
                     run = matching[0]
-                    if run["conclusion"] != "success":
+                    if run["conclusion"] != "success" and not include_failure:
                         logging.warning("  -> Workflow run failed, skip")
                         continue
                     if run["id"] not in artifacts_by_run:
@@ -218,55 +245,75 @@ class GithubUpdater:
             if not pending or len(commits) < 10 or page >= self.page_limit:
                 break
 
-    def _update_by_runs(self, targets: list[UpdateTarget]) -> None:
-        pending = targets.copy()
-        commits_by_sha: dict[str, dict] = {}
-        for page in count(1):
+    def _iter_event_runs(self, event: str) -> Iterator[dict]:
+        for page in range(1, self.page_limit + 1):
             runs = self.gh.actions.list_workflow_runs(
                 self.config.owner,
                 self.config.repo_name,
                 branch=self.config.branch,
-                event=self.config.event,
+                event=event,
                 status="completed",
                 page=page,
                 per_page=10,
             )["workflow_runs"]
-            if not runs:
+            yield from runs
+            if len(runs) < 10:
                 break
 
-            for run in runs:
-                logging.info("Checking workflow run %s", run["id"])
-                matching = [
-                    target for target in pending if target.config.workflow == run["name"]
-                ]
-                if not matching:
-                    continue
-                if run["conclusion"] != "success":
-                    logging.warning("  -> Workflow run failed, skip")
-                    continue
-                sha = run["head_sha"]
-                pending = [
-                    target
-                    for target in pending
-                    if target not in matching
-                    or not target.run_list.exists(target.metadata, sha)
-                ]
-                matching = [target for target in matching if target in pending]
-                if not pending:
-                    break
-                if not matching:
-                    continue
+    def _iter_runs(self, include_manual: bool = False) -> Iterator[dict]:
+        """Yield completed runs for all requested events, newest first."""
+        streams = [
+            self._iter_event_runs(event)
+            for event in workflow_events(self.config, include_manual)
+        ]
+        if len(streams) == 1:
+            yield from streams[0]
+            return
 
-                if sha not in commits_by_sha:
-                    commits_by_sha[sha] = self.gh.commits.get_commit(
-                        self.config.owner, self.config.repo_name, sha
-                    )
-                artifacts = self._get_artifacts(run["id"])
-                for target in matching:
-                    self._store_run(target, run, sha, commits_by_sha[sha], artifacts)
+        seen: set[int] = set()
+        for run in heapq.merge(*streams, key=lambda run: run["id"], reverse=True):
+            if run["id"] not in seen:
+                seen.add(run["id"])
+                yield run
 
-            if not pending or len(runs) < 10 or page >= self.page_limit:
+    def _update_by_runs(
+        self,
+        targets: list[UpdateTarget],
+        include_failure: bool = False,
+        include_manual: bool = False,
+    ) -> None:
+        pending = targets.copy()
+        commits_by_sha: dict[str, dict] = {}
+        for run in self._iter_runs(include_manual):
+            logging.info("Checking workflow run %s", run["id"])
+            matching = [
+                target for target in pending if target.config.workflow == run["name"]
+            ]
+            if not matching:
+                continue
+            if run["conclusion"] != "success" and not include_failure:
+                logging.warning("  -> Workflow run failed, skip")
+                continue
+            sha = run["head_sha"]
+            pending = [
+                target
+                for target in pending
+                if target not in matching
+                or not target.run_list.exists(target.metadata, sha)
+            ]
+            matching = [target for target in matching if target in pending]
+            if not pending:
                 break
+            if not matching:
+                continue
+
+            if sha not in commits_by_sha:
+                commits_by_sha[sha] = self.gh.commits.get_commit(
+                    self.config.owner, self.config.repo_name, sha
+                )
+            artifacts = self._get_artifacts(run["id"])
+            for target in matching:
+                self._store_run(target, run, sha, commits_by_sha[sha], artifacts)
 
     def _store_run(
         self,

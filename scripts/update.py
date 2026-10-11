@@ -32,6 +32,17 @@ def main() -> None:
         type=Path,
         help="Path to local data dir or file (requires exactly one --config)",
     )
+    parser.add_argument(
+        "--include-failure",
+        action="store_true",
+        help="Include failed runs when updating from GitHub artifacts",
+    )
+    parser.add_argument(
+        "--include-manual",
+        action="store_true",
+        help="Include manually triggered (workflow_dispatch) runs when updating from GitHub artifacts",
+    )
+
     args = parser.parse_args()
 
     logging.basicConfig(level=getattr(logging, args.logging_level))
@@ -58,7 +69,10 @@ def main() -> None:
             "Updating %s from GitHub artifacts",
             ", ".join(config.id for config in configs),
         )
-        GithubUpdater(gh, configs, args.page_limit).run()
+        GithubUpdater(gh, configs, args.page_limit).run(
+            include_failure=args.include_failure,
+            include_manual=args.include_manual,
+        )
 
 
 if __name__ == "__main__":

@@ -25,7 +25,7 @@ npm run build
 
 ## Updating Data
 
-Install the Python dependencies from `requirements.txt`, then run `python scripts/update.py --token "$GH_TOKEN"` to update all configured datasets. Use `--config weekly-xs-gcc-spec17` to update one dataset, or supply multiple config IDs. Run `python scripts/update.py --help` to see the available IDs. Increase `--page-limit` to backfill older runs or commits.
+Install the Python dependencies from `requirements.txt`, then run `python scripts/update.py --token "$GH_TOKEN"` to update all configured datasets. Use `--config weekly-xs-gcc-spec17` to update one dataset, or supply multiple config IDs. Run `python scripts/update.py --help` to see the available IDs. Increase `--page-limit` to backfill older runs or commits. Pass `--include-manual` to also scan `workflow_dispatch` runs, or `--include-failure` to process completed runs whose conclusion is not `success`.
 
 Update definitions live in `scripts/modules/config.py`. Each config specifies its data type (`test`, `nightly`, or `weekly`), repository branch, how to discover runs (`commits` or `runs`), and the workflow event (`push` or `schedule`) independently. XiangShan updates use `kunminghu-v3`; GEM5 updates use `xs-dev`, both for GitHub scanning and for the corresponding data directory. GEM5 0.3c push regressions are stored under `nightly`; aligned, ideal, and SMT results share the same branch metadata but use distinct variants. For a local import, select exactly one configuration and pass `--local` with a directory of `ipc-*` files for `test-xs`, or a score text file for an xs regression. Local imports still require `--token` to fetch commit and workflow metadata. Successful imports register new branches and subsets in the dashboard indexes automatically.
 
