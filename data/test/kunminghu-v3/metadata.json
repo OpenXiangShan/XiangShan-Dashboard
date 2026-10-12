@@ -1,4 +1,9 @@
 {
+  "38226124244": {
+    "hash": "d48cd2dd79726c2d7a1264b3c7a50679c77461e2",
+    "title": "feat(mbtb): implement a fully associative vbtb (#6587)",
+    "date": 1791795059
+  },
   "38064233821": {
     "hash": "df993b2527ddaa1c6291cdaf7dd44724a3ae669b",
     "title": "fix(crob): fix the bit width of scommit and increase the number of entries in crob.",
