@@ -1,4 +1,9 @@
 {
+  "38272731571": {
+    "hash": "d48cd2dd79726c2d7a1264b3c7a50679c77461e2",
+    "title": "feat(mbtb): implement a fully associative vbtb (#6587)",
+    "date": 1791795059
+  },
   "38152334285": {
     "hash": "6714a69d001dbb9e213ff077a518fb78e598c48a",
     "title": "ci(perf): fix --report with empty CKPT_HOME (#6705)",
