@@ -1,4 +1,9 @@
 {
+  "38334108081": {
+    "hash": "ac7b6b2fbbc21c48d10a300195fcc95f845fdff4",
+    "title": "cpu-o3,tests: Anchored trace-mode regression suite with runtime invariants (#1210)",
+    "date": 1791856272
+  },
   "37888303099": {
     "hash": "096f9e1ad5d05fec1e57c69ae9cad120f91d6a81",
     "title": "dev,misc: Fix UARTLite fast builds and add Clang coverage (#1209)",
