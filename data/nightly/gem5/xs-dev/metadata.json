@@ -1,4 +1,19 @@
 {
+  "38531875041": {
+    "hash": "6954822ee9bac3474a7bb2fe59bff132870cfa43",
+    "title": "misc: Restore macOS builds and add manual smoke CI (#1228)",
+    "date": 1791964701
+  },
+  "38531874850": {
+    "hash": "6954822ee9bac3474a7bb2fe59bff132870cfa43",
+    "title": "misc: Restore macOS builds and add manual smoke CI (#1228)",
+    "date": 1791964701
+  },
+  "38531874755": {
+    "hash": "6954822ee9bac3474a7bb2fe59bff132870cfa43",
+    "title": "misc: Restore macOS builds and add manual smoke CI (#1228)",
+    "date": 1791964701
+  },
   "38509105234": {
     "hash": "eaebcb0cf63ba320214fdf1a84a0c6e03e90d94b",
     "title": "mem-cache: Align xsstream active-region qualification (#1223)",

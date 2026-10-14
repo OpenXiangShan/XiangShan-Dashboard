@@ -1,4 +1,9 @@
 {
+  "38532230161": {
+    "hash": "18657f51ce1ed4acaffdceb38bb79ebae68b6af4",
+    "title": "perf(dcache): reduce L2 load-to-use latency (#6713)",
+    "date": 1791964884
+  },
   "38504941840": {
     "hash": "f1a649e0caa21e58b655defbf04833742c65ac4b",
     "title": "fix(ICache): pass exception(1) (#6414)",
