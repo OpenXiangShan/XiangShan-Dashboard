@@ -1,4 +1,34 @@
 {
+  "38718447712": {
+    "hash": "6beac939a848f8e9c42830aab97a53101bbb7e1a",
+    "title": "cpu-o3: add MLP-aware fetch policies and rework BlockStall fetch policy (#1180)",
+    "date": 1792059067
+  },
+  "38718447549": {
+    "hash": "6beac939a848f8e9c42830aab97a53101bbb7e1a",
+    "title": "cpu-o3: add MLP-aware fetch policies and rework BlockStall fetch policy (#1180)",
+    "date": 1792059067
+  },
+  "38718447323": {
+    "hash": "6beac939a848f8e9c42830aab97a53101bbb7e1a",
+    "title": "cpu-o3: add MLP-aware fetch policies and rework BlockStall fetch policy (#1180)",
+    "date": 1792059067
+  },
+  "38697118406": {
+    "hash": "037deac7f39c43d58be5d742cfa0166c004aa9ef",
+    "title": "cpu: Enable private MBTB victim caches by default (#1235)",
+    "date": 1792048301
+  },
+  "38697118219": {
+    "hash": "037deac7f39c43d58be5d742cfa0166c004aa9ef",
+    "title": "cpu: Enable private MBTB victim caches by default (#1235)",
+    "date": 1792048301
+  },
+  "38697118108": {
+    "hash": "037deac7f39c43d58be5d742cfa0166c004aa9ef",
+    "title": "cpu: Enable private MBTB victim caches by default (#1235)",
+    "date": 1792048301
+  },
   "38531875041": {
     "hash": "6954822ee9bac3474a7bb2fe59bff132870cfa43",
     "title": "misc: Restore macOS builds and add manual smoke CI (#1228)",

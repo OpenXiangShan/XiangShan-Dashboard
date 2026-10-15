@@ -1,4 +1,9 @@
 {
+  "38592086305": {
+    "hash": "18657f51ce1ed4acaffdceb38bb79ebae68b6af4",
+    "title": "perf(dcache): reduce L2 load-to-use latency (#6713)",
+    "date": 1791964884
+  },
   "38424933544": {
     "hash": "88fb444c574a52c1e33f682f5ab6770204cb923f",
     "title": "fix(StoreQueue): fix forward older store data (#6693)",
