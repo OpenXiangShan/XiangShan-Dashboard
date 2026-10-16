@@ -9,6 +9,8 @@
     "ideal/spec26/gcc",
     "smt/spec06/gcc",
     "smt-base/spec06/gcc",
-    "default/spec06/xscc"
+    "default/spec06/xscc",
+    "ideal/spec06/xscc",
+    "smt/spec17/gcc"
   ]
 }

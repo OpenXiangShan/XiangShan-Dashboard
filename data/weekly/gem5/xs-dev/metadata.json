@@ -1,4 +1,9 @@
 {
+  "38795368839": {
+    "hash": "92b75d778ffe4964dd2c48db8681e21a1895ec64",
+    "title": "misc: Cancel stale Quick Check runs per PR (#1237)[skip ci]",
+    "date": 1792059189
+  },
   "37893731138": {
     "hash": "096f9e1ad5d05fec1e57c69ae9cad120f91d6a81",
     "title": "dev,misc: Fix UARTLite fast builds and add Clang coverage (#1209)",
