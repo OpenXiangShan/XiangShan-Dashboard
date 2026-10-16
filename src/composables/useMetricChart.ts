@@ -9,6 +9,7 @@ import {
   Tooltip,
   Legend,
   type ChartDataset,
+  type ChartEvent,
 } from "chart.js";
 import type { ChartConfig } from "../config/tabs";
 import {
@@ -168,6 +169,7 @@ export function renderMetricChart(args: {
   if (chart) {
     chart.destroy();
   }
+  canvas.style.cursor = "";
 
   if (!runs.length || !selectedBenchmarks.length) {
     return null;
@@ -209,6 +211,23 @@ export function renderMetricChart(args: {
     },
   );
 
+  function commitUrlAtEvent(
+    event: ChartEvent,
+    chart: Chart,
+  ): string | undefined {
+    if (tab.id !== "ipc-commit" || !event.native) return;
+    const [point] = chart.getElementsAtEventForMode(
+      event.native,
+      "nearest",
+      { intersect: true },
+      false,
+    );
+    const hash = point && runs[point.index]?.hash;
+    return hash
+      ? `https://github.com/OpenXiangShan/XiangShan/commit/${encodeURIComponent(hash)}`
+      : undefined;
+  }
+
   return new Chart(canvas, {
     type: "line",
     data: { labels, datasets },
@@ -217,6 +236,15 @@ export function renderMetricChart(args: {
       maintainAspectRatio: false,
       animation: { duration: 0 },
       interaction: { mode: "nearest", intersect: false },
+      onClick: (event, _elements, chart) => {
+        const url = commitUrlAtEvent(event, chart);
+        if (url) window.open(url, "_blank", "noopener,noreferrer");
+      },
+      onHover: (event, _elements, chart) => {
+        chart.canvas.style.cursor = commitUrlAtEvent(event, chart)
+          ? "pointer"
+          : "";
+      },
       scales: {
         x: {
           offset: isSinglePoint,
