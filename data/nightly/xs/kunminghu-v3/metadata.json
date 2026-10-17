@@ -1,4 +1,9 @@
 {
+  "38925843162": {
+    "hash": "893e1580b705d81f113c30c7a05734e09a08050e",
+    "title": "perf(param): enlarge ROB size to 160 (#6730)",
+    "date": 1792122427
+  },
   "38592086305": {
     "hash": "18657f51ce1ed4acaffdceb38bb79ebae68b6af4",
     "title": "perf(dcache): reduce L2 load-to-use latency (#6713)",
