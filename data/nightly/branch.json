@@ -1,0 +1,7 @@
+{
+  "default": "xs/kunminghu-v3",
+  "branches": [
+    "xs/kunminghu-v3",
+    "gem5/xs-dev"
+  ]
+}
