@@ -1,4 +1,9 @@
 {
+  "39274669505": {
+    "hash": "6705b63685d301f8c0960f7cbcc8b964660dc58e",
+    "title": "submodule(XSCache): bump XSCache (#6738)",
+    "date": 1792422250
+  },
   "38847243344": {
     "hash": "893e1580b705d81f113c30c7a05734e09a08050e",
     "title": "perf(param): enlarge ROB size to 160 (#6730)",
