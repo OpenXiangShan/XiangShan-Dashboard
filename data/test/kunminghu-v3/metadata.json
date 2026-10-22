@@ -1,4 +1,14 @@
 {
+  "39745018632": {
+    "hash": "e516245046234ba958fd69cf95241e77278a1c43",
+    "title": "fix(decode): add decode of mnret and dret (#6692)",
+    "date": 1792656254
+  },
+  "39732081504": {
+    "hash": "361607eb2fd014f376e0bd2faffec4522d144294",
+    "title": "fix(rob): correct the rob idx of redirect begin (#6729)",
+    "date": 1792649290
+  },
   "39274669505": {
     "hash": "6705b63685d301f8c0960f7cbcc8b964660dc58e",
     "title": "submodule(XSCache): bump XSCache (#6738)",
