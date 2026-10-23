@@ -1,4 +1,14 @@
 {
+  "39927122484": {
+    "hash": "f85a1f71da8c1522035744c71e2cb266bfed1a7d",
+    "title": "ci(emu-misc): unify PERF_HOME and WAVE_HOME & cache built emu (#6701)",
+    "date": 1792745227
+  },
+  "39917972265": {
+    "hash": "c31e76d0a22c5669424d1489ce8190d6ae12698e",
+    "title": "fix(StoreUnit): report the pointer-masked address in tval (#6742)",
+    "date": 1792740499
+  },
   "39745018632": {
     "hash": "e516245046234ba958fd69cf95241e77278a1c43",
     "title": "fix(decode): add decode of mnret and dret (#6692)",
