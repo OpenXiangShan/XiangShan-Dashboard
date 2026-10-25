@@ -1,4 +1,9 @@
 {
+  "39936105503": {
+    "hash": "f85a1f71da8c1522035744c71e2cb266bfed1a7d",
+    "title": "ci(emu-misc): unify PERF_HOME and WAVE_HOME & cache built emu (#6701)",
+    "date": 1792745227
+  },
   "38884454174": {
     "hash": "893e1580b705d81f113c30c7a05734e09a08050e",
     "title": "perf(param): enlarge ROB size to 160 (#6730)",
