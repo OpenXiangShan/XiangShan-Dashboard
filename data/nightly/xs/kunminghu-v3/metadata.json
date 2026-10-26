@@ -1,4 +1,9 @@
 {
+  "40207973967": {
+    "hash": "f85a1f71da8c1522035744c71e2cb266bfed1a7d",
+    "title": "ci(emu-misc): unify PERF_HOME and WAVE_HOME & cache built emu (#6701)",
+    "date": 1792745227
+  },
   "39279893665": {
     "hash": "6705b63685d301f8c0960f7cbcc8b964660dc58e",
     "title": "submodule(XSCache): bump XSCache (#6738)",
