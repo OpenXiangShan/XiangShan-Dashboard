@@ -211,21 +211,25 @@ export function renderMetricChart(args: {
     },
   );
 
-  function commitUrlAtEvent(
-    event: ChartEvent,
-    chart: Chart,
-  ): string | undefined {
-    if (tab.id !== "ipc-commit" || !event.native) return;
+  function urlAtEvent(event: ChartEvent, chart: Chart): string | undefined {
+    if (!event.native) return;
     const [point] = chart.getElementsAtEventForMode(
       event.native,
       "nearest",
       { intersect: true },
       false,
     );
-    const hash = point && runs[point.index]?.hash;
-    return hash
-      ? `https://github.com/OpenXiangShan/XiangShan/commit/${encodeURIComponent(hash)}`
-      : undefined;
+    if (!point) return;
+    const hash = runs[point.index].hash;
+    switch (tab.id) {
+      case "ipc-commit":
+        return `https://github.com/OpenXiangShan/XiangShan/commit/${encodeURIComponent(hash)}`;
+      case "score-nightly":
+      case "score-weekly":
+        const prevHash = runs[point.index - 1]?.hash;
+        if (!prevHash) return;
+        return `https://github.com/OpenXiangShan/XiangShan/compare/${encodeURIComponent(prevHash)}...${encodeURIComponent(hash)}`;
+    }
   }
 
   return new Chart(canvas, {
@@ -237,13 +241,11 @@ export function renderMetricChart(args: {
       animation: { duration: 0 },
       interaction: { mode: "nearest", intersect: false },
       onClick: (event, _elements, chart) => {
-        const url = commitUrlAtEvent(event, chart);
+        const url = urlAtEvent(event, chart);
         if (url) window.open(url, "_blank", "noopener,noreferrer");
       },
       onHover: (event, _elements, chart) => {
-        chart.canvas.style.cursor = commitUrlAtEvent(event, chart)
-          ? "pointer"
-          : "";
+        chart.canvas.style.cursor = urlAtEvent(event, chart) ? "pointer" : "";
       },
       scales: {
         x: {
