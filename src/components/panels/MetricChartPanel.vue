@@ -2,7 +2,7 @@
   <div ref="exportRoot" class="panel-surface panel-shell chart-panel">
     <div class="panel-header">
       <h2 class="panel-title">
-        {{ title }}
+        {{ t(tab.titleKey) }}
         <span v-if="summary" class="panel-subtitle">{{ summary }}</span>
       </h2>
     </div>
@@ -48,9 +48,9 @@ const props = defineProps<{
   noDataText: string;
   geomeanMissing: Record<number, Record<string, string[]>>;
   specVersion: SpecVersion;
-  t: (key: string) => string;
-  title: string;
+  selectedBranch: string;
   summary: string;
+  t: (key: string) => string;
 }>();
 
 const canvasRef = ref<HTMLCanvasElement | null>(null);
@@ -83,6 +83,7 @@ async function redraw() {
     tab: props.tab,
     runs: props.runs,
     selectedBenchmarks: props.selectedBenchmarks,
+    selectedBranch: props.selectedBranch,
     runDataByHash: props.runDataByHash,
     geomeanMissing: props.geomeanMissing,
     specVersion: props.specVersion,

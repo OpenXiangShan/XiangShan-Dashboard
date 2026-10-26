@@ -99,10 +99,10 @@
         <MetricChartPanel
           ref="metricChartPanel"
           :tab="activeChartTab"
-          :title="t(activeChartTab.titleKey)"
           :summary="chartSummary"
           :runs="filteredRuns"
           :selected-benchmarks="selectedBenchmarks"
+          :selected-branch="selectedBranch"
           :run-data-by-hash="runDataByHash"
           :loading="isLoading"
           :no-data-text="chartEmptyText"

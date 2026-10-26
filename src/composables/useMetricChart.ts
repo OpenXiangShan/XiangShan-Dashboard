@@ -149,6 +149,7 @@ export function renderMetricChart(args: {
   tab: ChartConfig;
   runs: NormalizedRun[];
   selectedBenchmarks: string[];
+  selectedBranch: string;
   runDataByHash: Record<string, ReportPayload>;
   geomeanMissing: Record<number, Record<string, string[]>>;
   specVersion: SpecVersion;
@@ -160,6 +161,7 @@ export function renderMetricChart(args: {
     tab,
     runs,
     selectedBenchmarks,
+    selectedBranch,
     runDataByHash,
     geomeanMissing,
     specVersion,
@@ -227,8 +229,9 @@ export function renderMetricChart(args: {
       case "score-nightly":
       case "score-weekly":
         const prevHash = runs[point.index - 1]?.hash;
+        const repo = selectedBranch.startsWith("gem5") ? "gem5" : "XiangShan";
         if (!prevHash) return;
-        return `https://github.com/OpenXiangShan/XiangShan/compare/${encodeURIComponent(prevHash)}...${encodeURIComponent(hash)}`;
+        return `https://github.com/OpenXiangShan/${repo}/compare/${encodeURIComponent(prevHash)}...${encodeURIComponent(hash)}`;
     }
   }
 
