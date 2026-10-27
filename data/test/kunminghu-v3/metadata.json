@@ -1,4 +1,9 @@
 {
+  "40444926937": {
+    "hash": "b716aade5550b6c7ba21c199bc917e8275140bba",
+    "title": "fix(core): carry true PC guard bit (#6751)",
+    "date": 1793072069
+  },
   "40444322545": {
     "hash": "bc094bfda820b2c0b5edba827d8a69b43c681e7b",
     "title": "chore(FltRegion): remove useless code (#6765)",
