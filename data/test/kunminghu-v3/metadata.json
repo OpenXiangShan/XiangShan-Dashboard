@@ -1,4 +1,9 @@
 {
+  "40659821187": {
+    "hash": "5c80ed989e73627875fc0d7ff03516daee0aec84",
+    "title": "ci: update profile & improve fuzz (#6758)",
+    "date": 1793177491
+  },
   "40444926937": {
     "hash": "b716aade5550b6c7ba21c199bc917e8275140bba",
     "title": "fix(core): carry true PC guard bit (#6751)",
