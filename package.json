@@ -10,7 +10,7 @@
     "format": "prettier --write ."
   },
   "dependencies": {
-    "chart.js": "^4.4.1",
+    "chart.js": "^4.6.1",
     "html-to-image": "^1.11.13",
     "vue": "^3.5.44"
   },
