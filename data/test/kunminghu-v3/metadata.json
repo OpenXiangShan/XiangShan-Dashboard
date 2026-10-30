@@ -1,4 +1,14 @@
 {
+  "40997951707": {
+    "hash": "05f65879a951c1dc23225e7df69a75d14f5f07aa",
+    "title": "fix(mbtb): allow MBTB allocation for hidden VBTB branches  (#6750)",
+    "date": 1793331143
+  },
+  "40991451999": {
+    "hash": "b55bd03fb887932ffa191d6ee435a58c0a976b59",
+    "title": "fix(prefetch): modify the handle software `prefetch` flow (#6735)",
+    "date": 1793327038
+  },
   "40659821187": {
     "hash": "5c80ed989e73627875fc0d7ff03516daee0aec84",
     "title": "ci: update profile & improve fuzz (#6758)",

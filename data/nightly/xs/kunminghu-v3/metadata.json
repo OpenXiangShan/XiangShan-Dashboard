@@ -1,4 +1,9 @@
 {
+  "40903470318": {
+    "hash": "7599a09762147b839e6d0b9505d41888762d2e0a",
+    "title": "ci(perf): allow disabling difftest (#6804)",
+    "date": 1793278328
+  },
   "40717912048": {
     "hash": "5c80ed989e73627875fc0d7ff03516daee0aec84",
     "title": "ci: update profile & improve fuzz (#6758)",
