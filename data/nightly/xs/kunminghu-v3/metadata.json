@@ -1,4 +1,9 @@
 {
+  "41082470734": {
+    "hash": "a0c2a26cbe3c862175174bad03a1a23c406315ed",
+    "title": "misc(gsim): bump difftest & enable CI lightSSS (#6802)",
+    "date": 1793353604
+  },
   "40903470318": {
     "hash": "7599a09762147b839e6d0b9505d41888762d2e0a",
     "title": "ci(perf): allow disabling difftest (#6804)",
