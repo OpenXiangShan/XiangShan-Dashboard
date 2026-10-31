@@ -1,0 +1,71 @@
+{
+  "perlbench": {
+    "score": 2.933
+  },
+  "gcc": {
+    "score": 3.842
+  },
+  "mcf": {
+    "score": 3.551
+  },
+  "omnetpp": {
+    "score": 2.496
+  },
+  "xalancbmk": {
+    "score": 3.21
+  },
+  "x264": {
+    "score": 2.702
+  },
+  "deepsjeng": {
+    "score": 2.847
+  },
+  "leela": {
+    "score": 2.901
+  },
+  "exchange2": {
+    "score": 9.337
+  },
+  "xz": {
+    "score": 1.764
+  },
+  "bwaves": {
+    "score": 17.543
+  },
+  "cactuBSSN": {
+    "score": 2.388
+  },
+  "namd": {
+    "score": 2.907
+  },
+  "parest": {
+    "score": 3.103
+  },
+  "povray": {
+    "score": 3.845
+  },
+  "lbm": {
+    "score": 3.342
+  },
+  "wrf": {
+    "score": 2.567
+  },
+  "blender": {
+    "score": 3.639
+  },
+  "cam4": {
+    "score": 3.291
+  },
+  "imagick": {
+    "score": 4.354
+  },
+  "nab": {
+    "score": 3.614
+  },
+  "fotonik3d": {
+    "score": 8.552
+  },
+  "roms": {
+    "score": 2.721
+  }
+}

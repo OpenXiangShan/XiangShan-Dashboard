@@ -1,0 +1,80 @@
+{
+  "706.stockfish": {
+    "score": 0.624
+  },
+  "707.ntest": {
+    "score": 0.836
+  },
+  "708.sqlite": {
+    "score": 0.83
+  },
+  "710.omnetpp": {
+    "score": 0.934
+  },
+  "714.cpython": {
+    "score": 1.007
+  },
+  "721.gcc": {
+    "score": 1.103
+  },
+  "723.llvm": {
+    "score": 0.816
+  },
+  "727.cppcheck": {
+    "score": 0.994
+  },
+  "729.abc": {
+    "score": 1.022
+  },
+  "734.vpr": {
+    "score": 1.05
+  },
+  "735.gem5": {
+    "score": 0.994
+  },
+  "750.sealcrypto": {
+    "score": 0.742
+  },
+  "753.ns3": {
+    "score": 0.829
+  },
+  "777.zstd": {
+    "score": 0.423
+  },
+  "709.cactus": {
+    "score": 0.53
+  },
+  "722.palm": {
+    "score": 1.459
+  },
+  "731.astcenc": {
+    "score": 0.925
+  },
+  "736.ocio": {
+    "score": 1.25
+  },
+  "737.gmsh": {
+    "score": 1.007
+  },
+  "748.flightdm": {
+    "score": 0.836
+  },
+  "749.fotonik3d": {
+    "score": 2.312
+  },
+  "765.roms": {
+    "score": 1.492
+  },
+  "766.femflow": {
+    "score": 1.319
+  },
+  "767.nest": {
+    "score": 1.503
+  },
+  "772.marian": {
+    "score": 0.522
+  },
+  "782.lbm": {
+    "score": 0.467
+  }
+}
