@@ -1,4 +1,9 @@
 {
+  "41035907521": {
+    "hash": "a0c2a26cbe3c862175174bad03a1a23c406315ed",
+    "title": "misc(gsim): bump difftest & enable CI lightSSS (#6802)",
+    "date": 1793353604
+  },
   "41019555172": {
     "hash": "4b9f938b7bae582966ccfda00f5425492377ad4e",
     "title": "feat(frontend): enhanced iprefetch part 1 (#6691)",
