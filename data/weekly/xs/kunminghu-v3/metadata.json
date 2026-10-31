@@ -1,4 +1,9 @@
 {
+  "41037640355": {
+    "hash": "a0c2a26cbe3c862175174bad03a1a23c406315ed",
+    "title": "misc(gsim): bump difftest & enable CI lightSSS (#6802)",
+    "date": 1793353604
+  },
   "39936105503": {
     "hash": "f85a1f71da8c1522035744c71e2cb266bfed1a7d",
     "title": "ci(emu-misc): unify PERF_HOME and WAVE_HOME & cache built emu (#6701)",
