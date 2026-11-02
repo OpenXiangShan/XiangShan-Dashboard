@@ -1,4 +1,14 @@
 {
+  "41448039827": {
+    "hash": "429980ea228c481384134abcd99a02f1ceae7440",
+    "title": "fix(decode): add support of out-of-order CSRR instructions execution \u2026 (#6779)",
+    "date": 1793623860
+  },
+  "41416090996": {
+    "hash": "ecc3c3c7f78d26df5d9d96741caefeb64557d59d",
+    "title": "feat(Tage): bankIdx use history bits (#6771)",
+    "date": 1793609479
+  },
   "41402884020": {
     "hash": "13e6ea2d162ab226e0b3f5f6963ebfc1d12f5886",
     "title": "timing(Bpu): fix s2_override and s3_override timing (#6753)",
