@@ -1,4 +1,14 @@
 {
+  "41402884020": {
+    "hash": "13e6ea2d162ab226e0b3f5f6963ebfc1d12f5886",
+    "title": "timing(Bpu): fix s2_override and s3_override timing (#6753)",
+    "date": 1793602468
+  },
+  "41393293624": {
+    "hash": "95a5e89ff8b909658391f36ae1410fc0414be220",
+    "title": "bump(XSCache): fix the problem of late hints by replacing the arb (#6803)",
+    "date": 1793596735
+  },
   "41035907521": {
     "hash": "a0c2a26cbe3c862175174bad03a1a23c406315ed",
     "title": "misc(gsim): bump difftest & enable CI lightSSS (#6802)",
