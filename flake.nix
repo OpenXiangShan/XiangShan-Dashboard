@@ -1,5 +1,5 @@
 {
-  description = "nix devshell for npm";
+  description = "nix devshell for XiangShan Dashboard";
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
@@ -13,6 +13,8 @@
       packages = with pkgs; [
         yarn
         nodejs
+        python3
+        python3Packages.requests
       ];
       shellHook = ''
         npm set prefix ./.npm-global
