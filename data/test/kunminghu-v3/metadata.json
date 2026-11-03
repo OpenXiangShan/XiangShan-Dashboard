@@ -1,4 +1,44 @@
 {
+  "41605060276": {
+    "hash": "e725b6d37f5ab9935eb499b4028e30eea544698d",
+    "title": "feat(Tage): store alt meta (#6800)",
+    "date": 1793695240
+  },
+  "41598298919": {
+    "hash": "c3859025386c84232dcfe3a28ee8a58e13df8df6",
+    "title": "fix(Bpu): fix s2_override related performance counters (#6777)",
+    "date": 1793691856
+  },
+  "41588693792": {
+    "hash": "2145ba1c95fe2d7862416dfd2766da3fef207a8b",
+    "title": "fix(decode): select CBO opcode for inval-to-flush conversion (#6754)",
+    "date": 1793686497
+  },
+  "41587796458": {
+    "hash": "effee80b5a725523f117b5d1a04ea1fb2ec72e27",
+    "title": "feat(crob): decode and preserve former/latter remaining writeback counts under backend debug mode (#6749)",
+    "date": 1793685977
+  },
+  "41569814003": {
+    "hash": "dc7eb7338a863f24f9f0894559ecddae42a7b8a6",
+    "title": "fix(StoreQueue): wait for CBO zero enqueue before flushing (#6762)",
+    "date": 1793674976
+  },
+  "41569774340": {
+    "hash": "43fe084b3f2ffae21fa3b66ba77131432295cea7",
+    "title": "fix(StoreQueue): fix cross16B unalign forward mask (#6718)",
+    "date": 1793674951
+  },
+  "41569744072": {
+    "hash": "d3472986bd83b849f1bf7f91a1554cdef420934c",
+    "title": "fix(StoreQueue): fix judgement of `MdpHit` when `waitSqidx` is retired (#6714)",
+    "date": 1793674934
+  },
+  "41569706401": {
+    "hash": "a026b34f517df6c095c591567ee104af490f469a",
+    "title": "fix(LoadUnit): fix Rollback information lost under the same RobIdx (#6678)",
+    "date": 1793674911
+  },
   "41448039827": {
     "hash": "429980ea228c481384134abcd99a02f1ceae7440",
     "title": "fix(decode): add support of out-of-order CSRR instructions execution \u2026 (#6779)",

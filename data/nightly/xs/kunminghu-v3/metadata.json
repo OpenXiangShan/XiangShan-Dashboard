@@ -1,4 +1,9 @@
 {
+  "41473313543": {
+    "hash": "429980ea228c481384134abcd99a02f1ceae7440",
+    "title": "fix(decode): add support of out-of-order CSRR instructions execution \u2026 (#6779)",
+    "date": 1793623860
+  },
   "41082470734": {
     "hash": "a0c2a26cbe3c862175174bad03a1a23c406315ed",
     "title": "misc(gsim): bump difftest & enable CI lightSSS (#6802)",
