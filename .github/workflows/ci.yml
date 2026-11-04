@@ -42,7 +42,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          python scripts/update.py --token "$GH_TOKEN"
+          python scripts/update.py --token "$GH_TOKEN" --include-manual
           if git status --porcelain | grep .; then
             echo "changed=true" >> "$GITHUB_OUTPUT"
           else
