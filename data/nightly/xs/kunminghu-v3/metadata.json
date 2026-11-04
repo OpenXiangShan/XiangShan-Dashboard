@@ -1,4 +1,9 @@
 {
+  "41665663634": {
+    "hash": "352144b4403a723367a6b89eac54e68d20e4d561",
+    "title": "docs: refresh README and add AGENTS.md (#6849)",
+    "date": 1793701896
+  },
   "41473313543": {
     "hash": "429980ea228c481384134abcd99a02f1ceae7440",
     "title": "fix(decode): add support of out-of-order CSRR instructions execution \u2026 (#6779)",
