@@ -4,6 +4,7 @@ import calendar
 import heapq
 import json
 import logging
+import re
 import time
 from collections.abc import Iterator, Sequence
 from dataclasses import dataclass
@@ -183,6 +184,29 @@ class GithubUpdater:
             artifacts.extend(result)
         return artifacts
 
+    def _successful_job_artifacts(self, run_id: int, artifacts: list[dict]) -> list[dict]:
+        """Drop artifacts uploaded by failed jobs (score-<x> comes from job "... (<x>)")."""
+        jobs = self.gh.get(
+            f"repos/{self.config.owner}/{self.config.repo_name}/actions/runs/{run_id}/jobs",
+            params={"per_page": 100},
+        )["jobs"]
+        kept = []
+        for artifact in artifacts:
+            # The uploading job is the first matching job to finish after the upload
+            owners = [
+                job
+                for job in jobs
+                if (m := re.search(r"\(([^)]+)\)$", job["name"]))
+                and artifact["name"].endswith("-" + m.group(1))
+                and (job["completed_at"] or "") >= artifact["created_at"]
+            ]
+            owner = min(owners, key=lambda job: job["completed_at"], default=None)
+            if owner is not None and owner["conclusion"] == "success":
+                kept.append(artifact)
+            else:
+                logging.warning("  -> %s not from a successful job, skip", artifact["name"])
+        return kept
+
     def _update_by_commits(
         self,
         targets: list[UpdateTarget],
@@ -291,7 +315,9 @@ class GithubUpdater:
             ]
             if not matching:
                 continue
-            if run["conclusion"] != "success" and not include_failure:
+            # gem5 weekly runs often have a few failed jobs; keep the rest
+            partial = run["conclusion"] != "success" and self.config.repo == "gem5"
+            if run["conclusion"] != "success" and not (include_failure or partial):
                 logging.warning("  -> Workflow run failed, skip")
                 continue
             sha = run["head_sha"]
@@ -312,6 +338,8 @@ class GithubUpdater:
                     self.config.owner, self.config.repo_name, sha
                 )
             artifacts = self._get_artifacts(run["id"])
+            if partial:
+                artifacts = self._successful_job_artifacts(run["id"], artifacts)
             for target in matching:
                 self._store_run(target, run, sha, commits_by_sha[sha], artifacts)
 
