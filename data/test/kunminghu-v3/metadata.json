@@ -1,4 +1,9 @@
 {
+  "41854131445": {
+    "hash": "4fb3afcd122fedf9e165b759886ff744d1c9562a",
+    "title": "fix(ittage): default updateAlloc to false instead of DontCare (#6837)",
+    "date": 1793804729
+  },
   "41764709958": {
     "hash": "980935fd3c47d8b1ec0a5710705c390d1e3fff9a",
     "title": "fix(decode): set CBO commitType to STORE (#6847)",
