@@ -9,3 +9,4 @@ test.py
 .direnv
 
 dist-internal/
+/internal/data_import/local/
