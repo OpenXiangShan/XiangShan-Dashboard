@@ -5,10 +5,60 @@ from __future__ import annotations
 
 import argparse
 from functools import partial
+from io import BytesIO
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from urllib.parse import urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
+LINKED_PAGES = {
+    "/xiangshan-performance-dashboard/": ("legacy", "index.html"),
+    "/xiangshan-performance-dashboard/index.html": ("legacy", "index.html"),
+    "/xiangshan-performance-dashboard/reports/20261103/": (
+        "report",
+        "reports/20261103/index.html",
+    ),
+    "/xiangshan-performance-dashboard/reports/20261103/index.html": (
+        "report",
+        "reports/20261103/index.html",
+    ),
+    "/xiangshan-performance-dashboard/reports/20261103/report.html": (
+        "report-text",
+        "reports/20261103/report.html",
+    ),
+    "/xiangshan-performance-dashboard/reports/tea-dip/": (
+        "tea-dip",
+        "reports/tea-dip/index.html",
+    ),
+    "/xiangshan-performance-dashboard/reports/tea-dip/index.html": (
+        "tea-dip",
+        "reports/tea-dip/index.html",
+    ),
+}
+PAGE_LINKS = (
+    ("/", "性能看板", "dashboard"),
+    ("/xiangshan-performance-dashboard/reports/20261103/", "分析报告", "report"),
+    ("/xiangshan-performance-dashboard/reports/tea-dip/", "TEA+DIP", "tea-dip"),
+    ("/xiangshan-performance-dashboard/", "完整相关性与历史分析", "legacy"),
+)
+
+
+def linked_page_bar(page: str) -> bytes:
+    current = "report" if page == "report-text" else page
+    links = "".join(
+        f'<a href="{href}"'
+        f'{" aria-current=\"page\"" if key == current else ""}>{label}</a>'
+        for href, label, key in PAGE_LINKS
+    )
+    return (
+        '<link rel="stylesheet" href="/internal-linked-pages.css">'
+        f'<body class="internal-linked-page internal-{page}">'
+        '<div class="internal-pagebar" aria-label="内部页面导航">'
+        '<a class="internal-pagebar-brand" href="/">'
+        '<span class="internal-pagebar-mark">X</span>'
+        '<span>香山 <small>内部性能分析</small></span></a>'
+        f'<div class="internal-pagebar-links">{links}</div></div>'
+    ).encode("utf-8")
 
 
 class Handler(SimpleHTTPRequestHandler):
@@ -23,6 +73,33 @@ class Handler(SimpleHTTPRequestHandler):
         if relative.parts[:1] == ("xiangshan-performance-dashboard",) and self.legacy_root:
             return str(self.legacy_root.joinpath(*relative.parts[1:]))
         return str(translated)
+
+    def send_head(self):
+        path = urlsplit(self.path).path
+        if path == "/internal-linked-pages.css":
+            css = (ROOT / "internal/linked_pages.css").read_bytes()
+            return self.send_bytes(css, "text/css; charset=utf-8")
+        page = LINKED_PAGES.get(path)
+        if page and self.legacy_root:
+            kind, relative = page
+            source = self.legacy_root / relative
+            if not source.is_file():
+                self.send_error(404, "Linked analysis page not found")
+                return None
+            html = source.read_bytes()
+            if kind == "tea-dip":
+                html = html.replace(b"</style>", b"</style>" + linked_page_bar(kind), 1)
+            else:
+                html = html.replace(b"<body>", linked_page_bar(kind), 1)
+            return self.send_bytes(html, "text/html; charset=utf-8")
+        return super().send_head()
+
+    def send_bytes(self, content: bytes, content_type: str) -> BytesIO:
+        self.send_response(200)
+        self.send_header("Content-Type", content_type)
+        self.send_header("Content-Length", str(len(content)))
+        self.end_headers()
+        return BytesIO(content)
 
     def end_headers(self) -> None:
         self.send_header("Cache-Control", "no-store")
