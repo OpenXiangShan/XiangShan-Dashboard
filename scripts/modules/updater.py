@@ -12,6 +12,8 @@ from itertools import count
 from pathlib import Path
 from zipfile import ZipFile
 
+from requests import RequestException
+
 from modules.config import UpdateConfig
 from modules.github import GitHub
 from modules.json import MetadataJson, RunListJson, ReportRegressionJson, ReportTestJson
@@ -185,11 +187,16 @@ class GithubUpdater:
         return artifacts
 
     def _successful_job_artifacts(self, run_id: int, artifacts: list[dict]) -> list[dict]:
-        """Drop artifacts uploaded by failed jobs (score-<x> comes from job "... (<x>)")."""
+        """Keep successful jobs and weekly partial scores missing fewer than 10 points."""
         jobs = self.gh.get(
             f"repos/{self.config.owner}/{self.config.repo_name}/actions/runs/{run_id}/jobs",
             params={"per_page": 100},
         )["jobs"]
+        def completed_at(job):
+            return max([job["completed_at"] or ""] + [
+                step["completed_at"] or "" for step in job.get("steps", [])
+            ])
+
         kept = []
         for artifact in artifacts:
             # The uploading job is the first matching job to finish after the upload
@@ -198,11 +205,28 @@ class GithubUpdater:
                 for job in jobs
                 if (m := re.search(r"\(([^)]+)\)$", job["name"]))
                 and artifact["name"].endswith("-" + m.group(1))
-                and (job["completed_at"] or "") >= artifact["created_at"]
+                and completed_at(job) >= artifact["created_at"]
             ]
-            owner = min(owners, key=lambda job: job["completed_at"], default=None)
+            owner = min(owners, key=completed_at, default=None)
             if owner is not None and owner["conclusion"] == "success":
                 kept.append(artifact)
+            elif (owner is not None and self.config.type_ == "weekly"
+                  and owner["conclusion"] in ("failure", "cancelled")):
+                try:
+                    log = self.gh.get_raw(
+                        f"repos/{self.config.owner}/{self.config.repo_name}/actions/jobs/{owner['id']}/logs"
+                    ).text
+                except RequestException:
+                    logging.warning("  -> Cannot verify partial job %s, skip", owner["id"])
+                    continue
+                counts = re.findall(r"Summary: total=(\d+).*?completed=(\d+) failed=\d+", log)
+                if not counts:
+                    counts = [(t, c) for c, t in re.findall(r"Checkpoints\s*:\s*(\d+)/(\d+)", log)]
+                if counts:
+                    total, completed = map(int, counts[-1])
+                    if total > 0 and 0 <= total - completed < 10:
+                        artifact["partial_note"] = f"partial {completed}/{total}"
+                        kept.append(artifact)
             else:
                 logging.warning("  -> %s not from a successful job, skip", artifact["name"])
         return kept
@@ -306,12 +330,11 @@ class GithubUpdater:
         include_failure: bool = False,
         include_manual: bool = False,
     ) -> None:
-        pending = targets.copy()
         commits_by_sha: dict[str, dict] = {}
         for run in self._iter_runs(include_manual):
             logging.info("Checking workflow run %s", run["id"])
             matching = [
-                target for target in pending if target.config.workflow == run["name"]
+                target for target in targets if target.config.workflow == run["name"]
             ]
             if not matching:
                 continue
@@ -321,15 +344,10 @@ class GithubUpdater:
                 logging.warning("  -> Workflow run failed, skip")
                 continue
             sha = run["head_sha"]
-            pending = [
-                target
-                for target in pending
-                if target not in matching
-                or not target.run_list.exists(target.metadata, sha)
+            matching = [
+                target for target in matching
+                if str(run["id"]) not in target.run_list.runs
             ]
-            matching = [target for target in matching if target in pending]
-            if not pending:
-                break
             if not matching:
                 continue
 
@@ -420,6 +438,9 @@ class GithubUpdater:
                     note = report.append_artifact_zip(body)
                 else:
                     logging.warning("    -> unknown file type, ignore")
+                note = artifact.get("partial_note", note)
+            if not report._data:
+                return
 
         append_commit(target.metadata, target.run_list, run["id"], sha, commit, note)
         report.to_json(config.data_path(self.data_root) / f"{sha}.json")

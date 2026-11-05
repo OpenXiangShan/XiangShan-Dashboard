@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass, field, asdict
 import json
+import math
 from pathlib import Path
 import re
 from zipfile import ZipFile
@@ -89,7 +90,8 @@ class ReportRegressionJson(ReportJson):
 
     def append(self, testcase: str, score: float) -> None:
         """Append a single testcase to report"""
-        self._data[testcase] = ReportJsonEntry(score=score)
+        if math.isfinite(score):
+            self._data[testcase] = ReportJsonEntry(score=score)
 
     def append_score_txt(self, txt: str) -> str | None:
         """Append multiple testcase from a score.txt file"""
