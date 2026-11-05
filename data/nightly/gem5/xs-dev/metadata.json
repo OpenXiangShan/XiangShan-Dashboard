@@ -1,4 +1,14 @@
 {
+  "42000203373": {
+    "hash": "2aa34bebb4855e58d0c55adfc2d2bb1a8b09237f",
+    "title": "Add trace (google trace and cbp trace) to CI (#1272)",
+    "date": 1793869825
+  },
+  "42000203248": {
+    "hash": "2aa34bebb4855e58d0c55adfc2d2bb1a8b09237f",
+    "title": "Add trace (google trace and cbp trace) to CI (#1272)",
+    "date": 1793869825
+  },
   "41406139294": {
     "hash": "1cf461fbc000427f3faaebdb4c130190d5d9bffb",
     "title": "configs: optimize param combination in LSQ and ROB (#1283)",
