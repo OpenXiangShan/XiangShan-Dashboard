@@ -1,4 +1,9 @@
 {
+  "41859549807": {
+    "hash": "4fb3afcd122fedf9e165b759886ff744d1c9562a",
+    "title": "fix(ittage): default updateAlloc to false instead of DontCare (#6837)",
+    "date": 1793804729
+  },
   "41665663634": {
     "hash": "352144b4403a723367a6b89eac54e68d20e4d561",
     "title": "docs: refresh README and add AGENTS.md (#6849)",
