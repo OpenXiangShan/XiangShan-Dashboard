@@ -951,7 +951,7 @@ const chartData = computed<Record<string, ReportPayload>>(() => {
 
 const legacyUrl = computed(
   () =>
-    `/xiangshan-performance-dashboard/?${new URLSearchParams({ data: dataRoot, dataset: datasetId.value })}`,
+    `/xiangshan-performance-dashboard/legacy.html?${new URLSearchParams({ data: dataRoot, dataset: datasetId.value })}`,
 );
 const teaDipUrl = computed(() => {
   if (!selectedSlice.value || !target.value) return "";
