@@ -236,6 +236,7 @@ def collect_evidence(
 
         temporary = Path(tempfile.mkdtemp(prefix=f".{run_id}-", dir=evidence_root))
         try:
+            temporary.chmod(0o2770)
             write_json(temporary / "run.json", run)
             write_json(temporary / "jobs.json", jobs)
             write_json(temporary / "artifacts.json", artifacts)

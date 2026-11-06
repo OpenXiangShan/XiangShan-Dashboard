@@ -245,6 +245,7 @@ class PipelineTest(unittest.TestCase):
                 max_runs=10,
             )
             self.assertEqual(collected["collected"][0]["run_id"], 12)
+            self.assertEqual((evidence / "12").stat().st_mode & 0o2770, 0o2770)
 
             args = argparse.Namespace(
                 evidence=evidence,
