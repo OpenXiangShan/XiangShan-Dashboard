@@ -26,7 +26,8 @@ def main():
     if args.action=='prepare':
         if not args.profile or not args.git_repo or not args.weekly_source or not args.report_root:
             parser.error('prepare requires --profile, --git-repo, --weekly-source, and --report-root')
-        shas = subprocess.run(['git','-C',str(args.git_repo),'rev-list','--first-parent',args.branch],
+        shas = subprocess.run(['git','-c',f'safe.directory={args.git_repo}',
+                              '-C',str(args.git_repo),'rev-list','--first-parent',args.branch],
                               check=True,capture_output=True,text=True).stdout.splitlines()
         result=prepare(args.db,args.profile,set(shas),args.report_root,args.output,
                        args.weekly_source,args.jobs)

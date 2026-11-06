@@ -1,0 +1,7 @@
+{
+  "data_dir": "/shared/xiangshan-dashboard",
+  "update_host": "dashboard-update-host",
+  "report_root": "/shared/perf-report",
+  "git_repo": "/path/to/XiangShan",
+  "gcc16_profile": "/shared/checkpoint-profile/json/checkpoints_all.json"
+}

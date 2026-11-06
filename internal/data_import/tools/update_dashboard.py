@@ -4,14 +4,16 @@
 from __future__ import annotations
 
 import argparse
-from contextlib import closing
+from contextlib import closing, contextmanager
 from dataclasses import dataclass
+import fcntl
 import io
 import json
 import os
 from pathlib import Path
 import re
 import shutil
+import socket
 import sqlite3
 import subprocess
 import sys
@@ -26,10 +28,6 @@ DEFAULT_REPO = "OpenXiangShan/XiangShan"
 DEFAULT_WORKFLOW = "weekly.yml"
 DEFAULT_BRANCH = "kunminghu-v3"
 LOCAL_ROOT = ROOT / "local"
-DEFAULT_DB = LOCAL_ROOT / "performance.sqlite"
-DEFAULT_EVIDENCE = LOCAL_ROOT / "evidence"
-DEFAULT_OUTPUT = LOCAL_ROOT / "weekly-spec06-gcc16"
-DEFAULT_DASHBOARD = LOCAL_ROOT / "mainline-history"
 SCORE_NAME = "score-spec06-rva23-novec-gcc16-1.0c.txt"
 ANSI_RE = re.compile(r"\x1b\[[0-9;]*[A-Za-z]")
 
@@ -267,18 +265,21 @@ def run_stage(command: list[str]) -> None:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--config", type=Path, help="shared local JSON configuration")
+    parser.add_argument("--data-dir", type=Path, help="root for SQLite, evidence, caches and dashboard JSON")
+    parser.add_argument("--update-host", help="host allowed to run updates")
     parser.add_argument("--repo", default=DEFAULT_REPO)
     parser.add_argument("--workflow", default=DEFAULT_WORKFLOW)
     parser.add_argument("--branch", default=DEFAULT_BRANCH)
-    parser.add_argument("--report-root", type=Path, required=True,
+    parser.add_argument("--report-root", type=Path,
                         help="local perf-report directory")
-    parser.add_argument("--git-repo", type=Path, required=True,
+    parser.add_argument("--git-repo", type=Path,
                         help="local XiangShan Git checkout")
-    parser.add_argument("--db", type=Path, default=DEFAULT_DB)
-    parser.add_argument("--evidence", type=Path, default=DEFAULT_EVIDENCE)
-    parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
-    parser.add_argument("--dashboard-output", type=Path, default=DEFAULT_DASHBOARD)
-    parser.add_argument("--gcc16-profile", type=Path, required=True,
+    parser.add_argument("--db", type=Path)
+    parser.add_argument("--evidence", type=Path)
+    parser.add_argument("--output", type=Path)
+    parser.add_argument("--dashboard-output", type=Path)
+    parser.add_argument("--gcc16-profile", type=Path,
                         help="local GCC16 checkpoints_all.json profile")
     parser.add_argument("--page-limit", type=int, default=3)
     parser.add_argument("--max-runs", type=int, default=20)
@@ -291,10 +292,58 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def main(argv: list[str] | None = None) -> int:
-    args = build_parser().parse_args(argv)
+def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+    parser = build_parser()
+    args = parser.parse_args(argv)
+    paths = ("data_dir", "report_root", "git_repo", "gcc16_profile", "db", "evidence",
+             "output", "dashboard_output")
+    if args.config:
+        config_path = args.config.expanduser().resolve()
+        config = json.loads(config_path.read_text())
+        unknown = set(config) - {*paths, "update_host"}
+        if unknown:
+            parser.error(f"unknown configuration fields: {', '.join(sorted(unknown))}")
+        for name, value in config.items():
+            if getattr(args, name) is None:
+                if name in paths:
+                    value = Path(value).expanduser()
+                    if not value.is_absolute():
+                        value = config_path.parent / value
+                setattr(args, name, value)
+    args.data_dir = (args.data_dir or LOCAL_ROOT).expanduser().resolve()
+    for name, relative in (("db", "performance.sqlite"), ("evidence", "evidence"),
+                           ("output", "weekly-spec06-gcc16"),
+                           ("dashboard_output", "mainline-history")):
+        if getattr(args, name) is None:
+            setattr(args, name, args.data_dir / relative)
+    for name in ("report_root", "git_repo", "gcc16_profile"):
+        if getattr(args, name) is None:
+            parser.error(f"--{name.replace('_', '-')} is required, directly or in --config")
+    for name in paths:
+        setattr(args, name, getattr(args, name).expanduser().resolve())
     if args.import_only and args.collect_only:
-        raise SystemExit("--import-only and --collect-only are mutually exclusive")
+        parser.error("--import-only and --collect-only are mutually exclusive")
+    if args.update_host and socket.gethostname().split(".")[0] != args.update_host.split(".")[0]:
+        parser.error(f"run this update on {args.update_host}; current host is {socket.gethostname()}")
+    return args
+
+
+@contextmanager
+def update_lock(database: Path):
+    database.parent.mkdir(parents=True, exist_ok=True)
+    with database.with_name(database.name + ".update.lock").open("a") as lock:
+        try:
+            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            raise SystemExit(f"another dashboard update is running for {database}") from None
+        try:
+            yield
+        finally:
+            fcntl.flock(lock, fcntl.LOCK_UN)
+
+
+def main(argv: list[str] | None = None) -> int:
+    args = parse_args(argv)
     if not args.report_root.is_dir():
         raise SystemExit(f"report root is not a directory: {args.report_root}")
     if not args.git_repo.is_dir():
@@ -302,6 +351,18 @@ def main(argv: list[str] | None = None) -> int:
     if not args.gcc16_profile.is_file():
         raise SystemExit(f"GCC16 profile does not exist: {args.gcc16_profile}")
 
+    previous_umask = os.umask(0o007)
+    try:
+        with update_lock(args.db):
+            temporary = args.data_dir / "tmp"
+            temporary.mkdir(parents=True, exist_ok=True)
+            os.environ["SQLITE_TMPDIR"] = str(temporary)
+            return refresh(args)
+    finally:
+        os.umask(previous_umask)
+
+
+def refresh(args: argparse.Namespace) -> int:
     summary: dict[str, Any] = {"status": "ok"}
     if not args.import_only:
         summary["collection"] = collect_evidence(
@@ -318,7 +379,7 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     if not args.import_only:
-        run_stage(["git", "-C", str(args.git_repo), "fetch", "--no-tags",
+        run_stage(["git", "-c", f"safe.directory={args.git_repo}", "-C", str(args.git_repo), "fetch", "--no-tags",
                    "--recurse-submodules=no", "origin", args.branch])
 
     args.output.mkdir(parents=True, exist_ok=True)

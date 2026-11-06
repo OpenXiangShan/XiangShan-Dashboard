@@ -108,14 +108,17 @@ class Handler(SimpleHTTPRequestHandler):
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--data-root", required=True, type=Path,
-                        help="directory containing the private manifest.json export")
+    data = parser.add_mutually_exclusive_group(required=True)
+    data.add_argument("--data-root", type=Path,
+                      help="directory containing the private manifest.json export")
+    data.add_argument("--data-dir", type=Path,
+                      help="shared root containing mainline-history/")
     parser.add_argument("--legacy-root", type=Path,
                         help="optional legacy analysis page and generated reports")
     parser.add_argument("--bind", default="127.0.0.1")
     parser.add_argument("--port", default=8001, type=int)
     args = parser.parse_args()
-    Handler.data_root = args.data_root.resolve()
+    Handler.data_root = (args.data_root or args.data_dir / "mainline-history").resolve()
     Handler.legacy_root = args.legacy_root.resolve() if args.legacy_root else None
     server = ThreadingHTTPServer(
         (args.bind, args.port), partial(Handler, directory=str(ROOT / "dist-internal"))

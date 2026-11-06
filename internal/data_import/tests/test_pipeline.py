@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 import io
 import json
 from pathlib import Path
+import socket
 import subprocess
 import sys
 import tempfile
@@ -18,7 +19,7 @@ from commit_ipc_trend.dashboard_export import export_history
 from commit_ipc_trend.parsers import load_registry
 from commit_ipc_trend.store import Store
 from tools.import_weekly_spec06 import import_counters, import_weekly
-from tools.update_dashboard import SCORE_NAME, collect_evidence, main
+from tools.update_dashboard import SCORE_NAME, collect_evidence, main, parse_args, update_lock
 
 
 class FakeGitHubApi:
@@ -56,6 +57,57 @@ class FakeGitHubApi:
 
 
 class PipelineTest(unittest.TestCase):
+    def test_shared_config_resolves_paths_and_allows_cli_override(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            config = root / "config.json"
+            config.write_text(json.dumps({
+                "data_dir": "shared", "report_root": "reports", "git_repo": "XiangShan",
+                "gcc16_profile": "profile.json", "update_host": socket.gethostname(),
+            }))
+            args = parse_args(["--config", str(config)])
+            self.assertEqual(args.db, root / "shared/performance.sqlite")
+            self.assertEqual(args.evidence, root / "shared/evidence")
+            self.assertEqual(args.output, root / "shared/weekly-spec06-gcc16")
+            self.assertEqual(args.dashboard_output, root / "shared/mainline-history")
+            self.assertEqual(args.git_repo, root / "XiangShan")
+            overridden = parse_args(["--config", str(config), "--db", str(root / "other.sqlite")])
+            self.assertEqual(overridden.db, root / "other.sqlite")
+
+    def test_wrong_update_host_does_not_create_shared_state(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            config = root / "config.json"
+            config.write_text(json.dumps({
+                "data_dir": "shared", "report_root": "reports", "git_repo": "XiangShan",
+                "gcc16_profile": "profile.json", "update_host": "another-update-host",
+            }))
+            with redirect_stdout(io.StringIO()), patch("sys.stderr", new_callable=io.StringIO):
+                with self.assertRaises(SystemExit) as error:
+                    main(["--config", str(config)])
+            self.assertEqual(error.exception.code, 2)
+            self.assertFalse((root / "shared").exists())
+
+    def test_second_process_cannot_update_until_lock_is_released(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            database = Path(temporary) / "shared/performance.sqlite"
+            command = [sys.executable, "-c", (
+                "from pathlib import Path; from tools.update_dashboard import update_lock; "
+                "import sys; "
+                "\nwith update_lock(Path(sys.argv[1])): print('acquired')"
+            ), str(database)]
+            try:
+                with update_lock(database):
+                    blocked = subprocess.run(command, cwd=ROOT, capture_output=True, text=True)
+                    self.assertNotEqual(blocked.returncode, 0)
+                    self.assertIn("another dashboard update is running", blocked.stderr)
+                    raise RuntimeError("failed import")
+            except RuntimeError:
+                pass
+            released = subprocess.run(command, cwd=ROOT, capture_output=True, text=True)
+            self.assertEqual(released.returncode, 0, released.stderr)
+            self.assertEqual(released.stdout.strip(), "acquired")
+
     def test_update_entry_passes_local_inputs_through_export_stages(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
