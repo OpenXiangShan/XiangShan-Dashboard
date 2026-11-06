@@ -1,4 +1,9 @@
 {
+  "42115195085": {
+    "hash": "2061e44b1dfb9dc0f56f94f44edd0d4718ac577e",
+    "title": "cpu-o3: Filter resolve inputs with the oldest same-cycle squash (#1282)",
+    "date": 1793896884
+  },
   "40952029963": {
     "hash": "75569f588baa5ccd9be051cfc57408482f214494",
     "title": "misc: Exclude node033 and expand default CI pools to node042 (#1271)[skip ci]",
