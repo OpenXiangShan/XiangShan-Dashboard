@@ -217,6 +217,19 @@ def import_weekly(args):
                 if args.skip_invalid:
                     continue
                 raise ValueError(f"CI {ci['id']} was not successful")
+            artifacts = json.loads((evidence / "artifacts.json").read_text())
+            artifact = next(a for a in artifacts if a["name"] == "score")
+            existing = store.connection.execute(
+                """SELECT run_id FROM runs
+                   WHERE CAST(json_extract(experiment_json, '$.actions_run_id') AS TEXT)=?
+                     AND json_extract(experiment_json, '$.score_artifact_id')=?
+                     AND json_extract(experiment_json, '$.history_repair_version') IS NULL
+                   LIMIT 1""", (str(ci["id"]), artifact["id"])
+            ).fetchone()
+            if existing:
+                print(json.dumps({"actions_run_id": ci["id"], "run_id": existing["run_id"],
+                                  "status": "already_imported"}), flush=True)
+                continue
             jobs = json.loads((evidence / "jobs.json").read_text())
             job = next(j for j in jobs if "SPEC06 GCC16" in j["name"] or j["name"].startswith("Run GCC16"))
             if job["conclusion"] != "success":
@@ -248,8 +261,6 @@ def import_weekly(args):
             if not dram_config:
                 raise ValueError(f"report does not contain a DRAMsim3 config: {report}")
             score = (evidence / SCORE_NAME).resolve()
-            artifacts = json.loads((evidence / "artifacts.json").read_text())
-            artifact = next(a for a in artifacts if a["name"] == "score")
             score_time = datetime.fromisoformat(artifact["created_at"].replace("Z", "+00:00"))
             score_text = score.read_text()
             if re.search(r"Data Directory\s*:\s*(.*)", score_text)[1].strip() != str(original):

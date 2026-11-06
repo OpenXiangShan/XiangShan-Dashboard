@@ -259,6 +259,10 @@ class PipelineTest(unittest.TestCase):
             )
             with redirect_stdout(io.StringIO()):
                 import_weekly(args)
+                relocated = root / "shared-reports"
+                reports.rename(relocated)
+                reports.symlink_to(relocated, target_is_directory=True)
+                args.report_root = relocated
                 import_weekly(args)
                 import_counters(argparse.Namespace(db=args.db, output=args.output, jobs=1))
 

@@ -72,6 +72,8 @@ including evidence collection and JSON export. A second update exits with a
 message instead of running concurrently. The lock is released on exit; keep
 the `.update.lock` file in place. Use the same shared configuration for manual
 and scheduled updates.
+Previously imported CI score artifacts are reused, so relocating the data
+directory does not create another measurement for the same evidence.
 
 Give the collaborator group write and search access to the data directory,
 use setgid directories so new files inherit that group, and give that group
