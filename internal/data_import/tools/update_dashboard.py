@@ -46,7 +46,7 @@ class GitHubApi:
 
     def bytes(self, endpoint: str) -> bytes:
         result = subprocess.run(
-            ["gh", "api", endpoint], check=True, capture_output=True
+            ["gh", "api", "--allow-escape-sequences", endpoint], check=True, capture_output=True
         )
         return result.stdout
 
