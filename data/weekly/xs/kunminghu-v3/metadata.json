@@ -1,4 +1,9 @@
 {
+  "42199436965": {
+    "hash": "a253c1163982ae0b485b3a2ed9b61253d980d837",
+    "title": "fix(MissQueue): do not merge store when pre load miss is speculative (#6842)",
+    "date": 1793868941
+  },
   "41037640355": {
     "hash": "a0c2a26cbe3c862175174bad03a1a23c406315ed",
     "title": "misc(gsim): bump difftest & enable CI lightSSS (#6802)",
