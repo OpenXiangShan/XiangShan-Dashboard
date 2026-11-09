@@ -11,11 +11,10 @@ SCHEMA_VERSION = "1.0"
 PARSER_VERSION = "commit-ipc-trend/0.1"
 SCORE_FORMULA_VERSION = "score-spec06/published-v1"
 CPI_FORMULA_VERSION = "weighted-cpi/v1"
-COMPARISON_POLICY_VERSION = "demo-v1"
 
 
 class ManifestError(ValueError):
-    """Raised when a parsed run does not satisfy the demo contract."""
+    """Raised when a parsed run does not satisfy the import contract."""
 
 
 def canonical_hash(value: Any) -> str:

@@ -1,8 +1,7 @@
-"""Parsers for the constrained seven-run mcf demo dataset."""
+"""Parse CI scores, simulator summaries, PERF counters, and Git metadata."""
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
 import json
 import math
 from pathlib import Path
@@ -10,23 +9,9 @@ import re
 import subprocess
 from typing import Any, Iterable
 
-from .metrics import aggregate_cpi
-from .schema import (
-    COMPARISON_POLICY_VERSION,
-    CPI_FORMULA_VERSION,
-    PARSER_VERSION,
-    SCHEMA_VERSION,
-    SCORE_FORMULA_VERSION,
-    ManifestError,
-    canonical_hash,
-    validate_manifest,
-)
+from .schema import SCORE_FORMULA_VERSION, ManifestError
 
 
-RUN_DIR_RE = re.compile(
-    r"^cr(?P<date>\d{6})-(?P<sha>[0-9a-f]{7,40})-(?P<label>.+)$"
-)
-CONFIG_RE = re.compile(r"^(?P<config>[A-Za-z0-9_]+Config)(?:-|$)")
 SUMMARY_RE = re.compile(
     r"instrCnt\s*=\s*([0-9,]+),\s*cycleCnt\s*=\s*([0-9,]+),\s*IPC\s*=\s*([0-9.]+)"
 )
@@ -125,18 +110,6 @@ def parse_score(path: Path, *, require_suite: bool = True) -> tuple[list[dict[st
     if require_suite and not any(row["object_id"] == "SPEC2006" for row in scores):
         raise ManifestError(f"SPEC2006 score is missing in {path}")
     return scores, info
-
-
-def parse_profile(path: Path, workload: str) -> dict[str, Any]:
-    payload = json.loads(path.read_text(encoding="utf-8"))
-    try:
-        profile = payload[workload]
-        points = {int(key): float(value) for key, value in profile["points"].items()}
-    except (KeyError, TypeError, ValueError) as error:
-        raise ManifestError(f"invalid {workload} profile: {path}") from error
-    if not points or not math.isclose(sum(points.values()), 1.0, abs_tol=1e-5):
-        raise ManifestError(f"{workload} profile weights do not sum to one: {path}")
-    return {"instructions": int(profile["insts"]), "points": points}
 
 
 def parse_slice_output(path: Path) -> dict[str, Any]:
@@ -261,223 +234,3 @@ def parse_perf_counters(
             }
         )
     return values
-
-
-def _iso_mtime(path: Path) -> str:
-    return datetime.fromtimestamp(path.stat().st_mtime, timezone.utc).isoformat()
-
-
-def _snapshot_identity(paths: Iterable[Path]) -> str:
-    rows = []
-    for path in sorted(paths):
-        stat = path.stat()
-        rows.append((str(path), stat.st_size, stat.st_mtime_ns))
-    return canonical_hash(rows)
-
-
-def build_run_manifest(
-    run_dir: Path,
-    git_repos: Iterable[Path],
-    profile_path: Path | None = None,
-    registry_path: Path | None = None,
-    include_counters: bool = True,
-) -> dict[str, Any]:
-    run_dir = run_dir.resolve()
-    match = RUN_DIR_RE.fullmatch(run_dir.name)
-    if not match:
-        raise ManifestError(f"unsupported run directory name: {run_dir.name}")
-    config_match = CONFIG_RE.match(match.group("label"))
-    if not config_match:
-        raise ManifestError(f"cannot identify config from: {run_dir.name}")
-    config = config_match.group("config")
-    commit = commit_metadata(match.group("sha"), tuple(git_repos))
-
-    score_paths = sorted(run_dir.glob("score-spec06-*-1.0c.txt"))
-    if len(score_paths) != 1:
-        raise ManifestError(f"expected one 1.0c score file in {run_dir}, found {len(score_paths)}")
-    score_path = score_paths[0]
-    scores, score_info = parse_score(score_path)
-    checkpoint_version = score_info.get("Checkpoint Version")
-    if not checkpoint_version:
-        raise ManifestError(f"checkpoint version is missing in {score_path}")
-    profile_path = profile_path or Path(checkpoint_version).parent / "json" / "mcf.json"
-    profile = parse_profile(profile_path, "mcf")
-    registry = load_registry(registry_path)
-
-    members: list[dict[str, Any]] = []
-    results: list[dict[str, Any]] = []
-    counters: list[dict[str, Any]] = []
-    artifacts: list[dict[str, Any]] = [
-        {"slice_id": None, "kind": "score", "uri": str(score_path)}
-    ]
-    snapshot_paths = [score_path, profile_path]
-    run_conditions: dict[str, Any] | None = None
-    for ordinal, (checkpoint, weight) in enumerate(
-        sorted(profile["points"].items(), key=lambda item: item[0])
-    ):
-        candidates = sorted(run_dir.glob(f"mcf_{checkpoint}_*"))
-        if len(candidates) != 1:
-            raise ManifestError(
-                f"expected one mcf checkpoint {checkpoint} in {run_dir}, found {len(candidates)}"
-            )
-        slice_dir = candidates[0]
-        try:
-            directory_weight = float(slice_dir.name.rsplit("_", 1)[1])
-        except (IndexError, ValueError) as error:
-            raise ManifestError(f"invalid slice directory: {slice_dir}") from error
-        if not math.isclose(directory_weight, weight, abs_tol=1e-9):
-            raise ManifestError(f"profile/directory weight mismatch: {slice_dir}")
-
-        output_path = slice_dir / "simulator_out.txt"
-        error_path = slice_dir / "simulator_err.txt"
-        if not output_path.is_file() or not error_path.is_file():
-            raise ManifestError(f"missing simulator output in {slice_dir}")
-        parsed = parse_slice_output(output_path)
-        conditions = {
-            key: parsed.get(key)
-            for key in (
-                "dram_config",
-                "cpu_frequency_mhz",
-                "dram_frequency_mhz",
-            )
-        }
-        if run_conditions is None:
-            run_conditions = conditions
-        elif conditions != run_conditions:
-            raise ManifestError(f"mixed run conditions in {run_dir}")
-
-        slice_id = canonical_hash(
-            {
-                "checkpoint_version": checkpoint_version,
-                "workload": "mcf",
-                "checkpoint": checkpoint,
-                "restore_mode": "checkpoint-image",
-                "warmup_definition": "simulator-warmup-reset",
-                "roi_definition": "simulator-final-summary",
-            }
-        )
-        member = {
-            "slice_id": slice_id,
-            "benchmark": "429.mcf",
-            "workload": "mcf",
-            "slice": slice_dir.name,
-            "checkpoint": checkpoint,
-            "checkpoint_identity": parsed.get("checkpoint_image"),
-            "restore_mode": "checkpoint-image",
-            "warmup_definition": "simulator-warmup-reset",
-            "roi_definition": "simulator-final-summary",
-            "weight": weight,
-            "weight_kind": "simpoint_weight_unverified",
-            "ordinal": ordinal,
-        }
-        members.append(member)
-        result = {
-            **parsed,
-            "slice_id": slice_id,
-            "slice": slice_dir.name,
-            "checkpoint": checkpoint,
-            "weight": weight,
-            "source_out_uri": str(output_path),
-            "source_err_uri": str(error_path),
-        }
-        results.append(result)
-        artifacts.extend(
-            [
-                {"slice_id": slice_id, "kind": "simulator_out", "uri": str(output_path)},
-                {"slice_id": slice_id, "kind": "simulator_err", "uri": str(error_path)},
-            ]
-        )
-        snapshot_paths.append(output_path)
-        snapshot_paths.append(error_path)
-        if include_counters:
-            for counter in parse_perf_counters(error_path, registry):
-                counters.append({**counter, "slice_id": slice_id})
-
-    slice_set_id = canonical_hash(
-        [(row["slice_id"], row["weight"]) for row in members]
-    )
-    assert run_conditions is not None
-    experiment = {
-        **run_conditions,
-        "checkpoint_version": checkpoint_version,
-        "slice_set_id": slice_set_id,
-        "warmup_definition": "simulator-warmup-reset",
-        "roi_definition": "simulator-final-summary",
-        "simulator_semantic_version": "emu-gsim/unversioned",
-        "comparison_policy_version": COMPARISON_POLICY_VERSION,
-        "comparison_status": "provisional",
-    }
-    comparison_key = canonical_hash({"config": config, **experiment})
-    snapshot_identity = _snapshot_identity(snapshot_paths)
-    run_id = canonical_hash(
-        {"source_uri": str(run_dir), "snapshot_identity": snapshot_identity}
-    )
-    status = "published"
-    if any(row["status"] != "valid" for row in results) or any(
-        row["availability"] == "parse_error" for row in counters
-    ):
-        status = "partial"
-    elif score_path.stat().st_mtime_ns < max(
-        Path(row["source_out_uri"]).stat().st_mtime_ns for row in results
-    ):
-        status = "stale"
-
-    total_weight = math.fsum(row["weight"] for row in members)
-    aggregate = aggregate_cpi(results, total_weight)
-    aggregate_results = []
-    for metric_id in ("weighted_cpi", "equivalent_ipc"):
-        aggregate_results.append(
-            {
-                "level": "workload",
-                "object_id": "mcf",
-                "metric_id": metric_id,
-                "formula_version": CPI_FORMULA_VERSION,
-                "value": aggregate[metric_id],
-                "numerator": aggregate["numerator"],
-                "denominator": aggregate["denominator"],
-                "coverage_weight": aggregate["coverage_weight"],
-                "valid_member_count": aggregate["valid_member_count"],
-                "total_member_count": len(members),
-                "status": aggregate["status"],
-                "source_uri": str(profile_path),
-            }
-        )
-
-    manifest = {
-        "schema_version": SCHEMA_VERSION,
-        "parser_version": PARSER_VERSION,
-        "commit": commit,
-        "run": {
-            "run_id": run_id,
-            "commit_sha": commit["commit_sha"],
-            "branch_label": match.group("label"),
-            "config": config,
-            "started_at": None,
-            "completed_at": _iso_mtime(max(snapshot_paths, key=lambda path: path.stat().st_mtime_ns)),
-            "score_generated_at": _iso_mtime(score_path),
-            "snapshot_at": _iso_mtime(max(snapshot_paths, key=lambda path: path.stat().st_mtime_ns)),
-            "source_uri": str(run_dir),
-            "status": status,
-            "parser_version": PARSER_VERSION,
-            "score_formula_version": SCORE_FORMULA_VERSION,
-            "comparison_key": comparison_key,
-            "experiment": experiment,
-            "snapshot_identity": snapshot_identity,
-        },
-        "slice_set": {
-            "slice_set_id": slice_set_id,
-            "name": "mcf",
-            "version": str(profile_path.parent.parent.name),
-            "source_uri": str(profile_path),
-            "members": members,
-        },
-        "scores": scores,
-        "slice_results": results,
-        "counter_values": counters,
-        "counter_import": "complete" if include_counters else "skipped",
-        "metric_definitions": registry["metrics"],
-        "aggregate_results": aggregate_results,
-        "artifacts": artifacts,
-    }
-    validate_manifest(manifest)
-    return manifest

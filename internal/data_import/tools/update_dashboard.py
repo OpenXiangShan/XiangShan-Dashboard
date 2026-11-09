@@ -384,7 +384,7 @@ def refresh(args: argparse.Namespace) -> int:
                    "--recurse-submodules=no", "origin", args.branch])
 
     args.output.mkdir(parents=True, exist_ok=True)
-    run_stage([
+    weekly_command = [
         sys.executable,
         str(ROOT / "tools/import_weekly_spec06.py"),
         "--evidence", str(args.evidence),
@@ -395,7 +395,8 @@ def refresh(args: argparse.Namespace) -> int:
         "--db", str(args.db),
         "--output", str(args.output),
         "--skip-invalid",
-    ])
+    ]
+    run_stage(weekly_command)
 
     if not args.skip_receipts:
         receipt_command = [
@@ -410,20 +411,7 @@ def refresh(args: argparse.Namespace) -> int:
         run_stage(receipt_command)
 
     if not args.skip_counters:
-        run_stage([
-            sys.executable,
-            str(ROOT / "tools/import_weekly_spec06.py"),
-            "--evidence", str(args.evidence),
-            "--report-root", str(args.report_root),
-            "--archive-root", str(args.output / "source"),
-            "--git-repo", str(args.git_repo),
-            "--gcc16-profile", str(args.gcc16_profile),
-            "--db", str(args.db),
-            "--output", str(args.output),
-            "--counters-only",
-            "--skip-invalid",
-            "--jobs", str(args.jobs),
-        ])
+        run_stage([*weekly_command, "--counters-only", "--jobs", str(args.jobs)])
 
     if not args.skip_export:
         selected = []
