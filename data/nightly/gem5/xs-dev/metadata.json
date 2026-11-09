@@ -1,4 +1,9 @@
 {
+  "42548048520": {
+    "hash": "189d013e73a76866ba8a304995f889438b5077f3",
+    "title": "cpu-o3: Align scalar FMUL/FMA scheduling and execution timing with KMHV3 RTL (#1290)",
+    "date": 1794189300
+  },
   "42146417601": {
     "hash": "244990a2331549e31e0ad1c7974cddb58dad38c7",
     "title": "cpu: Add late value prediction and the EgDiff value predictor (#1186)",
