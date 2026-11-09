@@ -12,12 +12,20 @@ python3 internal/serve.py \
 ```
 
 Open `http://127.0.0.1:8001/` (or use an SSH tunnel). The server binds to
-loopback by default. The optional `--legacy-root` enables the existing
-correlation page and generated report links. The internal build writes to
+loopback by default. The correlation/history page is bundled in `internal/legacy/`.
+Generated report pages are read from `reports/` alongside `mainline-history/`;
+keep those measurement files outside Git. The internal build writes to
 `dist-internal/`, which is Git-ignored and is not copied into public `dist/`.
 
 The app retains distinct run IDs, score coverage, common-slice IPC comparison,
-PERF-window counter checks, TEA+DIP links, and CSV/PNG exports.
+PERF-window counter checks, TEA+DIP links, and CSV/PNG exports. The server also
+serves the dashboard at `/xiangshan-performance-dashboard/` and history analysis
+at `/xiangshan-performance-dashboard/legacy.html`.
+
+Existing A/B diagnostics, rolling analysis, slice sensitivity, anomaly export,
+and report/TEA+DIP generation tools are in `internal/data_import/tools/`.
+Install the optional plotting dependency with
+`pip install -r internal/data_import/requirements.txt` when using those tools.
 
 ## Local Data Import
 

@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>香山 · 主线性能看板</title>
+  <meta name="description" content="香山主线性能趋势、A/B 对比与切片分析">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23265ecf'/%3E%3Cpath d='M5 23L12 14L18 19L27 7' fill='none' stroke='white' stroke-width='3'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css?v=2026-11-04-report-links">
+</head>
+<body>
+  <div class="dashboard-topbar">
+    <a class="topbar-brand" href="/xiangshan-performance-dashboard/" aria-label="返回性能看板">
+      <span class="topbar-mark" aria-hidden="true">χ</span>
+      <span>香山 <small>内部性能分析</small></span>
+    </a>
+    <nav class="topbar-links" aria-label="内部页面">
+      <a href="#trendPanel">性能趋势</a>
+      <a href="reports/20261103/">分析报告</a>
+      <a href="reports/tea-dip/">TEA+DIP</a>
+      <a class="active" href="#top" aria-current="page">相关性与历史</a>
+    </nav>
+  </div>
+  <aside class="rail" aria-label="分析导航">
+    <nav class="rail-nav">
+      <a class="nav active" href="#top"><span aria-hidden="true">▤</span> 性能总览</a>
+      <a class="nav" href="#workloads"><span aria-hidden="true">▦</span> Workload</a>
+      <a class="nav" href="#slices"><span aria-hidden="true">⌕</span> 切片分析</a>
+      <a id="counterNav" class="nav" href="#trendPanel"><span aria-hidden="true">⌁</span> 性能计数器</a>
+      <a class="nav" href="#anomalies"><span aria-hidden="true">⚠</span> 异常清单</a>
+      <a id="teaDipNav" class="nav" href="reports/tea-dip/index.html" target="_blank" rel="noopener"><span aria-hidden="true">◫</span> TEA+DIP ↗</a>
+      <a id="analysisReportNav" class="nav" href="reports/20261103/report.html" target="_blank" rel="noopener"><span aria-hidden="true">▧</span> 分析报告 ↗</a>
+      <a class="nav" href="#commits"><span aria-hidden="true">⑂</span> 提交记录</a>
+    </nav>
+    <div class="rail-bottom"><span class="live-dot"></span><span class="version">SPEC2006</span></div>
+  </aside>
+
+  <main id="top">
+    <header>
+      <h1>主线性能看板</h1>
+      <div class="header-actions">
+        <button id="reset" class="quiet" type="button" title="恢复默认筛选">↺ 重置</button>
+        <button id="export" class="dark-btn" type="button" title="导出当前 A/B 切片数据">导出 A/B <span aria-hidden="true">↓</span></button>
+      </div>
+    </header>
+
+    <div id="loading" class="notice"><span class="loader" aria-hidden="true"></span><span>正在载入性能数据…</span></div>
+    <div id="error" class="notice error-notice" hidden></div>
+
+    <div id="dashboard" hidden>
+      <section class="comparison-controls" aria-label="A/B 对比设置">
+        <div class="filters pair-filters">
+          <label class="dataset-filter">切片集<select id="dataset"></select></label>
+          <label>基线 A<select id="base"></select></label>
+          <label>目标 B<select id="target"></select></label>
+        </div>
+        <div class="comparison-status">
+          <span id="comparisonNotice" class="comparison-notice" role="status"></span>
+          <details id="measurementDetails" class="measurement-disclosure">
+            <summary>测量详情</summary>
+            <div class="measurement-content">
+              <p id="observationDetails" class="measurement-details"></p>
+              <div class="context-line">
+                <span>配置 <b id="configName">—</b></span>
+                <span>切片 <b id="sliceCount">—</b></span>
+                <span>有效观测 <b id="observationCount">—</b></span>
+                <span id="coverageText">—</span>
+              </div>
+            </div>
+          </details>
+          <span id="scopeRange" class="scope-range"></span>
+          <span id="scopeStats" class="scope-stats"></span>
+        </div>
+      </section>
+
+      <section class="kpis" id="kpis" aria-label="关键指标"></section>
+
+      <section id="trendPanel" class="panel trend-panel">
+        <div class="panel-head">
+          <div class="panel-title"><h2 id="trendTitle">性能趋势</h2><button class="info-button" type="button" aria-label="趋势口径说明">i<span id="trendSub" class="info-popover"></span></button><span id="trendScale" class="tiny-label" hidden>独立纵轴</span></div>
+          <div id="valueMode" class="segmented" aria-label="数值模式"><button data-mode="absolute" class="selected" type="button">绝对值</button><button data-mode="relative" type="button">相对基线</button></div>
+        </div>
+        <section class="filters analysis-filters" aria-label="趋势筛选">
+          <label>分析粒度<select id="level"><option value="suite">套件总览</option><option value="workload">Workload</option><option value="slice">切片</option><option id="counterLevel" value="counter">性能计数器</option></select></label>
+          <label id="entityLabel" class="entity-filter">分析对象<select id="entity"></select></label>
+          <label>指标<select id="metric"></select></label>
+          <label id="scoreSuiteLabel">套件 / Benchmark 分数<select id="scoreSuite"></select></label>
+          <label id="counterUnitLabel" hidden>计数器口径<select id="counterUnit"><option value="raw">原始计数</option><option value="per_kinst">每千指令</option></select></label>
+        </section>
+        <section id="counterTrendControls" class="counter-trend-controls" aria-label="趋势序列筛选" hidden>
+          <div class="counter-view-row">
+            <div id="counterDisplayMode" class="segmented" role="group" aria-label="趋势显示内容">
+              <button type="button" data-display="combined" class="selected">IPC + 计数器</button>
+              <button type="button" data-display="counters">仅计数器</button>
+              <button type="button" data-display="ipc">仅 IPC</button>
+            </div>
+            <span id="counterCoverage" class="measurement-details" role="status"></span>
+          </div>
+          <details class="counter-picker">
+            <summary>选择计数器 <span id="counterSelectionSummary"></span></summary>
+            <div class="counter-selection-actions"><button id="selectAllCounters" type="button">全选</button><button id="clearCounters" type="button">清空</button></div>
+            <div id="counterMetricChecks" class="counter-metric-checks"></div>
+          </details>
+        </section>
+        <div id="trend" class="chart"></div>
+        <div class="chart-footer"><div id="legend" class="trend-legend"></div><span id="hoverReadout" aria-live="polite"></span></div>
+      </section>
+
+      <section id="workloads" class="workload-section">
+        <div class="section-toolbar">
+          <h2>Workload 对比</h2>
+          <div id="workloadFilters" class="segmented" role="group" aria-label="Workload 筛选">
+            <button type="button" data-filter="all" class="selected">全部</button>
+            <button type="button" data-filter="regressed">退化</button>
+            <button type="button" data-filter="improved">提升</button>
+          </div>
+          <input id="workloadSearch" type="search" placeholder="搜索 Workload" aria-label="搜索 Workload">
+        </div>
+        <div class="analysis-grid">
+          <section class="panel heat-panel">
+            <div class="panel-head"><h2>IPC 变化 <span class="heading-unit">%</span></h2><span id="workloadCount" class="tiny-label"></span></div>
+            <div class="heat-wrap"><table id="heatTable" class="heat-table"></table></div>
+            <div class="heat-legend"><span>退化</span><i class="heat-r2"></i><i class="heat-r1"></i><i class="heat-n"></i><i class="heat-g1"></i><i class="heat-g2"></i><span>提升</span></div>
+          </section>
+          <section class="panel movers-panel">
+            <div class="panel-head"><div class="panel-title"><h2>主要变化</h2><button class="info-button" type="button" aria-label="变化排序说明">i<span class="info-popover">按对套件 IPC 变化的绝对对数贡献排序，显示前 12 项。不同 cov 使用 A/B 共同有效且权重一致的切片重算 Workload IPC；套件变化取各可比 Workload 变化比的几何平均。</span></button></div><span class="tiny-label">Top 12</span></div>
+            <div id="bars"></div>
+            <div class="net-row"><span>套件 IPC 变化</span><strong id="net"></strong></div>
+            <p id="netScope" class="measurement-details" style="margin:8px 20px 16px"></p>
+          </section>
+        </div>
+      </section>
+
+      <section id="slices" class="panel">
+        <div class="panel-head">
+          <h2 id="sliceTitle">切片 A/B 对比</h2>
+          <label class="inline-label">排序<select id="sort"><option value="impact">加权 CPI 影响</option><option value="change">IPC 变化幅度</option><option value="weight">切片权重</option></select></label>
+        </div>
+        <div class="table-scroll"><table class="result-table"><thead><tr><th>切片</th><th>权重</th><th id="valueAHead">IPC · A</th><th id="valueBHead">IPC · B</th><th id="changeHead">IPC 变化</th><th id="impactHead" title="切片权重 × (CPI B − CPI A)，正值表示退化贡献">加权 ΔCPI</th><th>判定</th></tr></thead><tbody id="sliceRows"></tbody></table></div>
+        <div id="sliceSummary" class="slice-summary"></div>
+      </section>
+
+      <section id="sliceCounters" class="panel slice-counter-panel" aria-labelledby="sliceCounterTitle" hidden>
+        <div class="panel-head">
+          <div>
+            <h2 id="sliceCounterTitle">当前切片 · 性能计数器变化</h2>
+            <p id="sliceCounterContext" class="measurement-details"></p>
+          </div>
+          <button id="sliceTeaDipOpen" class="quiet" type="button">TEA+DIP 下钻 ↗</button>
+          <label class="inline-label">计数器口径<select id="sliceCounterUnit"><option value="raw">原始计数</option><option value="per_kinst">每千指令</option></select></label>
+        </div>
+        <div id="sliceCounterSummary" class="slice-counter-summary" role="status" aria-live="polite"></div>
+        <div class="table-scroll"><table class="result-table slice-counter-table">
+          <thead><tr><th>计数器</th><th id="sliceCounterAHead">A</th><th id="sliceCounterBHead">B</th><th>增减量 · B − A</th><th>变化 · (B / A − 1)</th><th>对比状态</th></tr></thead>
+          <tbody id="sliceCounterRows"></tbody>
+        </table></div>
+      </section>
+
+      <section id="counterInsights" class="counter-insights" hidden>
+        <div class="analysis-grid counter-grid">
+          <section class="panel relation-panel">
+            <div class="panel-head">
+              <div class="panel-title"><h2>计数器 × IPC</h2><button class="info-button" type="button" aria-label="相关性视角说明">i<span id="relationSub" class="info-popover"></span></button></div>
+              <div class="segmented" id="relationMode" role="group" aria-label="相关性视角">
+                <button data-rel="level" class="selected" type="button">切片水平</button><button data-rel="delta" type="button">A→B 变化</button><button data-rel="panel" type="button">全区间</button>
+              </div>
+            </div>
+            <div id="relationScatter" class="chart scatter-chart"></div>
+            <div id="relationStats" class="relation-stats"></div>
+          </section>
+          <section class="panel ranking-panel">
+            <div class="panel-head"><h2>相关性排行 <span class="heading-unit">ρ</span></h2><span class="tiny-label" id="rankingCount"></span></div>
+            <div id="correlationBars" class="correlation-bars"></div>
+          </section>
+        </div>
+        <details class="panel disclosure-panel matrix-panel">
+          <summary class="panel-head"><div class="panel-title"><h2>计数器 × 切片矩阵</h2><span id="matrixSub" class="sr-only"></span></div><span class="tiny-label">A/B 变化</span></summary>
+          <div class="table-scroll"><table id="counterMatrix" class="counter-matrix"></table></div>
+          <div class="matrix-legend"><span>不利方向</span><i class="heat-r2"></i><i class="heat-r1"></i><i class="heat-n"></i><i class="heat-g1"></i><i class="heat-g2"></i><span>有利方向</span></div>
+        </details>
+      </section>
+
+      <details id="anomalies" class="panel disclosure-panel anomaly-panel">
+        <summary class="panel-head"><h2>异常清单</h2><span id="anomalyPolicy" class="tiny-label"></span></summary>
+        <div id="anomalyComparisons" class="anomaly-comparisons"></div>
+      </details>
+
+      <details id="commits" class="panel disclosure-panel history-panel">
+        <summary class="panel-head"><h2>提交记录</h2><span id="missingBadge" class="tiny-label"></span></summary>
+        <section class="transitions-panel">
+          <div class="panel-head"><h2 title="按切片 IPC 统计，稳定区间为 ±0.5%">相邻观测</h2><span id="transitionCount" class="tiny-label"></span></div>
+          <div id="transitions" class="transitions"></div>
+        </section>
+        <div class="table-scroll"><table class="commit-table"><thead><tr><th>序号</th><th>Commit</th><th>提交时间</th><th>变更说明</th><th>覆盖</th></tr></thead><tbody id="commitRows"></tbody></table></div>
+      </details>
+    </div>
+  </main>
+  <script src="observation-filter.js?v=2026-10-10-trends"></script>
+  <script src="comparison.js"></script>
+  <script src="app.js?v=2026-11-04-report-links"></script>
+  <script src="tea-dip.js"></script>
+</body>
+</html>

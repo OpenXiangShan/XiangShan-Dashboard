@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Serve the optional internal build with local performance data."""
+"""Serve the internal dashboard, history analysis, and shared generated reports."""
 
 from __future__ import annotations
 
@@ -12,8 +12,6 @@ from urllib.parse import urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
 LINKED_PAGES = {
-    "/xiangshan-performance-dashboard/": ("legacy", "index.html"),
-    "/xiangshan-performance-dashboard/index.html": ("legacy", "index.html"),
     "/xiangshan-performance-dashboard/reports/20261103/": (
         "report",
         "reports/20261103/index.html",
@@ -36,10 +34,10 @@ LINKED_PAGES = {
     ),
 }
 PAGE_LINKS = (
-    ("/", "性能看板", "dashboard"),
+    ("/xiangshan-performance-dashboard/", "性能看板", "dashboard"),
     ("/xiangshan-performance-dashboard/reports/20261103/", "分析报告", "report"),
     ("/xiangshan-performance-dashboard/reports/tea-dip/", "TEA+DIP", "tea-dip"),
-    ("/xiangshan-performance-dashboard/", "完整相关性与历史分析", "legacy"),
+    ("/xiangshan-performance-dashboard/legacy.html", "完整相关性与历史分析", "legacy"),
 )
 
 
@@ -54,7 +52,7 @@ def linked_page_bar(page: str) -> bytes:
         '<link rel="stylesheet" href="/internal-linked-pages.css">'
         f'<body class="internal-linked-page internal-{page}">'
         '<div class="internal-pagebar" aria-label="内部页面导航">'
-        '<a class="internal-pagebar-brand" href="/">'
+        '<a class="internal-pagebar-brand" href="/xiangshan-performance-dashboard/">'
         '<span class="internal-pagebar-mark">X</span>'
         '<span>香山 <small>内部性能分析</small></span></a>'
         f'<div class="internal-pagebar-links">{links}</div></div>'
@@ -63,15 +61,26 @@ def linked_page_bar(page: str) -> bytes:
 
 class Handler(SimpleHTTPRequestHandler):
     data_root: Path
-    legacy_root: Path | None
+    reports_root: Path
 
     def translate_path(self, path: str) -> str:
         translated = Path(super().translate_path(path))
-        relative = translated.relative_to(self.directory)
-        if relative.parts[:2] == ("outputs", "mainline-history"):
-            return str(self.data_root.joinpath(*relative.parts[2:]))
-        if relative.parts[:1] == ("xiangshan-performance-dashboard",) and self.legacy_root:
-            return str(self.legacy_root.joinpath(*relative.parts[1:]))
+        parts = translated.relative_to(self.directory).parts
+        if parts[:2] == ("outputs", "mainline-history"):
+            return str(self.data_root.joinpath(*parts[2:]))
+        if parts[:1] == ("xiangshan-performance-dashboard",):
+            relative = parts[1:]
+            if not relative or relative == ("index.html",):
+                return str(ROOT / "dist-internal/index.html")
+            if relative[:1] == ("reports",):
+                return str(self.reports_root.joinpath(*relative[1:]))
+            if relative[:1] == ("assets",):
+                return str((ROOT / "dist-internal").joinpath(*relative))
+            if relative == ("comparison.js",):
+                return str(ROOT / "internal/comparison.js")
+            if relative == ("legacy.html",):
+                return str(ROOT / "internal/legacy/index.html")
+            return str((ROOT / "internal/legacy").joinpath(*relative))
         return str(translated)
 
     def send_head(self):
@@ -80,9 +89,9 @@ class Handler(SimpleHTTPRequestHandler):
             css = (ROOT / "internal/linked_pages.css").read_bytes()
             return self.send_bytes(css, "text/css; charset=utf-8")
         page = LINKED_PAGES.get(path)
-        if page and self.legacy_root:
+        if page:
             kind, relative = page
-            source = self.legacy_root / relative
+            source = self.reports_root / Path(relative).relative_to("reports")
             if not source.is_file():
                 self.send_error(404, "Linked analysis page not found")
                 return None
@@ -113,13 +122,11 @@ def main() -> None:
                       help="directory containing the private manifest.json export")
     data.add_argument("--data-dir", type=Path,
                       help="shared root containing mainline-history/")
-    parser.add_argument("--legacy-root", type=Path,
-                        help="optional legacy analysis page and generated reports")
     parser.add_argument("--bind", default="127.0.0.1")
     parser.add_argument("--port", default=8001, type=int)
     args = parser.parse_args()
     Handler.data_root = (args.data_root or args.data_dir / "mainline-history").resolve()
-    Handler.legacy_root = args.legacy_root.resolve() if args.legacy_root else None
+    Handler.reports_root = Handler.data_root.parent / "reports"
     server = ThreadingHTTPServer(
         (args.bind, args.port), partial(Handler, directory=str(ROOT / "dist-internal"))
     )

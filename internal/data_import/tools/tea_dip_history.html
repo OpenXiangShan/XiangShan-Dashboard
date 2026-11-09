@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>切片趋势 · TEA + DIP</title>
+<style>
+:root{font-family:system-ui,"Noto Sans CJK SC",sans-serif;color:#172b45;background:#f2f5fa;font-size:14px}*{box-sizing:border-box}body{margin:0}header,main{max-width:1600px;margin:auto;padding:24px}header{padding-bottom:8px}h1{font-size:28px;letter-spacing:-.7px;margin:0 0 10px}h2{font-size:18px;margin:0 0 14px}h3{font-size:15px;margin:18px 0 10px}p{line-height:1.7;overflow-wrap:anywhere}.muted{color:#52647a}.note{background:#fff4d8;padding:12px 16px;border-radius:9px;line-height:1.7}.toolbar>label{min-width:0;max-width:100%}.toolbar{display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin:18px 0}select,input{padding:9px;border:1px solid #cad5e4;border-radius:6px;background:white;max-width:100%;font:inherit}input[type=search]{width:260px}input[type=checkbox]{width:auto}.layout{display:grid;grid-template-columns:350px minmax(0,1fr);gap:20px}.panel{background:#fff;border:1px solid #dce4ef;border-radius:12px;padding:20px;margin-bottom:18px;min-width:0}.slice-list{max-height:750px;overflow:auto;padding:0}.pick{display:block;width:100%;border:0;border-bottom:1px solid #e4eaf2;background:white;padding:13px 16px;text-align:left;color:inherit;font:inherit;cursor:pointer}.pick:hover{background:#edf5ff}.pick[aria-pressed=true]{background:#e6efff;box-shadow:inset 4px 0 #396bd6}.pick small{display:block;color:#52647a;margin-top:6px}.badge{font-size:11px;background:#e6f2ef;color:#216953;border-radius:4px;padding:2px 5px;margin-left:6px}.missing{background:#f2f2f2;color:#697482}.columns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}.columns>div{min-width:0}.bar{display:flex;height:30px;overflow:hidden;border-radius:5px;margin:14px 0}.bar span{min-width:0}.legend{display:flex;gap:10px;flex-wrap:wrap}.legend span:before{content:"";display:inline-block;width:9px;height:9px;background:var(--color);margin-right:5px}table{width:100%;border-collapse:collapse;font-size:12px}td,th{padding:9px 7px;border-bottom:1px solid #e4eaf2;text-align:left;vertical-align:top}th{color:#52647a}td.code,code{font-family:ui-monospace,monospace;overflow-wrap:anywhere}.scroll{overflow:auto}.pcs{max-height:410px;overflow:auto}button,a{touch-action:manipulation}a{color:#315ec3}.spark{width:100%;height:180px;display:block}.statline{display:flex;flex-wrap:wrap;gap:18px;line-height:1.9}.statline b{font-size:19px}details{margin:10px 0}summary{cursor:pointer}.positive{color:#14785d}.negative{color:#bc344c}.empty{padding:24px;color:#596d84}.point-meta{font-size:12px;line-height:1.8;overflow-wrap:anywhere}button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid #9ab8f6;outline-offset:2px}@media(max-width:1050px){.layout{grid-template-columns:260px minmax(0,1fr)}.columns{grid-template-columns:minmax(0,1fr)}}@media(max-width:700px){header,main{padding:16px}.layout{grid-template-columns:1fr}.slice-list{max-height:245px}.panel{padding:15px}.toolbar{gap:10px}h1{font-size:24px}.toolbar input[type=search]{width:100%}}
+</style>
+<header>
+<p class="muted">香山性能分析 / checkpoint 数据联动</p>
+<h1>切片趋势 → TEA + DIP → 关键 PC</h1>
+<p id="overview" class="muted"></p>
+<div class="note">归因来自页面标明的参考 CI。切片身份一致可用于调查同一段程序；各历史提交的瓶颈仍需对应运行的采样证明。TEA 与 DIP 各自有一份周期预算，事件原因可以重叠。</div>
+<div class="toolbar">
+<label>历史比较组 <select id="group"><option value="">所有组</option></select></label>
+<input id="search" type="search" placeholder="搜索 workload / checkpoint" aria-label="搜索切片">
+<label><input id="linkedOnly" type="checkbox" checked>只看有 TEA+DIP 的切片</label>
+<a href="analysis.json" download>数据 JSON</a><a href="slice-links.csv" download>关联 CSV</a>
+</div>
+<p id="dashboardContext" class="muted" role="status" hidden></p>
+</header>
+<main class="layout">
+<aside><p id="count" class="muted" aria-live="polite"></p><div id="list" class="panel slice-list" aria-label="切片列表"></div></aside>
+<article>
+<section class="panel"><h2 id="selection">选择切片</h2><p id="historyGroup" class="muted"></p><div id="historyStats" class="statline"></div><div id="trend"></div><p class="muted">图中仅显示当前历史比较组。相邻 IPC 变化是描述性响应，未校准 seed 或重复测量噪声。</p><details><summary>历史逐点身份与测量窗口</summary><div id="history" class="scroll"></div></details></section>
+<section class="panel"><h2>TEA+DIP 参考测量</h2><div id="reference"></div><div id="stacks" class="columns"></div><div id="causes" class="columns"></div></section>
+<section class="panel"><h2>关键 PC 与阻塞原因</h2><p class="muted">每种状态显示归因最高的 8 个 PC。占比均以参考点的完整预算为分母；归因 CPI = 正式 CPI × 采样占比。无符号的地址保留未知。TEA 的等待目标与 DIP 的受阻指令可能不同。</p><input id="pcSearch" type="search" placeholder="搜索 PC / 函数 / 原因" aria-label="搜索 PC"><div class="columns"><div><h3>TEA · 退休端 <select id="teaState" aria-label="TEA 状态"></select></h3><div id="teaPCs" class="pcs"></div></div><div><h3>DIP · 分派端 <select id="dipState" aria-label="DIP 状态"></select></h3><div id="dipPCs" class="pcs"></div></div></div></section>
+<details class="panel"><summary>来源、采样边界与文件校验</summary><div id="sources" class="point-meta"></div></details>
+</article>
+</main>
+<script id="analysis" type="application/json">__ANALYSIS_JSON__</script>
+<script>
+"use strict";
+const data=JSON.parse(document.getElementById("analysis").textContent);
+const $=id=>document.getElementById(id);
+const esc=value=>String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const num=(value,n=4)=>value===null||value===undefined?"未知":Number(value).toFixed(n);
+const pct=value=>num(value*100,2)+"%";
+const change=value=>value==null?"不足两点":(value>=0?"+":"")+num(value,2)+"%";
+const palette={Computing:"#4176d7",Stalled:"#e6a247",Flushed:"#d56a78",Drained:"#9daabf",Base:"#4176d7",Stall:"#e6a247",FrontEnd:"#6fa79b",Misspeculation:"#d56a78",Unresolved:"#9daabf"};
+const evidence=new Map(data.evidence.map(row=>[row.point,row]));
+let selected=null,visible=[],dashboardContext=null;
+const params=new URLSearchParams(location.search);
+$("overview").textContent=`${data.coverage.history_runs} 个历史 run · ${data.coverage.history_slices} 个切片 · ${data.coverage.matched_points}/${data.coverage.evidence_points} 个参考点关联成功。参考 CI ${data.source.ci} / ${data.source.commit.slice(0,9)}，完成于 ${data.source.completed_at}。`;
+for(const group of data.groups){const option=document.createElement("option");option.value=group.group;option.textContent=`${group.group} · ${group.runs} runs · ${group.first_commit} → ${group.last_commit}`;$("group").append(option)}
+for(const [id,states,initial] of [["teaState",["Computing","Stalled","Flushed","Drained"],"Stalled"],["dipState",["Base","Stall","FrontEnd","Misspeculation"],"Stall"]]){for(const state of ["全部",...states]){const option=document.createElement("option");option.value=state==="全部"?"":state;option.textContent=state;$(id).append(option)}$(id).value=initial;$(id).addEventListener("change",renderPCs)}
+function renderList(){
+ const query=$("search").value.toLowerCase(),group=$("group").value;
+ visible=data.slices.filter(row=>(!dashboardContext||dashboardContext.checkpoint_root===data.source.checkpoint_root)&&(!group||row.summary.group===group)&&(!$("linkedOnly").checked||row.evidence_point)&&`${row.summary.workload}:${row.summary.checkpoint}`.toLowerCase().includes(query));
+ $("count").textContent=`${visible.length} 个切片/比较组 · 按最大相邻变化排序`;
+ $("list").replaceChildren();
+ for(const row of visible){const button=document.createElement("button");button.className="pick";button.type="button";button.setAttribute("aria-pressed",String(row===selected));button.innerHTML=`<strong>${esc(row.summary.workload)}:${row.summary.checkpoint}</strong><span class="badge ${row.evidence_point?"":"missing"}">${row.evidence_point?"TEA+DIP":"缺测"}</span><small>最大相邻 ${change(row.summary.max_adjacent_step_pct)} · ${row.summary.observations} 次观测</small><small>${esc(row.summary.group)}</small>`;button.addEventListener("click",()=>select(row));$("list").append(button)}
+ if(!visible.length){$("list").innerHTML='<p class="empty">没有符合条件的切片</p>';selected=null;renderSelection()}
+ else if(!visible.includes(selected))select(visible[0]);
+}
+function select(row){selected=row;for(let i=0;i<visible.length;i++)$("list").children[i].setAttribute("aria-pressed",String(visible[i]===row));renderSelection()}
+function table(headers,rows){return `<table><thead><tr>${headers.map(x=>`<th>${esc(x)}</th>`).join("")}</tr></thead><tbody>${rows.map(row=>`<tr>${row.map(cell=>`<td>${cell}</td>`).join("")}</tr>`).join("")}</tbody></table>`}
+function stack(states){return `<div class="bar" role="img" aria-label="${esc(Object.entries(states).map(([key,value])=>key+': '+pct(value)).join(', '))}">${Object.entries(states).map(([key,value])=>`<span style="width:${value*100}%;background:${palette[key]}" title="${key} ${pct(value)}"></span>`).join("")}</div><div class="legend">${Object.entries(states).map(([key,value])=>`<span style="--color:${palette[key]}">${key} ${pct(value)}</span>`).join("")}</div>`}
+function renderSelection(){
+ if(!selected){$("selection").textContent="没有选中切片";for(const id of ["historyGroup","historyStats","trend","history","reference","stacks","causes","teaPCs","dipPCs"])$(id).replaceChildren();return}
+ const s=selected.summary,h=selected.history,p=evidence.get(selected.evidence_point);
+ $("selection").textContent=`${s.workload}:${s.checkpoint}`;
+ $("historyGroup").textContent=`${s.benchmark} · 比较组 ${s.group} · checkpoint 根 ${data.source.checkpoint_root}`;
+ $("historyStats").innerHTML=`<span>首点 IPC <b>${num(s.first_ipc)}</b></span><span>末点 IPC <b>${num(s.last_ipc)}</b></span><span>首尾变化 <b>${change(s.first_to_last_pct)}</b></span>`;
+ const values=h.map(r=>r.ipc),low=Math.min(...values),high=Math.max(...values),span=high-low||Math.max(high*.1,.1),y=value=>135-(value-low)/span*110,x=i=>55+i*650/Math.max(h.length-1,1);
+ $("trend").innerHTML=`<svg class="spark" viewBox="0 0 760 170" role="img" aria-label="所选比较组的历史切片 IPC"><line x1="55" y1="145" x2="720" y2="145" stroke="#d6dfeb"/><text x="0" y="25" fill="#52647a">${num(high,2)}</text><text x="0" y="140" fill="#52647a">${num(low,2)}</text><polyline fill="none" stroke="#4176d7" stroke-width="2.5" points="${h.map((r,i)=>`${x(i)},${y(r.ipc)}`).join(" ")}"/>${h.map((r,i)=>`<circle cx="${x(i)}" cy="${y(r.ipc)}" r="4" fill="#4176d7"><title>${esc(r.short_sha)} IPC ${num(r.ipc)} / ${r.instructions} instructions / seed ${r.seed??"未知"}</title></circle>`).join("")}<text x="55" y="166" fill="#52647a">${esc(h[0].short_sha)}</text><text x="630" y="166" fill="#52647a">${esc(h[h.length-1].short_sha)}</text></svg>`;
+ $("history").innerHTML=table(["提交 / 日期","IPC","周期 / 指令数","seed / 窗口","run / 来源"],h.map(r=>[`${esc(r.short_sha)}<br>${esc(r.commit_time)}`,num(r.ipc),`${r.cycles}<br>${r.instructions}`,`${r.seed??"未知"}<br>${esc(r.window)}`,`<details><summary>${esc(r.run_id.slice(0,12))}</summary>${esc(r.source)}<br>${esc(r.source_archive)}</details>`]));
+ if(!p){$("reference").innerHTML='<p class="empty">该切片在参考 CI 中没有 TEA+DIP 测量。</p>';$("stacks").replaceChildren();$("causes").replaceChildren();renderPCs();return}
+ $("reference").innerHTML=`<p class="point-meta">跨运行 checkpoint 参考 · CI ${data.source.ci} · 源码 ${esc(data.source.commit.slice(0,12))}<br>正式窗口 [${p.roi_start}, ${p.roi_end}) · ${p.instructions} 条指令 / ${p.cycles} 周期 · CPI ${num(p.cpi,6)} · seed ${p.seed}<br>${p.samples} 个采样边界 · 每 ${data.source.sample_period} 周期采样 · benchmark 内权重 ${pct(p.benchmark_weight)} · 输入所选原始权重 ${pct(p.coverage)}</p>`;
+ $("stacks").innerHTML=`<div><h3>TEA · 退休端周期</h3>${stack(p.tea)}</div><div><h3>DIP · 分派槽位周期当量</h3>${stack(p.dip)}</div>`;
+ const causes=Object.entries(p.dip_causes).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
+ $("causes").innerHTML=`<div><h3>TEA 等待签名</h3>${table(["事件","占总周期","归因 CPI"],Object.entries(p.tea_events).map(([key,value])=>[esc(key),pct(value),num(p.cpi*value,6)]))}<p class="muted">无事件位表示当前事件集中未记录到事件；仍可能存在执行、唤醒、依赖或其他等待。</p></div><div><h3>DIP 原因位 · 可重叠</h3>${table(["原因","占总容量","归因 CPI"],causes.map(([key,value])=>[esc(key),pct(value),num(p.cpi*value,6)]))}</div>`;
+ renderPCs();
+}
+function renderPCs(){const p=selected&&evidence.get(selected.evidence_point),query=$("pcSearch").value.toLowerCase();for(const view of ["tea","dip"]){const state=$(view+"State").value;const rows=(p?.[view+"_pcs"]||[]).filter(row=>(!state||row.state===state)&&`${row.pc} ${row.function||""} ${row.instruction||""} ${Object.keys(row.signatures).join(" ")}`.toLowerCase().includes(query));$(view+"PCs").innerHTML=rows.length?table(["PC / 指令","状态","占比 / CPI","事件 / 原因"],rows.map(row=>[`<code>${esc(row.pc)}</code><br>${esc(row.function||"符号未知")}<br><code>${esc(row.instruction||"")}</code>`,esc(row.state),`${pct(row.fraction)}<br>${num(row.cpi,6)}`,Object.entries(row.signatures).map(([key,value])=>`${esc(key)} ${pct(value)}`).join("<br>")])):'<p class="empty">此筛选下没有 PC 归因</p>'}}
+$("sources").innerHTML=`数据生成于 ${esc(data.generated_at)}<br>趋势库 ${esc(data.database)}<br>参考归档 ${esc(data.source.archive)}<br>原始目录 ${esc(data.source.directory)}<br>binary SHA256 ${esc(data.source.emulator_sha256)}<br>REF SHA256 ${esc(data.source.reference_sha256)}<br>原件端点缺样 ${esc(JSON.stringify(data.source.sampling_endpoint_deficits))}<details><summary>输入文件 SHA256</summary>${Object.entries(data.source.hashes).map(([path,hash])=>`${esc(path)}<br><code>${esc(hash)}</code>`).join("<br>")}</details>`;
+for(const id of ["group","linkedOnly"])$(id).addEventListener("change",renderList);
+$("search").addEventListener("input",renderList);$("pcSearch").addEventListener("input",renderPCs);
+function selectDashboardSlice(context){
+ dashboardContext=context;
+ $("search").value=`${context.workload}:${context.checkpoint}`;$("linkedOnly").checked=false;
+ const candidates=data.slices.filter(row=>row.summary.workload===context.workload&&row.summary.checkpoint===Number(context.checkpoint));
+ const history=candidates.find(row=>row.history.some(record=>record.source_archive===context.source_uri));
+ $("group").value=history?history.summary.group:"";
+ $("dashboardContext").hidden=false;
+ $("dashboardContext").textContent=context.checkpoint_root!==data.source.checkpoint_root
+  ? "当前看板切片的 checkpoint profile 与参考数据不同，没有关联。"
+  : `来自看板：${context.workload}:${context.checkpoint} · ${context.observation||""}。${history?"已定位到包含该来源归档的历史组。":"当前测量未包含在此历史快照中；以下保留同 checkpoint 的参考历史。"}`;
+ renderList();
+}
+if(params.get("group"))$("group").value=params.get("group");
+if(params.get("slice")){$("search").value=params.get("slice");$("linkedOnly").checked=false}
+if(params.get("checkpoint_root"))selectDashboardSlice({workload:params.get("slice").split(":")[0],checkpoint:Number(params.get("slice").split(":")[1]),checkpoint_root:params.get("checkpoint_root"),source_uri:params.get("source_uri"),observation:params.get("observation")});
+else renderList();
+</script>
+</html>
