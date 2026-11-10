@@ -1,4 +1,9 @@
 {
+  "42745165219": {
+    "hash": "ac7b34075a910809dde961abda8eda21b8941f52",
+    "title": "fix(difftest): align CBO invalidate events to cache lines #6864",
+    "date": 1794278855
+  },
   "42599022278": {
     "hash": "1e05481a4c63d06323fd83524b297dd7af55186e",
     "title": "fix(MMU): decode SFENCE.VMA with the current V",
