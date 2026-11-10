@@ -7,3 +7,6 @@ dist/
 test.py
 
 .direnv
+
+dist-internal/
+internal/local/

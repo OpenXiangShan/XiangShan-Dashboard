@@ -133,12 +133,28 @@
             @paste-error="onComparisonPasteError(source.id, $event)"
           />
           <Exporter
+            v-if="!detailedAnalysisVisible"
             :t="t"
             :disabled="comparisonBenchmarkCount === 0"
             :on-export="exportComparisonPng"
           />
         </aside>
+        <component
+          v-if="internalAnalysis"
+          :is="DeveloperComparison"
+          :sources="comparisonSources"
+          @details-change="detailedAnalysisVisible = $event"
+        >
+          <ComparisonPanel
+            ref="comparisonPanel"
+            :t="t"
+            :sources="comparisonSources"
+            :coverage="selectedComparisonCoverage"
+            :spec-version="comparisonSpecVersion"
+          />
+        </component>
         <ComparisonPanel
+          v-else
           ref="comparisonPanel"
           :t="t"
           :sources="comparisonSources"
@@ -151,7 +167,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, defineAsyncComponent, onMounted, ref, watch } from "vue";
+const internalAnalysis = __INTERNAL_ANALYSIS__;
+const detailedAnalysisVisible = ref(false);
+const DeveloperComparison = __INTERNAL_ANALYSIS__
+  ? defineAsyncComponent(() => import("./internal/DeveloperComparison.vue"))
+  : null;
 import { version as appVersion } from "../package.json";
 import DashboardHero from "./components/DashboardHero.vue";
 import RangeSelector from "./components/sidebars/RangeSelector.vue";
@@ -431,6 +452,13 @@ async function loadComparisonSource(source: ComparisonSource) {
         dataset.branch === previousDataset?.branch &&
         dataset.subset === previousDataset?.subset,
     ) ||
+    (internalAnalysis
+      ? activeComparisonDatasets.value.find(
+          (dataset) =>
+            dataset.branch === "gem5/xs-dev" &&
+            dataset.subset === "default/spec06/gcc",
+        )
+      : undefined) ||
     activeComparisonDatasets.value[0];
   if (!source.dataset) return;
   const { tab, branch, subset } = source.dataset;
@@ -1210,7 +1238,16 @@ onMounted(async () => {
   isHydrating.value = true;
   try {
     loadSettings();
-    selectedTabId.value = settings.selectedTabId;
+    selectedTabId.value =
+      internalAnalysis && new URLSearchParams(location.search).has("analysis")
+        ? "performance-compare"
+        : settings.selectedTabId;
+    if (
+      internalAnalysis &&
+      new URLSearchParams(location.search).has("analysis")
+    ) {
+      selectedComparisonCoverageId.value = "score-nightly";
+    }
     selectedBranch.value = settings.selectedBranch;
     selectedSubset.value = settings.selectedSubset;
     startDateStr.value = settings.startDateStr;

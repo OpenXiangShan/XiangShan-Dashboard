@@ -14,11 +14,12 @@ function getCommitHash(): string {
   }
 }
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [vue()],
   base: process.env.VITE_BASE || repoBase,
   define: {
     __COMMIT_HASH__: JSON.stringify(getCommitHash()),
+    __INTERNAL_ANALYSIS__: mode === "internal",
     __BUILD_TIMESTAMP__: JSON.stringify(Date.now()),
   },
-});
+}));

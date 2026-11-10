@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vue-tsc --noEmit && vite build",
     "preview": "vite preview",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "build:internal": "vue-tsc --noEmit && vite build --mode internal --outDir dist-internal"
   },
   "dependencies": {
     "chart.js": "^4.6.1",
