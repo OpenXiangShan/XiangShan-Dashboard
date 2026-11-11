@@ -1,4 +1,14 @@
 {
+  "42783990903": {
+    "hash": "41ab74e7db544787bd607280967b98eb44fa634f",
+    "title": "fix(NewCSR): refetch when CSR writes change the breakpoint gate (#6862)",
+    "date": 1794299796
+  },
+  "42781652005": {
+    "hash": "5e147dc1c49066fa16458828e666297a018f275b",
+    "title": "feat(mbtb): change the VBTB prediction selection logic to taken-first (#6844)",
+    "date": 1794298727
+  },
   "42745165219": {
     "hash": "ac7b34075a910809dde961abda8eda21b8941f52",
     "title": "fix(difftest): align CBO invalidate events to cache lines #6864",
