@@ -1,4 +1,19 @@
 {
+  "43164592770": {
+    "hash": "e716c765824900ff78816b92ac827fd4aa2cab35",
+    "title": "refactor(rob): split functional and debug uop buffers (#6937)",
+    "date": 1794462930
+  },
+  "43140311627": {
+    "hash": "511ca530d11f90d411264c6a074a65cdb3b3c887",
+    "title": "feat(backend): connect FP IQ and ROB topdown counters (#6709)",
+    "date": 1794449821
+  },
+  "43137182948": {
+    "hash": "9f1919abea451d844a664a132385b99f3ab518ab",
+    "title": "fix(bju): assign isRVC metadata in JumpUnit backend redirect (#6917)",
+    "date": 1794448191
+  },
   "42982112116": {
     "hash": "182b2277c0e4115e39ae396f7d705bc4e20e0def",
     "title": "refactor(TLB): name TLB read result fields",
