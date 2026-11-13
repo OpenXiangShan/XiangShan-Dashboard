@@ -1,4 +1,9 @@
 {
+  "43315596206": {
+    "hash": "f9649a04eef8615322dfd5f69a5393fc9559854e",
+    "title": "configs: Set SMT defaults before DIP option validation (#1335)[skip ci]",
+    "date": 1794477006
+  },
   "42115195085": {
     "hash": "2061e44b1dfb9dc0f56f94f44edd0d4718ac577e",
     "title": "cpu-o3: Filter resolve inputs with the oldest same-cycle squash (#1282)",
