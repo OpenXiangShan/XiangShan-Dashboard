@@ -1,0 +1,89 @@
+{
+  "perlbench": {
+    "score": 17.23
+  },
+  "bzip2": {
+    "score": 10.989
+  },
+  "gcc": {
+    "score": 21.114
+  },
+  "mcf": {
+    "score": 25.854
+  },
+  "gobmk": {
+    "score": 14.2
+  },
+  "hmmer": {
+    "score": 18.965
+  },
+  "sjeng": {
+    "score": 14.139
+  },
+  "libquantum": {
+    "score": 46.833
+  },
+  "h264ref": {
+    "score": 23.61
+  },
+  "omnetpp": {
+    "score": 15.717
+  },
+  "astar": {
+    "score": 26.866
+  },
+  "xalancbmk": {
+    "score": 25.952
+  },
+  "bwaves": {
+    "score": 29.658
+  },
+  "gamess": {
+    "score": 17.566
+  },
+  "milc": {
+    "score": 32.156
+  },
+  "zeusmp": {
+    "score": 26.579
+  },
+  "gromacs": {
+    "score": 17.603
+  },
+  "cactusADM": {
+    "score": 21.244
+  },
+  "leslie3d": {
+    "score": 22.473
+  },
+  "namd": {
+    "score": 15.07
+  },
+  "dealII": {
+    "score": 33.865
+  },
+  "soplex": {
+    "score": 20.933
+  },
+  "povray": {
+    "score": 24.997
+  },
+  "calculix": {
+    "score": 18.905
+  },
+  "GemsFDTD": {
+    "score": 30.396
+  },
+  "tonto": {
+    "score": 27.254
+  },
+  "lbm": {
+    "score": 30.832
+  },
+  "wrf": {
+    "score": 16.963
+  },
+  "sphinx3": {
+    "score": 23.241
+  }
+}

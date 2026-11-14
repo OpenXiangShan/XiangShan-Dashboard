@@ -1,0 +1,71 @@
+{
+  "500.perlbench_r": {
+    "score": 2.205
+  },
+  "502.gcc_r": {
+    "score": 2.966
+  },
+  "505.mcf_r": {
+    "score": 2.463
+  },
+  "520.omnetpp_r": {
+    "score": 1.928
+  },
+  "523.xalancbmk_r": {
+    "score": 2.021
+  },
+  "525.x264_r": {
+    "score": 2.373
+  },
+  "531.deepsjeng_r": {
+    "score": 1.983
+  },
+  "541.leela_r": {
+    "score": 1.646
+  },
+  "548.exchange2_r": {
+    "score": 6.279
+  },
+  "557.xz_r": {
+    "score": 1.195
+  },
+  "503.bwaves_r": {
+    "score": 18.351
+  },
+  "507.cactuBSSN_r": {
+    "score": 3.184
+  },
+  "508.namd_r": {
+    "score": 2.378
+  },
+  "510.parest_r": {
+    "score": 1.92
+  },
+  "511.povray_r": {
+    "score": 3.101
+  },
+  "519.lbm_r": {
+    "score": 2.906
+  },
+  "521.wrf_r": {
+    "score": 2.52
+  },
+  "526.blender_r": {
+    "score": 2.407
+  },
+  "527.cam4_r": {
+    "score": 2.822
+  },
+  "538.imagick_r": {
+    "score": 3.427
+  },
+  "544.nab_r": {
+    "score": 2.819
+  },
+  "549.fotonik3d_r": {
+    "score": 5.901
+  },
+  "554.roms_r": {
+    "score": 2.562
+  }
+}
