@@ -1,4 +1,14 @@
 {
+  "44270801382": {
+    "hash": "177ec669116aa1ff6bb96469cb62349e42041353",
+    "title": "fix(ICache): query the ITLB with fb(0) and use its gpaddr unchanged (#6870)",
+    "date": 1794991972
+  },
+  "44270473599": {
+    "hash": "68e49162f7acb645132024a499b09b4de6d68705",
+    "title": "fix(ICache): do not raise an I_ECC for a fetch request slot that holds no request (#6871)",
+    "date": 1794991833
+  },
   "44003151915": {
     "hash": "9df386608e590e9d2e1e80d10ed5710de21f9d08",
     "title": "refactor(csr): standardize CSR and related bundle naming",
