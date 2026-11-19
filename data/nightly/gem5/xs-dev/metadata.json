@@ -1,4 +1,59 @@
 {
+  "44477844133": {
+    "hash": "275ece544c1666df8ab12d2c4f293b0dfd6e342d",
+    "title": "cpu-o3: Detect SMT RAR violations with local write snoops (#1346)",
+    "date": 1795072350
+  },
+  "44477843999": {
+    "hash": "275ece544c1666df8ab12d2c4f293b0dfd6e342d",
+    "title": "cpu-o3: Detect SMT RAR violations with local write snoops (#1346)",
+    "date": 1795072350
+  },
+  "44461038727": {
+    "hash": "b57b5a3f36a205f67dd8e474cfca67ff8f3fd834",
+    "title": "mem: Add teacher-student BOP optimization (#1319)",
+    "date": 1795063820
+  },
+  "44461038673": {
+    "hash": "b57b5a3f36a205f67dd8e474cfca67ff8f3fd834",
+    "title": "mem: Add teacher-student BOP optimization (#1319)",
+    "date": 1795063820
+  },
+  "44461038598": {
+    "hash": "b57b5a3f36a205f67dd8e474cfca67ff8f3fd834",
+    "title": "mem: Add teacher-student BOP optimization (#1319)",
+    "date": 1795063820
+  },
+  "44460529196": {
+    "hash": "4594ea144f26ecbf36ed984d0a6bba358df46a18",
+    "title": "Int/fp div wakeup (#1327)",
+    "date": 1795063544
+  },
+  "44460529107": {
+    "hash": "4594ea144f26ecbf36ed984d0a6bba358df46a18",
+    "title": "Int/fp div wakeup (#1327)",
+    "date": 1795063544
+  },
+  "44460528997": {
+    "hash": "4594ea144f26ecbf36ed984d0a6bba358df46a18",
+    "title": "Int/fp div wakeup (#1327)",
+    "date": 1795063544
+  },
+  "44444296741": {
+    "hash": "7b59bdba08040492debe3d4624fbdb8bf63475de",
+    "title": "cpu-o3: Fix integer division CLZ latency calculation (#1324)",
+    "date": 1795055168
+  },
+  "44444296669": {
+    "hash": "7b59bdba08040492debe3d4624fbdb8bf63475de",
+    "title": "cpu-o3: Fix integer division CLZ latency calculation (#1324)",
+    "date": 1795055168
+  },
+  "44444296620": {
+    "hash": "7b59bdba08040492debe3d4624fbdb8bf63475de",
+    "title": "cpu-o3: Fix integer division CLZ latency calculation (#1324)",
+    "date": 1795055168
+  },
   "44223858073": {
     "hash": "111ca07f8b31894820b3c238aabd6fffb177ecce",
     "title": "configs: Align KMHV3 IQ capacities with RTL (#1312)",
