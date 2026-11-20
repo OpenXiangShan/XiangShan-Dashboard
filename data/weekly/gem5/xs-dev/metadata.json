@@ -1,4 +1,9 @@
 {
+  "44620883786": {
+    "hash": "275ece544c1666df8ab12d2c4f293b0dfd6e342d",
+    "title": "cpu-o3: Detect SMT RAR violations with local write snoops (#1346)",
+    "date": 1795072350
+  },
   "43315596206": {
     "hash": "f9649a04eef8615322dfd5f69a5393fc9559854e",
     "title": "configs: Set SMT defaults before DIP option validation (#1335)[skip ci]",
