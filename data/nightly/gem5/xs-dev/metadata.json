@@ -1,4 +1,19 @@
 {
+  "44723494277": {
+    "hash": "dad3d3c7852621bf84eddab4f8393faa88def17f",
+    "title": "cpu: Verify serialized AMO results in multi-hart difftest (#1357)",
+    "date": 1795172215
+  },
+  "44723457788": {
+    "hash": "f9dccf53be561d4fb2111b3f883c6ec7917a2004",
+    "title": "cpu: Tighten multi-hart scalar load difftest checks (#1356)",
+    "date": 1795172198
+  },
+  "44723457780": {
+    "hash": "f9dccf53be561d4fb2111b3f883c6ec7917a2004",
+    "title": "cpu: Tighten multi-hart scalar load difftest checks (#1356)",
+    "date": 1795172198
+  },
   "44477844133": {
     "hash": "275ece544c1666df8ab12d2c4f293b0dfd6e342d",
     "title": "cpu-o3: Detect SMT RAR violations with local write snoops (#1346)",
