@@ -1,0 +1,44 @@
+{
+  "400.perlbench": {
+    "score": 21.874
+  },
+  "401.bzip2": {
+    "score": 10.066
+  },
+  "403.gcc": {
+    "score": 23.175
+  },
+  "429.mcf": {
+    "score": 21.325
+  },
+  "458.sjeng": {
+    "score": 13.707
+  },
+  "462.libquantum": {
+    "score": 55.01
+  },
+  "473.astar": {
+    "score": 26.586
+  },
+  "483.xalancbmk": {
+    "score": 24.057
+  },
+  "410.bwaves": {
+    "score": 46.291
+  },
+  "433.milc": {
+    "score": 54.144
+  },
+  "435.gromacs": {
+    "score": 14.408
+  },
+  "447.dealII": {
+    "score": 7.189
+  },
+  "454.calculix": {
+    "score": 19.568
+  },
+  "459.GemsFDTD": {
+    "score": 34.686
+  }
+}
