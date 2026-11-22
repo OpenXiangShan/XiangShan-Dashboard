@@ -1,4 +1,9 @@
 {
+  "44920043726": {
+    "hash": "b9638259e98c92b4c0d9e64a09d3c504faa699e6",
+    "title": "feat(trigger): implement slot-zero icount in Decode",
+    "date": 1795158139
+  },
   "44764996255": {
     "hash": "b9638259e98c92b4c0d9e64a09d3c504faa699e6",
     "title": "feat(trigger): implement slot-zero icount in Decode",
