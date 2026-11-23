@@ -1,4 +1,9 @@
 {
+  "45039210159": {
+    "hash": "ffe2c0f77e6e88bbe8589e99b404044defac7c6e",
+    "title": "docs(README): add tapeout info & version selection guidance (#7021)",
+    "date": 1795300338
+  },
   "44920043726": {
     "hash": "b9638259e98c92b4c0d9e64a09d3c504faa699e6",
     "title": "feat(trigger): implement slot-zero icount in Decode",
