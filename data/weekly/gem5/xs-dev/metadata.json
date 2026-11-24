@@ -1,4 +1,9 @@
 {
+  "45123051515": {
+    "hash": "8143d7bc795f91b332beee85a3ff3ae5d2d26fe1",
+    "title": "cpu-o3: fetch block trace database (#1364)",
+    "date": 1795410759
+  },
   "44620883786": {
     "hash": "275ece544c1666df8ab12d2c4f293b0dfd6e342d",
     "title": "cpu-o3: Detect SMT RAR violations with local write snoops (#1346)",
