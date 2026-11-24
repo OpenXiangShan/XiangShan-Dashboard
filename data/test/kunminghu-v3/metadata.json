@@ -1,4 +1,9 @@
 {
+  "45374913218": {
+    "hash": "120f25407b34454154b8ef8a5605784ceac908b0",
+    "title": "fix(DCache): keep full client visibility on one memory channel (#7035)",
+    "date": 1795516023
+  },
   "45345109735": {
     "hash": "ae37b219f03fc3156f2bec179a2f8d37416e0e38",
     "title": "feat(topdown): add L1/L2 grouping to TopDownCounters (#6567)",
