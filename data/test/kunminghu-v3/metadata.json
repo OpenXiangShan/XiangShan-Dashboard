@@ -1,4 +1,24 @@
 {
+  "45345109735": {
+    "hash": "ae37b219f03fc3156f2bec179a2f8d37416e0e38",
+    "title": "feat(topdown): add L1/L2 grouping to TopDownCounters (#6567)",
+    "date": 1795503835
+  },
+  "45316644076": {
+    "hash": "41d856971ffdf83c95dbb124708ed5bbdf31cef8",
+    "title": "fix(csr): redirect exceptions raised in Debug Mode (#7038)",
+    "date": 1795489332
+  },
+  "45310164760": {
+    "hash": "9d86877396c1eb6d7597ea6952a468c0cd113625",
+    "title": "fix(mbtb): invalidate stale prediction across io.enable transitions (#6920)",
+    "date": 1795486097
+  },
+  "45309621603": {
+    "hash": "d2ef79a58f0bcd8555fe8d711d1aafd5d07c8579",
+    "title": "area(Sc): reuse tage meta (#6876)",
+    "date": 1795485838
+  },
   "45129357483": {
     "hash": "9b3589414f91fc0f42c183a66921b337dd145b08",
     "title": "fix(GPAMem): select raw gpa for VS non-leaf PTE #6915\u2060",
