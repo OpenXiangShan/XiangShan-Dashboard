@@ -1,4 +1,14 @@
 {
+  "45578944530": {
+    "hash": "d2bf6e04818f9a3cbb175fb7b1ee4d47b4ddf81d",
+    "title": "fix(frontend): fix topdown attribution (#6808)",
+    "date": 1795596269
+  },
+  "45576253494": {
+    "hash": "2ddc9e819a0bf7ffca2b9d66b9ef74820a56b720",
+    "title": "fix(ICache): use ValidHold for corrupt/deniedReg (#6948)",
+    "date": 1795595174
+  },
   "45374913218": {
     "hash": "120f25407b34454154b8ef8a5605784ceac908b0",
     "title": "fix(DCache): keep full client visibility on one memory channel (#7035)",
