@@ -1,0 +1,80 @@
+{
+  "stockfish": {
+    "score": 0.638
+  },
+  "ntest": {
+    "score": 0.974
+  },
+  "sqlite": {
+    "score": 1.038
+  },
+  "omnetpp": {
+    "score": 1.345
+  },
+  "cpython": {
+    "score": 1.676
+  },
+  "gcc": {
+    "score": 1.436
+  },
+  "llvm": {
+    "score": 1.074
+  },
+  "cppcheck": {
+    "score": 1.229
+  },
+  "abc": {
+    "score": 1.177
+  },
+  "vpr": {
+    "score": 1.237
+  },
+  "gem5": {
+    "score": 1.38
+  },
+  "sealcrypto": {
+    "score": 0.801
+  },
+  "ns3": {
+    "score": 1.218
+  },
+  "zstd": {
+    "score": 0.45
+  },
+  "cactus": {
+    "score": 0.859
+  },
+  "palm": {
+    "score": 1.595
+  },
+  "astcenc": {
+    "score": 1.018
+  },
+  "ocio": {
+    "score": 1.348
+  },
+  "gmsh": {
+    "score": 1.26
+  },
+  "flightdm": {
+    "score": 1.37
+  },
+  "fotonik3d": {
+    "score": 2.641
+  },
+  "roms": {
+    "score": 1.732
+  },
+  "femflow": {
+    "score": 1.451
+  },
+  "nest": {
+    "score": 1.809
+  },
+  "marian": {
+    "score": 0.539
+  },
+  "lbm": {
+    "score": 1.171
+  }
+}
