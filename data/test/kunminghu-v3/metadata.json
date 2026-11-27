@@ -1,4 +1,9 @@
 {
+  "45977806141": {
+    "hash": "3b3f15c9bd34f3a29ea55bf5e28297914382cd67",
+    "title": "submodule: bump difftest (#7075)",
+    "date": 1795773355
+  },
   "45578944530": {
     "hash": "d2bf6e04818f9a3cbb175fb7b1ee4d47b4ddf81d",
     "title": "fix(frontend): fix topdown attribution (#6808)",
