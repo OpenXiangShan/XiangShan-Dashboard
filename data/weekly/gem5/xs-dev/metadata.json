@@ -1,4 +1,9 @@
 {
+  "45904637694": {
+    "hash": "6509b9ef0b21de10b7f68b35f63e8f950bd78665",
+    "title": "chore(misc): Standardize commit subjects and PR guidelines (#1388)[skip ci]",
+    "date": 1795674250
+  },
   "45123051515": {
     "hash": "8143d7bc795f91b332beee85a3ff3ae5d2d26fe1",
     "title": "cpu-o3: fetch block trace database (#1364)",
